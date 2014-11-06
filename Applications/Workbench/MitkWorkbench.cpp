@@ -126,7 +126,7 @@ int main(int argc, char** argv)
     storageDir = QDesktopServices::storageLocation(QDesktopServices::DataLocation) + '_';
     storageDir += QString::number(qHash(QCoreApplication::applicationDirPath())) + "/";
   }
-  us::ModuleSettings::SetStoragePath((storageDir + "us/").toStdString());
+  us::ModuleSettings::SetStoragePath((storageDir + "us/").toUtf8().constData());
 
   // These paths replace the .ini file and are tailored for installation
   // packages created with CPack. If a .ini file is presented, it will
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
   Poco::Util::MapConfiguration* extConfig(new Poco::Util::MapConfiguration());
   if (!storageDir.isEmpty())
   {
-    extConfig->setString(berry::Platform::ARG_STORAGE_DIR, storageDir.toStdString());
+    extConfig->setString(berry::Platform::ARG_STORAGE_DIR, storageDir.toUtf8().constData());
   }
   extConfig->setString(berry::Platform::ARG_PLUGIN_DIRS, pluginDirs);
   extConfig->setString(berry::Platform::ARG_PROVISIONING, provFile.toString());
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
   // which have difficulties with multiple dynamic opening and closing of shared libraries with
   // many global static initializers. It also helps if dependent libraries have weird static
   // initialization methods and/or missing de-initialization code.
-  extConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, libraryPath.toStdString()+CTK_LIB_PREFIX "CTKDICOMCore:0.1");
+  extConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, (libraryPath+QString(CTK_LIB_PREFIX "CTKDICOMCore:0.1")).toUtf8().constData());
 
   // Seed the random number generator, once at startup.
   QTime time = QTime::currentTime();
