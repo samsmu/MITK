@@ -77,6 +77,11 @@ QmitkExtWorkbenchWindowAdvisorHack
 * QmitkExtWorkbenchWindowAdvisorHack::undohack =
 new QmitkExtWorkbenchWindowAdvisorHack();
 
+QString QmitkExtWorkbenchWindowAdvisor::MI_FILE = QMenu::tr("&File");
+QString QmitkExtWorkbenchWindowAdvisor::MI_EDIT = QMenu::tr("&Edit");
+QString QmitkExtWorkbenchWindowAdvisor::MI_WINDOW = QMenu::tr("&Window");
+QString QmitkExtWorkbenchWindowAdvisor::MI_HELP = QMenu::tr("&Help");
+
 QString QmitkExtWorkbenchWindowAdvisor::QT_SETTINGS_FILENAME = "QtSettings.ini";
 
 class PartListenerForTitle: public berry::IPartListener
@@ -459,7 +464,7 @@ void QmitkExtWorkbenchWindowAdvisor::PostWindowCreate()
  QMenuBar* menuBar = mainWindow->menuBar();
  menuBar->setContextMenuPolicy(Qt::PreventContextMenu);
 
- QMenu* fileMenu = menuBar->addMenu("&File");
+ QMenu* fileMenu = menuBar->addMenu(MI_FILE);
  fileMenu->setObjectName("FileMenu");
 
  QAction* fileOpenAction = new QmitkFileOpenAction(QIcon(":/org.mitk.gui.qt.ext/Load_48.png"), window);
@@ -490,7 +495,7 @@ if(this->GetWindowConfigurer()->GetWindow()->GetWorkbench()->GetEditorRegistry()
   viewRegistry->GetViews();
 
  // another bad hack to get an edit/undo menu...
- QMenu* editMenu = menuBar->addMenu("&Edit");
+ QMenu* editMenu = menuBar->addMenu(MI_EDIT);
  undoAction = editMenu->addAction(QIcon(":/org.mitk.gui.qt.ext/Undo_48.png"),
   "&Undo",
   QmitkExtWorkbenchWindowAdvisorHack::undohack, SLOT(onUndo()),
@@ -559,7 +564,7 @@ if(this->GetWindowConfigurer()->GetWindow()->GetWorkbench()->GetEditorRegistry()
 #endif
 
  // ==== Window Menu ==========================
- QMenu* windowMenu = menuBar->addMenu("Window");
+ QMenu* windowMenu = menuBar->addMenu(MI_WINDOW);
  if (showNewWindowMenuItem)
  {
    windowMenu->addAction("&New Window", QmitkExtWorkbenchWindowAdvisorHack::undohack, SLOT(onNewWindow()));
@@ -707,7 +712,7 @@ if(this->GetWindowConfigurer()->GetWindow()->GetWorkbench()->GetEditorRegistry()
  // ====================================================
 
  // ===== Help menu ====================================
- QMenu* helpMenu = menuBar->addMenu("&Help");
+ QMenu* helpMenu = menuBar->addMenu(MI_HELP);
  helpMenu->addAction("&Welcome",this, SLOT(onIntro()));
  helpMenu->addAction("&Open Help Perspective", this, SLOT(onHelpOpenHelpPerspective()));
   helpMenu->addAction("&Context Help",this, SLOT(onHelp()),  QKeySequence("F1"));
