@@ -29,6 +29,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkCommon.h>
 #include <mitkException.h>
 
+#include <QTranslator>
+
+
 class QtSafeApplication : public QtSingleApplication
 {
 
@@ -101,10 +104,23 @@ public:
 
 int main(int argc, char** argv)
 {
+  Poco::Path basePath(argv[0]);
+  basePath.setFileName("");
+  
   // Create a QApplication instance first
+  QTranslator translator;
+  QString dirStr = QString::fromUtf8((basePath.current()+"autoplan_ru.qm").c_str());
+  translator.load(dirStr);
+
+  translator.load(dirStr);
+
+  MITK_INFO << qPrintable(dirStr);
+
   QtSafeApplication qSafeApp(argc, argv);
   qSafeApp.setApplicationName("MITK Workbench");
   qSafeApp.setOrganizationName("DKFZ");
+
+  qSafeApp.installTranslator(&translator);
 
   // This function checks if an instance is already running
   // and either sends a message to it (containing the command
@@ -131,8 +147,6 @@ int main(int argc, char** argv)
   // These paths replace the .ini file and are tailored for installation
   // packages created with CPack. If a .ini file is presented, it will
   // overwrite the settings in MapConfiguration
-  Poco::Path basePath(argv[0]);
-  basePath.setFileName("");
 
   Poco::Path provFile(basePath);
   provFile.setFileName("MitkWorkbench.provisioning");
