@@ -179,7 +179,7 @@ bool QmitkDataStorageTreeModel::dropMimeData(const QMimeData *data,
         slIter != listOfTreeItemAddressPointers.end();
         slIter++)
     {
-      long val = (*slIter).toLong();
+      long long val = (*slIter).toLongLong();
       listOfItemsToDrop << static_cast<TreeItem *>((void*)val);
     }
 
@@ -251,7 +251,7 @@ bool QmitkDataStorageTreeModel::dropMimeData(const QMimeData *data,
          slIter != listOfDataNodeAddressPointers.end();
          slIter++)
     {
-      long val = (*slIter).toLong();
+      long long val = (*slIter).toLongLong();
       mitk::DataNode* node = static_cast<mitk::DataNode *>((void*)val);
 
       if(node && m_DataStorage.IsNotNull() && !m_DataStorage->Exists(node))
@@ -296,8 +296,8 @@ QMimeData * QmitkDataStorageTreeModel::mimeData(const QModelIndexList & indexes)
   for (int i = 0; i < indexes.size(); i++)
   {
     TreeItem* treeItem = static_cast<TreeItem*>(indexes.at(i).internalPointer());
-    long treeItemAddress = reinterpret_cast<long>(treeItem);
-    long dataNodeAddress = reinterpret_cast<long>(treeItem->GetDataNode().GetPointer());
+    long long treeItemAddress = reinterpret_cast<long long>(treeItem);
+    long long dataNodeAddress = reinterpret_cast<long long>(treeItem->GetDataNode().GetPointer());
     QTextStream(&treeItemAddresses) << treeItemAddress;
     QTextStream(&dataNodeAddresses) << dataNodeAddress;
 
