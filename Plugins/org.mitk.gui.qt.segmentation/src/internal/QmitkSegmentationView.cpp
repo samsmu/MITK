@@ -42,6 +42,19 @@ See LICENSE.txt or http://www.mitk.org for details.
 //micro service to get the ToolManager instance
 #include "mitkToolManagerProvider.h"
 
+const QString QmitkSegmentationView::TR_CREATE_NEW_SEGM = QLabel::tr("Create new segmentation");
+const QString QmitkSegmentationView::TR_ALLOCATE_ERROR = QLabel::tr("Could not allocate memory for new segmentation");
+const QString QmitkSegmentationView::TR_SEGMENTATION = QLabel::tr("Segmentation");
+const QString QmitkSegmentationView::TR_SEGM_2D_ERROR = QLabel::tr("Segmentation is currently not supported for 2D images");
+const QString QmitkSegmentationView::TR_SELECTED_SEGM_NOT_VISIBLE = QLabel::tr("The selected segmentation is currently not visible!");
+const QString QmitkSegmentationView::TR_SELECT_OR_CREATE_SEGM = QLabel::tr("Select or create a segmentation");
+const QString QmitkSegmentationView::TR_PATIENT_NOT_MATCH_SEGM = QLabel::tr("The selected patient image does not match with the selected segmentation!");
+const QString QmitkSegmentationView::TR_LOAD_IMAGE = QLabel::tr("Please load an image!");
+const QString QmitkSegmentationView::TR_SEGM_NOT_MATCH_PATIENT = QLabel::tr("The selected segmentation does not match with the selected patient image!");
+const QString QmitkSegmentationView::TR_LOAD_ACCORDING_PATIENT_IMAGE = QLabel::tr("Please select or load the according patient image!");
+const QString QmitkSegmentationView::TR_NEED_REINIT_SEGM = QLabel::tr("Please perform a reinit on the segmentation image!");
+
+
 const std::string QmitkSegmentationView::VIEW_ID =
    "org.mitk.views.segmentation";
 
@@ -337,13 +350,13 @@ void QmitkSegmentationView::CreateNewSegmentation()
                }
                catch (std::bad_alloc)
                {
-                  QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
+                 QMessageBox::warning(NULL, TR_CREATE_NEW_SEGM, TR_ALLOCATE_ERROR);
                }
             }
          }
          else
          {
-            QMessageBox::information(NULL,"Segmentation","Segmentation is currently not supported for 2D images");
+           QMessageBox::information(NULL, TR_SEGMENTATION, TR_SEGM_2D_ERROR);
          }
       }
    }
@@ -362,7 +375,7 @@ void QmitkSegmentationView::OnWorkingNodeVisibilityChanged()
    if (!selectedNodeIsVisible)
    {
       this->SetToolSelectionBoxesEnabled(false);
-      this->UpdateWarningLabel("The selected segmentation is currently not visible!");
+      this->UpdateWarningLabel(TR_SELECTED_SEGM_NOT_VISIBLE);
    }
    else
    {
@@ -474,7 +487,7 @@ void QmitkSegmentationView::NodeRemoved(const mitk::DataNode* node)
       if ((mitk::ToolManagerProvider::GetInstance()->GetToolManager()->GetWorkingData(0) == node) && m_Controls->patImageSelector->GetSelectedNode().IsNotNull())
       {
          this->SetToolManagerSelection(mitk::ToolManagerProvider::GetInstance()->GetToolManager()->GetReferenceData(0), NULL);
-         this->UpdateWarningLabel("Select or create a segmentation");
+         this->UpdateWarningLabel(TR_SELECT_OR_CREATE_SEGM);
       }
 
       mitk::SurfaceInterpolationController::GetInstance()->RemoveSegmentationFromContourList(image);
@@ -598,7 +611,7 @@ void QmitkSegmentationView::OnPatientComboBoxSelectionChanged( const mitk::DataN
          {
             this->SetToolManagerSelection(node, NULL);
             this->SetToolSelectionBoxesEnabled( false );
-            this->UpdateWarningLabel("The selected patient image does not match with the selected segmentation!");
+            this->UpdateWarningLabel(TR_PATIENT_NOT_MATCH_SEGM);
          }
          else if ((!isSourceNode && this->CheckForSameGeometry(segNode, node)) || isSourceNode )
          {
@@ -617,12 +630,12 @@ void QmitkSegmentationView::OnPatientComboBoxSelectionChanged( const mitk::DataN
       {
          this->SetToolManagerSelection(node, NULL);
          this->SetToolSelectionBoxesEnabled( false );
-         this->UpdateWarningLabel("Select or create a segmentation");
+         this->UpdateWarningLabel(TR_SELECT_OR_CREATE_SEGM);
       }
    }
    else
    {
-      this->UpdateWarningLabel("Please load an image!");
+      this->UpdateWarningLabel(TR_LOAD_IMAGE);
       this->SetToolSelectionBoxesEnabled( false );
    }
 }
@@ -631,7 +644,7 @@ void QmitkSegmentationView::OnSegmentationComboBoxSelectionChanged(const mitk::D
 {
    if (node == NULL)
    {
-      this->UpdateWarningLabel("Select or create a segmentation");
+      this->UpdateWarningLabel(TR_SELECT_OR_CREATE_SEGM);
       this->SetToolSelectionBoxesEnabled( false );
       return;
    }
@@ -656,7 +669,7 @@ void QmitkSegmentationView::OnSegmentationComboBoxSelectionChanged(const mitk::D
 
          if (parentNode != refNode)
          {
-            this->UpdateWarningLabel("The selected segmentation does not match with the selected patient image!");
+            this->UpdateWarningLabel(TR_SEGM_NOT_MATCH_PATIENT);
             this->SetToolSelectionBoxesEnabled( false );
             this->SetToolManagerSelection(NULL, node);
          }
@@ -673,12 +686,12 @@ void QmitkSegmentationView::OnSegmentationComboBoxSelectionChanged(const mitk::D
       }
       else if (!refNode || !this->CheckForSameGeometry(node, refNode))
       {
-         this->UpdateWarningLabel("Please select or load the according patient image!");
+        this->UpdateWarningLabel(TR_LOAD_ACCORDING_PATIENT_IMAGE);
       }
    }
    if (!node->IsVisible(mitk::BaseRenderer::GetInstance( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1"))))
    {
-     this->UpdateWarningLabel("The selected segmentation is currently not visible!");
+     this->UpdateWarningLabel(TR_SELECTED_SEGM_NOT_VISIBLE);
      this->SetToolSelectionBoxesEnabled( false );
    }
 }
@@ -831,7 +844,7 @@ void QmitkSegmentationView::OnSelectionChanged(std::vector<mitk::DataNode*> node
                   //May be a bug in the selection services. A node which is deselected will be passed as selected node to the OnSelectionChanged function
                   if (!selectedNode->IsVisible(mitk::BaseRenderer::GetInstance( mitk::BaseRenderer::GetRenderWindowByName("stdmulti.widget1"))))
                      selectedNode->SetVisibility(true);
-                  this->UpdateWarningLabel("The selected patient image does not\nmatchwith the selected segmentation!");
+                  this->UpdateWarningLabel(TR_PATIENT_NOT_MATCH_SEGM);
                   this->SetToolSelectionBoxesEnabled( false );
                }
             }
@@ -1060,7 +1073,7 @@ void QmitkSegmentationView::RenderingManagerReinitialized()
       {
          this->SetToolManagerSelection(m_Controls->patImageSelector->GetSelectedNode(), NULL);
          this->SetToolSelectionBoxesEnabled(false);
-         this->UpdateWarningLabel("Please perform a reinit on the segmentation image!");
+         this->UpdateWarningLabel(TR_NEED_REINIT_SEGM);
       }
    }
 }
@@ -1111,10 +1124,10 @@ void QmitkSegmentationView::CreateQtPartControl(QWidget* parent)
    m_Controls->patImageSelector->SetDataStorage(this->GetDefaultDataStorage());
    m_Controls->patImageSelector->SetPredicate(m_IsNotABinaryImagePredicate);
 
-   this->UpdateWarningLabel("Please load an image");
+   this->UpdateWarningLabel(TR_LOAD_IMAGE);
 
    if( m_Controls->patImageSelector->GetSelectedNode().IsNotNull() )
-      this->UpdateWarningLabel("Select or create a new segmentation");
+     this->UpdateWarningLabel(TR_SELECT_OR_CREATE_SEGM);
 
    m_Controls->segImageSelector->SetDataStorage(this->GetDefaultDataStorage());
    m_Controls->segImageSelector->SetPredicate(m_IsABinaryImagePredicate);
