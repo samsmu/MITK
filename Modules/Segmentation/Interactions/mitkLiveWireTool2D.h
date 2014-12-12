@@ -60,6 +60,7 @@ class MitkSegmentation_EXPORT LiveWireTool2D : public SegTool2D
     us::ModuleResource GetIconResource() const;
 
     virtual const char* GetName() const;
+    virtual const char* GetCaption() const;
 
     /// \brief Convert all current contour objects to binary segmentation image.
     void ConfirmSegmentation();
