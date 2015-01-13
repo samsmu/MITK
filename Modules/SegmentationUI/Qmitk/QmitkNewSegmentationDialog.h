@@ -49,6 +49,10 @@ class MitkSegmentationUI_EXPORT QmitkNewSegmentationDialog : public QDialog
 
   public:
 
+    static const QString TR_NAME_AND_COLOR;
+    static const QString TR_OK;
+    static const QString TR_CANCEL;
+
     QmitkNewSegmentationDialog(QWidget* parent = 0);
 
     virtual ~QmitkNewSegmentationDialog();

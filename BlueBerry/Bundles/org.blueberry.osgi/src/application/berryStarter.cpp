@@ -68,7 +68,7 @@ int Starter::Run(int& argc, char** argv,
   bool consoleLog = platform->ConsoleLog();
 
   // Add search paths for Qt plugins
-  foreach(QString qtPluginPath, QString::fromStdString(Platform::GetProperty(Platform::PROP_QTPLUGIN_PATH)).split(';', QString::SkipEmptyParts))
+  foreach(QString qtPluginPath, QString::fromUtf8(Platform::GetProperty(Platform::PROP_QTPLUGIN_PATH).c_str()).split(';', QString::SkipEmptyParts))
   {
     if (QFile::exists(qtPluginPath))
     {
@@ -76,7 +76,7 @@ int Starter::Run(int& argc, char** argv,
     }
     else if (consoleLog)
     {
-      BERRY_WARN << "Qt plugin path does not exist: " << qtPluginPath.toStdString();
+		BERRY_WARN << "Qt plugin path does not exist: " << qtPluginPath.toUtf8().constData();
     }
   }
 
@@ -93,7 +93,7 @@ int Starter::Run(int& argc, char** argv,
     std::string pathList;
     foreach(QString libPath, QCoreApplication::libraryPaths())
     {
-      pathList += (pathList.empty() ? "" : ", ") + libPath.toStdString();
+      pathList += (pathList.empty() ? "" : ", ") + libPath.toUtf8();
     }
     BERRY_INFO << "Qt library search paths: " << pathList;
   }

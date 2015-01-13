@@ -81,6 +81,22 @@ class MitkSegmentationUI_EXPORT QmitkSlicesInterpolator : public QWidget
 
   public:
 
+const static QString TR_INTERPOLATION;
+const static QString TR_DISABLED;
+const static QString TR_2D;
+const static QString TR_3D;
+const static QString TR_CONFIRM_SINGLE;
+const static QString TR_CONFIRM_ALL;
+const static QString TR_CONFIRM;
+const static QString TR_SHOW_POSITION_NODE;
+const static QString TR_INTERPOLATION_ENB;
+const static QString TR_INTERPOLATION_PROC;
+const static QString TR_INTERPOLATION_ERROR;
+const static QString TR_INTERPOLATION_SLOW;
+const static QString TR_INTERPOLATION_SURE;
+const static QString TR_INTERPOLATION_3D_PROC;
+const static QString TR_INTERPOLATION_3D_SUPPORT;
+
     QmitkSlicesInterpolator(QWidget* parent = 0, const char* name = 0);
 
     /**

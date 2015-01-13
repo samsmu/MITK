@@ -147,7 +147,7 @@ void InternalPlatform::Initialize(int& argc, char** argv, Poco::Util::AbstractCo
     // This allows to start the same application from different build or install trees.
     QString dataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation) + '_';
     dataLocation += QString::number(qHash(QCoreApplication::applicationDirPath())) + "/";
-    m_UserPath.assign(dataLocation.toStdString());
+	m_UserPath.assign(dataLocation.toUtf8().constData());
   }
   BERRY_INFO(m_ConsoleLog) << "Framework storage dir: " << m_UserPath.toString();
 
@@ -168,7 +168,7 @@ void InternalPlatform::Initialize(int& argc, char** argv, Poco::Util::AbstractCo
 
   // Initialize the CTK Plugin Framework
   ctkProperties fwProps;
-  fwProps.insert(ctkPluginConstants::FRAMEWORK_STORAGE, QString::fromStdString(userFile.path()));
+  fwProps.insert(ctkPluginConstants::FRAMEWORK_STORAGE, QString::fromUtf8(userFile.path().c_str()));
   if (this->GetConfiguration().hasProperty(Platform::ARG_CLEAN))
   {
     fwProps.insert(ctkPluginConstants::FRAMEWORK_STORAGE_CLEAN, ctkPluginConstants::FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
@@ -183,7 +183,7 @@ void InternalPlatform::Initialize(int& argc, char** argv, Poco::Util::AbstractCo
   }
   if (this->GetConfiguration().hasProperty(Platform::ARG_PRELOAD_LIBRARY))
   {
-    QString preloadLibs = QString::fromStdString(this->GetConfiguration().getString(Platform::ARG_PRELOAD_LIBRARY));
+	  QString preloadLibs = QString::fromUtf8(this->GetConfiguration().getString(Platform::ARG_PRELOAD_LIBRARY).c_str());
     fwProps.insert(ctkPluginConstants::FRAMEWORK_PRELOAD_LIBRARIES, preloadLibs.split(',', QString::SkipEmptyParts));
   }
   m_ctkPluginFrameworkFactory = new ctkPluginFrameworkFactory(fwProps);
@@ -195,13 +195,7 @@ void InternalPlatform::Initialize(int& argc, char** argv, Poco::Util::AbstractCo
   {
     BERRY_INFO(m_ConsoleLog) << "Using provisioning file: " << provisioningFile;
 
-    // FIXME: This is a quick-fix for Bug 16224 - Umlaut and other special characters in install/binary path
-    // Assumption : linux provides utf8, windows provides ascii encoded argv lists
-#ifdef Q_OS_WIN
-    ProvisioningInfo provInfo(QString::fromStdString(provisioningFile.c_str()));
-#else
     ProvisioningInfo provInfo(QString::fromUtf8(provisioningFile.c_str()));
-#endif
 
     // it can still happen, that the encoding is not compatible with the fromUtf8 function ( i.e. when manipulating the LANG variable
     // in such case, the QStringList in provInfo is empty which we can easily check for
@@ -230,7 +224,7 @@ void InternalPlatform::Initialize(int& argc, char** argv, Poco::Util::AbstractCo
       }
       try
       {
-        BERRY_INFO(m_ConsoleLog) << "Installing CTK plug-in from: " << pluginUrl.toString().toStdString();
+		  BERRY_INFO(m_ConsoleLog) << "Installing CTK plug-in from: " << pluginUrl.toString().toUtf8().constData();
         QSharedPointer<ctkPlugin> plugin = pfwContext->installPlugin(pluginUrl);
         if (pluginsToStart.contains(pluginUrl))
         {
@@ -379,8 +373,8 @@ void InternalPlatform::uninstallPugin(const QUrl& pluginUrl, ctkPluginContext* p
     if (plugin->getSymbolicName() == symbolicName &&
         plugin->getLocation() != pluginUrl.toString())
     {
-      BERRY_WARN << "A plug-in with the symbolic name " << symbolicName.toStdString() <<
-                    " but different location is already installed. Trying to uninstall " << plugin->getLocation().toStdString();
+		BERRY_WARN << "A plug-in with the symbolic name " << symbolicName.toUtf8().constData() <<
+                    " but different location is already installed. Trying to uninstall " << plugin->getLocation().toUtf8().constData();
       plugin->uninstall();
       return;
     }
@@ -590,7 +584,7 @@ int InternalPlatform::main(const std::vector<std::string>& args)
 
   ctkPluginContext* context = GetCTKPluginFrameworkContext();
   QFileInfo storageDir = context->getDataFile("");
-  BundleDirectory::Pointer bundleStorage(new BundleDirectory(Poco::Path(storageDir.absolutePath().toStdString())));
+  BundleDirectory::Pointer bundleStorage(new BundleDirectory(Poco::Path(storageDir.absolutePath().toUtf8().constData())));
   SystemBundle::Pointer systemBundle(new SystemBundle(*m_BundleLoader, bundleStorage));
   if (systemBundle == 0)
     throw PlatformException("Could not find the system bundle");
@@ -600,7 +594,7 @@ int InternalPlatform::main(const std::vector<std::string>& args)
   m_ctkPluginFrameworkFactory->getFramework()->start();
   foreach(long pluginId, m_CTKPluginsToStart)
   {
-    BERRY_INFO(m_ConsoleLog) << "Starting CTK plug-in: " << context->getPlugin(pluginId)->getSymbolicName().toStdString()
+    BERRY_INFO(m_ConsoleLog) << "Starting CTK plug-in: " << context->getPlugin(pluginId)->getSymbolicName().toUtf8().constData()
                              << " [" << pluginId << "]";
     // do not change the autostart setting of this plugin
     context->getPlugin(pluginId)->start(ctkPlugin::START_TRANSIENT | ctkPlugin::START_ACTIVATION_POLICY);
