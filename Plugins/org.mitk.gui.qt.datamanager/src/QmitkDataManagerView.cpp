@@ -94,6 +94,26 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 const std::string QmitkDataManagerView::VIEW_ID = "org.mitk.views.datamanager";
 
+QString QmitkDataManagerView::TR_GLOBAL_REINIT = QAction::tr("Global Reinit");
+QString QmitkDataManagerView::TR_SAVE = QAction::tr("Save...");
+QString QmitkDataManagerView::TR_REMOVE = QAction::tr("Remove");
+QString QmitkDataManagerView::TR_REINIT = QAction::tr("Reinit");
+QString QmitkDataManagerView::TR_OPACITY = QLabel::tr("Opacity: ");
+QString QmitkDataManagerView::TR_COLOR = QLabel::tr("Color: ");
+QString QmitkDataManagerView::TR_TEXTURE_INTERPOLATION = QAction::tr("Texture Interpolation");
+QString QmitkDataManagerView::TR_SURFACE_REPRESENTATION = QAction::tr("Surface Representation");
+QString QmitkDataManagerView::TR_SHOW_ONLY_SELECTED_NOTES = QAction::tr("Show only selected nodes");
+QString QmitkDataManagerView::TR_TOGGLE_VISIBILITY = QAction::tr("Toggle visibility");
+QString QmitkDataManagerView::TR_DETAILS = QAction::tr("Details...");
+QString QmitkDataManagerView::TR_COLORMAP = QAction::tr("Colormap");
+
+const QString QmitkDataManagerView::contextMenuExtTranslateNames[] = { 
+  QAction::tr("Create polygon model"),   
+  QAction::tr("Create smoothed polygon model"),
+  QAction::tr("Autocrop")
+};
+
+
 QmitkDataManagerView::QmitkDataManagerView()
     : m_GlobalReinitOnNodeDelete(true),
       m_ItemDelegate(NULL)
@@ -203,7 +223,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
   QmitkNodeDescriptor* surfaceDataNodeDescriptor =
     QmitkNodeDescriptorManager::GetInstance()->GetDescriptor("Surface");
 
-  QAction* globalReinitAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/Refresh_48.png"), "Global Reinit", this);
+  QAction* globalReinitAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/Refresh_48.png"), TR_GLOBAL_REINIT, this);
   QObject::connect( globalReinitAction, SIGNAL( triggered(bool) )
     , this, SLOT( GlobalReinit(bool) ) );
   unknownDataNodeDescriptor->AddAction(globalReinitAction);
@@ -214,13 +234,13 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
   unknownDataNodeDescriptor->AddAction(saveAction);
   m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(unknownDataNodeDescriptor,saveAction));
 
-  QAction* removeAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/Remove_48.png"), "Remove", this);
+  QAction* removeAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/Remove_48.png"), TR_REMOVE, this);
   QObject::connect( removeAction, SIGNAL( triggered(bool) )
     , this, SLOT( RemoveSelectedNodes(bool) ) );
   unknownDataNodeDescriptor->AddAction(removeAction);
   m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(unknownDataNodeDescriptor,removeAction));
 
-  QAction* reinitAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/Refresh_48.png"), "Reinit", this);
+  QAction* reinitAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/Refresh_48.png"), TR_REINIT, this);
   QObject::connect( reinitAction, SIGNAL( triggered(bool) )
     , this, SLOT( ReinitSelectedNodes(bool) ) );
   unknownDataNodeDescriptor->AddAction(reinitAction);
@@ -259,15 +279,24 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
         MITK_WARN << "cannot add action \"" << cmLabel << "\" because descriptor " << cmNodeDescriptorName << " does not exist";
         continue;
       }
+
+      QString translatedLabel = QString(cmLabel.c_str());
+      for (int i=0; i<contextMenuExtSrcNames.size(); i++) {
+        if (contextMenuExtSrcNames[i].compare(QString(cmLabel.c_str())) == 0) {
+          translatedLabel  = contextMenuExtTranslateNames[i];
+          break;
+        }
+      }
+
       // check if the user specified an icon attribute
       if ( (*cmActionsIt)->GetAttribute("icon", cmIcon) )
       {
         contextMenuAction = new QAction( QIcon( QString::fromStdString(cmIcon)),
-                                         QString::fromStdString(cmLabel), parent);
+                                         translatedLabel, parent);
       }
       else
       {
-        contextMenuAction = new QAction( QString::fromStdString(cmLabel), parent);
+        contextMenuAction = new QAction( translatedLabel, parent);
       }
       tmpDescriptor->AddAction(contextMenuAction);
       m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(tmpDescriptor,contextMenuAction));
@@ -287,7 +316,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
   QObject::connect( m_OpacitySlider, SIGNAL( valueChanged(int) )
     , this, SLOT( OpacityChanged(int) ) );
 
-  QLabel* _OpacityLabel = new QLabel("Opacity: ");
+  QLabel* _OpacityLabel = new QLabel(TR_OPACITY);
   QHBoxLayout* _OpacityWidgetLayout = new QHBoxLayout;
   _OpacityWidgetLayout->setContentsMargins(4,4,4,4);
   _OpacityWidgetLayout->addWidget(_OpacityLabel);
@@ -308,7 +337,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
   QObject::connect( m_ColorButton, SIGNAL( clicked() )
     , this, SLOT( ColorChanged() ) );
 
-  QLabel* _ColorLabel = new QLabel("Color: ");
+  QLabel* _ColorLabel = new QLabel(TR_COLOR);
   _ColorLabel->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
   QHBoxLayout* _ColorWidgetLayout = new QHBoxLayout;
   _ColorWidgetLayout->setContentsMargins(4,4,4,4);
@@ -352,7 +381,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
       m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(diffusionImageDataNodeDescriptor,componentAction));
   }
 
-  m_TextureInterpolation = new QAction("Texture Interpolation", this);
+  m_TextureInterpolation = new QAction(TR_TEXTURE_INTERPOLATION, this);
   m_TextureInterpolation->setCheckable ( true );
   QObject::connect( m_TextureInterpolation, SIGNAL( changed() )
     , this, SLOT( TextureInterpolationChanged() ) );
@@ -366,7 +395,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
       m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(diffusionImageDataNodeDescriptor,m_TextureInterpolation));
   }
 
-  m_ColormapAction = new QAction("Colormap", this);
+  m_ColormapAction = new QAction(TR_COLORMAP, this);
   m_ColormapAction->setMenu(new QMenu);
   QObject::connect( m_ColormapAction->menu(), SIGNAL( aboutToShow() )
     , this, SLOT( ColormapMenuAboutToShow() ) );
@@ -378,7 +407,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
       m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(diffusionImageDataNodeDescriptor, m_ColormapAction));
   }
 
-  m_SurfaceRepresentation = new QAction("Surface Representation", this);
+  m_SurfaceRepresentation = new QAction(TR_SURFACE_REPRESENTATION, this);
   m_SurfaceRepresentation->setMenu(new QMenu);
   QObject::connect( m_SurfaceRepresentation->menu(), SIGNAL( aboutToShow() )
     , this, SLOT( SurfaceRepresentationMenuAboutToShow() ) );
@@ -387,7 +416,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
 
   QAction* showOnlySelectedNodes
     = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/ShowSelectedNode_48.png")
-    , "Show only selected nodes", this);
+    , TR_SHOW_ONLY_SELECTED_NOTES, this);
   QObject::connect( showOnlySelectedNodes, SIGNAL( triggered(bool) )
     , this, SLOT( ShowOnlySelectedNodes(bool) ) );
   unknownDataNodeDescriptor->AddAction(showOnlySelectedNodes);
@@ -395,7 +424,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
 
   QAction* toggleSelectedVisibility
     = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/InvertShowSelectedNode_48.png")
-    , "Toggle visibility", this);
+    , TR_TOGGLE_VISIBILITY, this);
   QObject::connect( toggleSelectedVisibility, SIGNAL( triggered(bool) )
     , this, SLOT( ToggleVisibilityOfSelectedNodes(bool) ) );
   unknownDataNodeDescriptor->AddAction(toggleSelectedVisibility);
@@ -403,7 +432,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
 
   QAction* actionShowInfoDialog
     = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/ShowDataInfo_48.png")
-    , "Details...", this);
+    , TR_DETAILS, this);
   QObject::connect( actionShowInfoDialog, SIGNAL( triggered(bool) )
     , this, SLOT( ShowInfoDialogForSelectedNodes(bool) ) );
   unknownDataNodeDescriptor->AddAction(actionShowInfoDialog);

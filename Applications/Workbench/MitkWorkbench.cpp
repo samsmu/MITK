@@ -128,7 +128,7 @@ int main(int argc, char** argv)
     storageDir = QDesktopServices::storageLocation(QDesktopServices::DataLocation) + '_';
     storageDir += QString::number(qHash(QCoreApplication::applicationDirPath())) + QDir::separator();
   }
-  us::ModuleSettings::SetStoragePath((storageDir + QString("us") + QDir::separator()).toStdString());
+  us::ModuleSettings::SetStoragePath((storageDir + "us/").toUtf8().constData());
 
   // These paths replace the .ini file and are tailored for installation
   // packages created with CPack. If a .ini file is presented, it will
@@ -204,7 +204,7 @@ int main(int argc, char** argv)
   }
   preloadConfig.chop(1);
 
-  extConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, preloadConfig.toStdString());
+  extConfig->setString(berry::Platform::ARG_PRELOAD_LIBRARY, preloadConfig.toUtf8().constData());
 
   // Seed the random number generator, once at startup.
   QTime time = QTime::currentTime();
