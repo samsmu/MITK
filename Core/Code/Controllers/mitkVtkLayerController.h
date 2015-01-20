@@ -97,10 +97,6 @@ class MITK_CORE_EXPORT VtkLayerController
     unsigned int GetNumberOfRenderers();
 
     void SetEraseForAllRenderers(int i);
-  protected:
-    vtkRenderWindow*    m_RenderWindow;
-
-  private:
 
     /**
     * Internally used to sort all registered renderers and to connect the with the vtkRenderWindow.
@@ -109,6 +105,10 @@ class MITK_CORE_EXPORT VtkLayerController
     */
     void UpdateLayers();
 
+  protected:
+    vtkRenderWindow*    m_RenderWindow;
+
+  private:
     // Layer Management
     typedef std::vector<vtkRenderer*> RendererVectorType;
     RendererVectorType m_BackgroundRenderers;

@@ -152,6 +152,8 @@ protected:
 
   void HideAllWidgetToolbars();
 
+  void setCornerAnnotation(int corner, const char* text);
+
   mitk::DataNode::Pointer GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes);
 
 public slots:
