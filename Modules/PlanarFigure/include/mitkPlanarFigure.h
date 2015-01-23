@@ -219,6 +219,8 @@ public:
   /** \brief Calculates quantities of all features of this planar figure. */
   virtual void EvaluateFeatures();
 
+  /** \evaluate annotation based on evaluating features. */
+  virtual std::string EvaluateAnnotation();
 
   /** \brief Intherited from parent */
   virtual void UpdateOutputInformation() override;
