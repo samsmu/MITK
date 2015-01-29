@@ -148,14 +148,12 @@ std::string mitk::PlanarCircle::EvaluateAnnotation()
 {
   double diameter = GetQuantity(FEATURE_ID_DIAMETER);
   double area = GetQuantity(FEATURE_ID_AREA);
-  char* str = new char[20];
+  char str[20];
   sprintf(str, "%.2f", diameter);
   std::string res = "D=";
   res += str;
   res += " mm";
-
   res += "\n";
-
 
   sprintf(str, "%.2f", area);
   res += "Area=";
