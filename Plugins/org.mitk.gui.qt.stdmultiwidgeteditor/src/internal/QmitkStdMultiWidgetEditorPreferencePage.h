@@ -72,6 +72,7 @@ protected:
   QWidget* m_MainControl;
   QCheckBox* m_EnableFlexibleZooming;
   QCheckBox* m_ShowLevelWindowWidget;
+  QCheckBox* m_DisplayMetainfo;
   QCheckBox* m_UseGradientBackground;
   QCheckBox* m_ChangeBackgroundColors;
   QCheckBox* m_PACSLikeMouseMode;
