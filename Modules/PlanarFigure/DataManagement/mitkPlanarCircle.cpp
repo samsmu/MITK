@@ -19,6 +19,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkPlaneGeometry.h"
 
 #include "mitkProperties.h"
+#include "mitkImage.h"
+#include "itkImage.h"
+#include <mitkImageCast.h>
 
 
 mitk::PlanarCircle::PlanarCircle()
@@ -144,6 +147,99 @@ void mitk::PlanarCircle::GenerateHelperPolyLine(double /*mmPerDisplayUnit*/, uns
   // A circle does not require a helper object
 }
 
+mitk::PlanarCircle::MeasurementStatistics* mitk::PlanarCircle::EvaluateStatistics() 
+{
+  if (m_ImageNode) {
+    mitk::BaseData* data = m_ImageNode->GetData();
+    if (data) {
+      mitk::Image* image = dynamic_cast<mitk::Image*>(data);
+      if (image) {
+
+        const int CENTRAL_POINT_NUM = 0;
+        const int RADIUS_POINT_NUM = 1;
+        const int X = 0;
+        const int Y = 1;
+        const int Z = 2;        
+
+        double circleRadius = GetWorldControlPoint(CENTRAL_POINT_NUM).EuclideanDistanceTo(GetWorldControlPoint(RADIUS_POINT_NUM));
+        double circleRadiusSqr = circleRadius*circleRadius;
+
+        mitk::Point3D centerIndex;
+        image->GetGeometry()->WorldToIndex(this->GetWorldControlPoint(CENTRAL_POINT_NUM), centerIndex);
+
+        mitk::Point3D center = GetWorldControlPoint(CENTRAL_POINT_NUM);
+
+        int minValue = INT32_MAX;
+        int maxValue = INT32_MIN;
+
+        typedef itk::Image<short, 3> ImageType3D;
+        ImageType3D::Pointer itkImage;
+		mitk::CastToItkImage(image, itkImage);
+
+        ImageType3D::IndexType currentIndex;
+        currentIndex[Z] = centerIndex[Z];
+
+        long long sum = 0;
+        double sd(0), mean(0);
+        long long pixCount = 0;
+        double dx;
+        int lIndex, rIndex;
+        mitk::Point3D currentPoint; 
+        std::vector<short> values;
+        for (double dy = circleRadius; dy > - circleRadius; dy--) {  
+          dx = sqrt(circleRadiusSqr - dy*dy);
+          currentPoint[X] = center[X] - dx;
+          currentPoint[Y] =  center[Y] + dy;
+          currentPoint[Z] = 0;
+          image->GetGeometry()->WorldToIndex(currentPoint, centerIndex);
+          lIndex = centerIndex[X];
+
+          currentPoint[X] = center[X] + dx;
+          image->GetGeometry()->WorldToIndex(currentPoint, centerIndex);
+          rIndex = centerIndex[X];
+          
+          currentIndex[Y] = centerIndex[Y];
+          for (int rowX = lIndex; rowX <= rIndex; rowX++) {
+            currentIndex[X] = rowX;
+            short val = itkImage->GetPixel(currentIndex);
+            values.push_back(val);
+            if (val < minValue) {
+              minValue = val;
+            } else if (val > maxValue) {
+              maxValue = val;
+            }
+            sum += val;
+            pixCount++;
+          } 
+        }
+
+        if (pixCount > 0) {
+          mean = (double)sum/pixCount;
+          sum = 0;
+          for (std::vector<short>::const_iterator it = values.begin(); it != values.end(); ++it) {
+            sum += (*it - mean)*(*it - mean);
+          }
+          sd = sqrt((double)sum/pixCount);
+        } else {
+          maxValue = 0;
+          minValue = 0;
+        }
+
+        MeasurementStatistics* stats = new MeasurementStatistics();
+        stats->Mean = mean;
+        stats->Max = maxValue;
+        stats->Min = minValue;
+        stats->SD = sd;
+
+        return stats;
+      }
+    }
+  }
+  return NULL;
+}
+
+
+
 std::string mitk::PlanarCircle::EvaluateAnnotation()
 {
   double diameter = GetQuantity(FEATURE_ID_DIAMETER);
@@ -159,6 +255,20 @@ std::string mitk::PlanarCircle::EvaluateAnnotation()
   res += "Area=";
   res += str;
   res += " mm\xC2\xB2";
+
+  MeasurementStatistics* stats = EvaluateStatistics();
+  if (stats) {
+    res += "\n";
+    sprintf(str, "%.2f", stats->Mean);
+    res += "Mean=";
+    res += str;    
+    sprintf(str, "%.2f", stats->SD);
+    res += "\nSD=";
+    res += str;    
+    res += "\nMax=" + std::to_string(stats->Max);
+    res += " Min=" + std::to_string(stats->Min);
+  }
+  delete stats;
 
   return res;
 }

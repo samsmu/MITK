@@ -47,11 +47,13 @@ void QmitkStdMultiWidgetEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
   m_EnableFlexibleZooming = new QCheckBox;
   m_ShowLevelWindowWidget = new QCheckBox;
+  m_DisplayMetainfo = new QCheckBox;
   m_PACSLikeMouseMode = new QCheckBox;
 
   QFormLayout *formLayout = new QFormLayout;
   formLayout->addRow("&Use constrained zooming and padding", m_EnableFlexibleZooming);
   formLayout->addRow("&Show level/window widget", m_ShowLevelWindowWidget);
+  formLayout->addRow("&Display metainfo", m_DisplayMetainfo);
   formLayout->addRow("&PACS like mouse interactions (select left mouse button action)", m_PACSLikeMouseMode);
 
   // gradient background
@@ -146,6 +148,7 @@ bool QmitkStdMultiWidgetEditorPreferencePage::PerformOk()
   m_StdMultiWidgetEditorPreferencesNode->PutBool("Use constrained zooming and padding"
                                         , m_EnableFlexibleZooming->isChecked());
   m_StdMultiWidgetEditorPreferencesNode->PutBool("Show level/window widget", m_ShowLevelWindowWidget->isChecked());
+  m_StdMultiWidgetEditorPreferencesNode->PutBool("Display metainfo", m_DisplayMetainfo->isChecked());
   m_StdMultiWidgetEditorPreferencesNode->PutBool("PACS like mouse interaction", m_PACSLikeMouseMode->isChecked());
   m_StdMultiWidgetEditorPreferencesNode->PutInt("Rendering Mode", m_RenderingMode->currentIndex());
 
@@ -160,6 +163,7 @@ void QmitkStdMultiWidgetEditorPreferencePage::Update()
 {
   m_EnableFlexibleZooming->setChecked(m_StdMultiWidgetEditorPreferencesNode->GetBool("Use constrained zooming and padding", true));
   m_ShowLevelWindowWidget->setChecked(m_StdMultiWidgetEditorPreferencesNode->GetBool("Show level/window widget", true));
+  m_DisplayMetainfo->setChecked(m_StdMultiWidgetEditorPreferencesNode->GetBool("Show level/window widget", true));
   m_PACSLikeMouseMode->setChecked(m_StdMultiWidgetEditorPreferencesNode->GetBool("PACS like mouse interaction", false));
   m_FirstColorStyleSheet = QString::fromStdString(m_StdMultiWidgetEditorPreferencesNode->Get("first background color style sheet", ""));
   m_SecondColorStyleSheet = QString::fromStdString(m_StdMultiWidgetEditorPreferencesNode->Get("second background color style sheet", ""));
