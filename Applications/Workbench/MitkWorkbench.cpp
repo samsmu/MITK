@@ -147,7 +147,7 @@ int main(int argc, char** argv)
   Poco::Util::MapConfiguration* extConfig(new Poco::Util::MapConfiguration());
   if (!storageDir.isEmpty())
   {
-    extConfig->setString(berry::Platform::ARG_STORAGE_DIR, storageDir.toStdString());
+    extConfig->setString(berry::Platform::ARG_STORAGE_DIR, storageDir.toUtf8().constData());
   }
   extConfig->setString(berry::Platform::ARG_PLUGIN_DIRS, pluginDirs);
   extConfig->setString(berry::Platform::ARG_PROVISIONING, provFile.toString());
