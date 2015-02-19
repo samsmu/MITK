@@ -32,6 +32,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 class QmitkFileSaveActionPrivate
 {
 private:
+  QString TR_SAVE;
+  QString TR_SAVE_TIP;
 
   void HandleSelectionChanged(berry::IWorkbenchPart::Pointer /*part*/, berry::ISelection::ConstPointer selection)
   {
@@ -62,8 +64,12 @@ public:
     m_Action = action;
 
     action->setParent(static_cast<QWidget*>(m_Window.Lock()->GetShell()->GetControl()));
-    action->setText("&Save...");
-    action->setToolTip("Save data objects (images, surfaces,...)");
+    TR_SAVE = QAction::tr("&Save...");
+    TR_SAVE_TIP = QAction::tr("Save data objects (images, surfaces,...)");
+
+    action->setText(TR_SAVE);
+
+    action->setToolTip(TR_SAVE_TIP);
 
     berry::ISelectionService* selectionService = m_Window.Lock()->GetSelectionService();
     setEnabled(selectionService->GetSelection());
