@@ -24,6 +24,7 @@ namespace berry
 
 const QString PartInfo::plugingTranslateNames[] = { 
   QObject::tr("BasicImageProcessing"),   
+  QObject::tr("Clipping Plane"),
   QObject::tr("Display"),
   QObject::tr("Data Manager"),
   QObject::tr("Image Navigator"),
@@ -42,7 +43,7 @@ const QString PartInfo::plugingTranslateNames[] = {
 PartInfo::PartInfo() :
   image(0)
 {
-  plugingSrcNames << "BasicImageProcessing" << "Display" << "Data Manager" << "Image Navigator" << "LiverSegmentation" <<
+  plugingSrcNames << "BasicImageProcessing" << "Clipping Plane" << "Display" << "Data Manager" << "Image Navigator" << "LiverSegmentation" <<
     "Measurement" << "PointSet Interaction" << "RegionGrowing Segmentation" << "Segmentation" << "Segmentation Utilities" <<
     "Statistics" << "Vascular Structure Segmentation" << "Volume Visualization";
 }
