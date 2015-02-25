@@ -703,10 +703,11 @@ void mitk::PlanarFigureMapper2D::RenderAnnotations( mitk::BaseRenderer * rendere
 
     openGLrenderer->WriteSimpleText( name,
       anchorPoint[0] + 5.0, anchorPoint[1] + 5.0,
-      m_LineColor[lineDisplayMode][0],
-      m_LineColor[lineDisplayMode][1],
-      m_LineColor[lineDisplayMode][2],
-      globalOpacity );
+      1, 1, 0, 0.8 );
+      //m_LineColor[lineDisplayMode][0],
+      //m_LineColor[lineDisplayMode][1],
+      //m_LineColor[lineDisplayMode][2],
+      //globalOpacity );
 
     // If drawing is successful, add approximate height to annotation offset
     annotationOffset -= 15.0;
