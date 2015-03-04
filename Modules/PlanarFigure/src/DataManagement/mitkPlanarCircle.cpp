@@ -38,7 +38,6 @@ mitk::PlanarCircle::PlanarCircle()
   this->SetProperty( "closed", mitk::BoolProperty::New(true) );
 }
 
-
 mitk::PlanarCircle::~PlanarCircle()
 {
 }
@@ -238,8 +237,6 @@ mitk::PlanarCircle::MeasurementStatistics* mitk::PlanarCircle::EvaluateStatistic
   return NULL;
 }
 
-
-
 std::string mitk::PlanarCircle::EvaluateAnnotation()
 {
   double diameter = GetQuantity(FEATURE_ID_DIAMETER);
@@ -287,7 +284,6 @@ void mitk::PlanarCircle::EvaluateFeaturesInternal()
   this->SetQuantity( FEATURE_ID_DIAMETER, 2*radius );
   this->SetQuantity( FEATURE_ID_AREA, area );
 }
-
 
 void mitk::PlanarCircle::PrintSelf( std::ostream& os, itk::Indent indent) const
 {
