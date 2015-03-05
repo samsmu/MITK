@@ -38,7 +38,6 @@ mitk::PlanarCircle::PlanarCircle()
   this->SetProperty( "closed", mitk::BoolProperty::New(true) );
 }
 
-
 mitk::PlanarCircle::~PlanarCircle()
 {
 }
@@ -174,7 +173,7 @@ mitk::PlanarCircle::MeasurementStatistics* mitk::PlanarCircle::EvaluateStatistic
 
         typedef itk::Image<short, 3> ImageType3D;
         ImageType3D::Pointer itkImage;
-		mitk::CastToItkImage(image, itkImage);
+        mitk::CastToItkImage(image, itkImage);
 
         ImageType3D::IndexType currentIndex;
         currentIndex[Z] = centerIndex[Z];
@@ -186,10 +185,10 @@ mitk::PlanarCircle::MeasurementStatistics* mitk::PlanarCircle::EvaluateStatistic
         int lIndex, rIndex;
         mitk::Point3D currentPoint; 
         std::vector<short> values;
-        for (double dy = circleRadius; dy > - circleRadius; dy--) {  
+        for (double dy = circleRadius; dy > - circleRadius; dy--) {
           dx = sqrt(circleRadiusSqr - dy*dy);
           currentPoint[X] = center[X] - dx;
-          currentPoint[Y] =  center[Y] + dy;
+          currentPoint[Y] = center[Y] + dy;
           currentPoint[Z] = 0;
           image->GetGeometry()->WorldToIndex(currentPoint, centerIndex);
           lIndex = centerIndex[X];
@@ -238,8 +237,6 @@ mitk::PlanarCircle::MeasurementStatistics* mitk::PlanarCircle::EvaluateStatistic
   return NULL;
 }
 
-
-
 std::string mitk::PlanarCircle::EvaluateAnnotation()
 {
   double diameter = GetQuantity(FEATURE_ID_DIAMETER);
@@ -287,7 +284,6 @@ void mitk::PlanarCircle::EvaluateFeaturesInternal()
   this->SetQuantity( FEATURE_ID_DIAMETER, 2*radius );
   this->SetQuantity( FEATURE_ID_AREA, area );
 }
-
 
 void mitk::PlanarCircle::PrintSelf( std::ostream& os, itk::Indent indent) const
 {
