@@ -332,10 +332,17 @@ void QmitkStdMultiWidget::InitializeWidget()
   m_CornerAnnotaions[2].ren->InteractiveOff();
   mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->InsertForegroundRenderer(m_CornerAnnotaions[2].ren,true);
 
-  cornerText = vtkCornerAnnotation::New();
-  textProp = vtkTextProperty::New();
-  ren = vtkRenderer::New();
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->InsertForegroundRenderer(ren,true);
+  for(int i = 0; i < 4; i++) {
+    cornerText[i] = vtkCornerAnnotation::New();
+    textProp[i] = vtkTextProperty::New();
+    ren[i] = vtkRenderer::New();
+    ren[i]->AddActor(cornerText[i]);
+    ren[i]->InteractiveOff();
+  }
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->InsertForegroundRenderer(ren[0], true);
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->InsertForegroundRenderer(ren[1], true);
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->InsertForegroundRenderer(ren[2], true);
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->InsertForegroundRenderer(ren[3], true);
 
   /*************************************************/
 
@@ -458,7 +465,12 @@ QmitkStdMultiWidget::~QmitkStdMultiWidget()
   mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->RemoveRenderer( m_CornerAnnotaions[0].ren );
   mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->RemoveRenderer( m_CornerAnnotaions[1].ren );
   mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->RemoveRenderer( m_CornerAnnotaions[2].ren );
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->RemoveRenderer( ren );
+
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->RemoveRenderer( ren[0] );
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->RemoveRenderer( ren[1] );
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->RemoveRenderer( ren[2] );
+
+  mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->RemoveRenderer( ren[3] );
 
   //Delete CornerAnnotation
   m_CornerAnnotaions[0].cornerText->Delete();
@@ -472,10 +484,12 @@ QmitkStdMultiWidget::~QmitkStdMultiWidget()
   m_CornerAnnotaions[2].cornerText->Delete();
   m_CornerAnnotaions[2].textProp->Delete();
   m_CornerAnnotaions[2].ren->Delete();
-
-  cornerText->Delete();
-  textProp->Delete();
-  ren->Delete();
+  
+  for(int i = 0; i < 4; i++) {
+    cornerText[i]->Delete();
+    textProp[i]->Delete();
+    ren[i]->Delete();
+  }
 }
 
 void QmitkStdMultiWidget::RemovePlanesFromDataStorage()
@@ -1623,15 +1637,13 @@ mitk::DataNode::Pointer QmitkStdMultiWidget::GetTopLayerNode(mitk::DataStorage::
   return node;
 }
 
-void QmitkStdMultiWidget::setCornerAnnotation(int corner, const char* text) 
+void QmitkStdMultiWidget::setCornerAnnotation(int corner, int i, const char* text) 
 {
-  cornerText->SetText(corner, text);
-  cornerText->SetMaximumFontSize(14);
-  textProp->SetColor( 1.0, 1.0, 1.0 );
-  textProp->SetFontFamilyToArial();
-  cornerText->SetTextProperty( textProp );
-  ren->AddActor(cornerText);
-  ren->InteractiveOff();
+  cornerText[i]->SetText(corner, text);
+  cornerText[i]->SetMaximumFontSize(14);
+  textProp[i]->SetColor( 1.0, 1.0, 1.0 );
+  textProp[i]->SetFontFamilyToArial();
+  cornerText[i]->SetTextProperty( textProp[i] );
 }
 
 void QmitkStdMultiWidget::setDisplayMetaInfo(bool metainfo)
@@ -1693,6 +1705,14 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
   {
     image->GetGeometry()->WorldToIndex(crosshairPos, p);
     stream.precision(2);
+    mitk::BoundingBox::BoundsArrayType bounds = image->GetGeometry()->GetBounds();
+    std::stringstream _infoStringStream[3];
+    std::string cornerimgtext[3];
+    for(int i = 0; i < 3; i++) {
+      _infoStringStream[i] << "Im: " << p[i] << "/" << bounds[(i*2 + 1)];
+      cornerimgtext[i] = _infoStringStream[i].str();
+      setCornerAnnotation(2, i, cornerimgtext[i].c_str());
+    }
 
     unsigned long newImageMTime = image->GetMTime();
     if (imageMTime != newImageMTime) {
@@ -1708,8 +1728,8 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
       imageProperties->GetStringProperty("dicom.study.InstitutionName", institution);
       imageProperties->GetStringProperty("dicom.study.StudyDate", studyDate);
       imageProperties->GetStringProperty("dicom.study.StudyTime", studyTime);
-    
-      std::stringstream infoStringStream, infoStringStream2;
+      
+      std::stringstream infoStringStream[3];
 
       char yy[5]; yy[4] = 0;
       char mm[3]; mm[2] = 0;
@@ -1720,26 +1740,34 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
 
       if ( displayMetaInfo && ( birthday != "" ) ) {
         sscanf (birthday.c_str(),"%4c%2c%2c",yy,mm,dd);
-        infoStringStream 
+        infoStringStream[0] 
           << "\n\n" << patient.c_str()
           << "\n" << patientId.c_str()
           << "\n" << dd << "." << mm << "." << yy << " " << sex.c_str()
           << "\n" << institution.c_str();
       }
-      const std::string infoString = infoStringStream.str();
 
       if ( displayMetaInfo && ( studyDate != "" && studyTime != "" ) ) {
         sscanf (studyDate.c_str(),"%4c%2c%2c",yy,mm,dd);
         sscanf (studyTime.c_str(),"%2c%2c%2c",hh,mi,ss);
-        infoStringStream2 
+        infoStringStream[1]
           << dd << "." << mm << "." << yy 
           << " " << hh << ":" << mi << ":" << ss;
       }
-      const std::string infoString2 = infoStringStream2.str();
 
-      setCornerAnnotation(3, infoString.c_str());
-      setCornerAnnotation(1, infoString2.c_str());
+      auto render_annotation = [&] (int j, int corner) {
+        const std::string infoString = infoStringStream[j].str();
+        setCornerAnnotation(corner, 3, infoString.c_str());
+      };
+      render_annotation(0, 3);
+      render_annotation(1, 1);
+      mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->UpdateLayers();
+      mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->UpdateLayers();
+      mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->UpdateLayers();
       mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->UpdateLayers();
+      this->GetRenderWindow1()->GetRenderer()->ForceImmediateUpdate();
+      this->GetRenderWindow2()->GetRenderer()->ForceImmediateUpdate();
+      this->GetRenderWindow3()->GetRenderer()->ForceImmediateUpdate();
       this->GetRenderWindow4()->GetRenderer()->ForceImmediateUpdate();
     }
 
