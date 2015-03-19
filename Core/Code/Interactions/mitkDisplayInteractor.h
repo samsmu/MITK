@@ -108,6 +108,21 @@ namespace mitk
      * \brief Adjusts the level windows relative to mouse/pointer movement.
      */
     virtual bool AdjustLevelWindow(StateMachineAction*, InteractionEvent*);
+    /**
+     * \brief 3D rotation.
+     */
+    virtual bool Rotate(StateMachineAction*, InteractionEvent*);
+    virtual bool RotateBack(StateMachineAction*, InteractionEvent*);
+    virtual bool RotateUp(StateMachineAction*, InteractionEvent*);
+    virtual bool RotateDown(StateMachineAction*, InteractionEvent*);
+    virtual bool RotateClock(StateMachineAction*, InteractionEvent*);
+    virtual bool RotateBackClock(StateMachineAction*, InteractionEvent*);
+
+    /**
+    /* Change Clock rotation spead for ctrl+arrow rotation
+    */
+    double GetClockRotationSpeed();
+    void SetClockRotationSpeed(double newRotationSpeed);
 
     /**
     * \brief Method to retrieve bool-value for given property from string-property
@@ -198,6 +213,10 @@ namespace mitk
      * Factor to adjust zooming speed.
      */
     float m_ZoomFactor;
+     /**
+     * Clock rotation spead for ctrl+arrow rotation
+     */
+    double m_ClockRotationSpeed;
   };
 }
 #endif

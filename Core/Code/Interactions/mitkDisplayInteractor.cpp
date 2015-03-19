@@ -46,6 +46,12 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("ScrollOneDown", ScrollOneDown);
   CONNECT_FUNCTION("ScrollOneUp", ScrollOneUp);
   CONNECT_FUNCTION("levelWindow", AdjustLevelWindow);
+  CONNECT_FUNCTION("rotate", Rotate);
+  CONNECT_FUNCTION("rotateBack", RotateBack);
+  CONNECT_FUNCTION("rotateUp", RotateUp);
+  CONNECT_FUNCTION("rotateDown", RotateDown);
+  CONNECT_FUNCTION("rotateClock", RotateClock);
+  CONNECT_FUNCTION("rotateBackClock", RotateBackClock);
 }
 
 mitk::DisplayInteractor::DisplayInteractor()
@@ -57,6 +63,7 @@ mitk::DisplayInteractor::DisplayInteractor()
 , m_InvertLevelWindowDirection( false )
 , m_AlwaysReact(false)
 , m_ZoomFactor(2)
+, m_ClockRotationSpeed(5)
 {
   m_StartDisplayCoordinate.Fill(0);
   m_LastDisplayCoordinate.Fill(0);
@@ -313,6 +320,72 @@ bool mitk::DisplayInteractor::AdjustLevelWindow(StateMachineAction*, Interaction
 
   sender->GetRenderingManager()->RequestUpdateAll();
   return true;
+}
+
+bool mitk::DisplayInteractor::Rotate(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  BaseRenderer::Pointer sender = interactionEvent->GetSender();
+  mitk::Stepper* slice = sender->GetCameraRotationController()->GetSlice();
+  slice->Next();
+
+  sender->GetRenderingManager()->RequestUpdateAll();
+  return true;
+}
+
+bool mitk::DisplayInteractor::RotateBack(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  BaseRenderer::Pointer sender = interactionEvent->GetSender();
+  mitk::Stepper* slice = sender->GetCameraRotationController()->GetSlice();
+  slice->Previous();
+
+  sender->GetRenderingManager()->RequestUpdateAll();
+  return true;
+}
+
+bool mitk::DisplayInteractor::RotateUp(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  BaseRenderer::Pointer sender = interactionEvent->GetSender();
+  mitk::Stepper* slice = sender->GetCameraRotationController()->GetElevationSlice();
+  slice->Next();
+
+  sender->GetRenderingManager()->RequestUpdateAll();
+  return true;
+}
+
+bool mitk::DisplayInteractor::RotateDown(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  BaseRenderer::Pointer sender = interactionEvent->GetSender();
+  mitk::Stepper* slice = sender->GetCameraRotationController()->GetElevationSlice();
+  slice->Previous();
+
+  sender->GetRenderingManager()->RequestUpdateAll();
+  return true;
+}
+
+bool mitk::DisplayInteractor::RotateClock(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  BaseRenderer::Pointer sender = interactionEvent->GetSender();
+  sender->GetCameraRotationController()->RotateToAngle(m_ClockRotationSpeed);
+  sender->GetRenderingManager()->RequestUpdateAll();
+  return true;
+}
+
+bool mitk::DisplayInteractor::RotateBackClock(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  BaseRenderer::Pointer sender = interactionEvent->GetSender();
+  sender->GetCameraRotationController()->RotateToAngle(-m_ClockRotationSpeed);
+  sender->GetRenderingManager()->RequestUpdateAll();
+  return true;
+}
+
+double mitk::DisplayInteractor::GetClockRotationSpeed()
+{
+  return m_ClockRotationSpeed;
+}
+
+void mitk::DisplayInteractor::SetClockRotationSpeed(double newRotationSpeed)
+{
+  m_ClockRotationSpeed = newRotationSpeed;
 }
 
 void mitk::DisplayInteractor::ConfigurationChanged()
