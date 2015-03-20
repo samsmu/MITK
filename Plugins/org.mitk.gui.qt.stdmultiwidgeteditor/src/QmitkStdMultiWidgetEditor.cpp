@@ -135,6 +135,17 @@ QmitkStdMultiWidgetEditor::~QmitkStdMultiWidgetEditor()
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
 }
 
+void QmitkStdMultiWidgetEditor::SetWindowPresetBeforeLoading()
+{
+  d->m_StdMultiWidget->changeLayoutToWidget1();
+}
+
+void QmitkStdMultiWidgetEditor::SetWindowPresetAfterLoading()
+{
+  d->m_StdMultiWidget->changeLayoutToDefault();
+}
+
+
 QmitkStdMultiWidget* QmitkStdMultiWidgetEditor::GetStdMultiWidget()
 {
   return d->m_StdMultiWidget;
