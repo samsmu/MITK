@@ -552,7 +552,10 @@ public:
                               UpdateCallBackMethod callback = 0,
                               itk::SmartPointer<Image> preLoadedImageBlock = 0);
 
-  static void LoadSeries(const DicomSeriesReader::StringContainer& filenames, itk::SmartPointer<Image> image,  void* command); 
+  static void LoadSeries(const DicomSeriesReader::StringContainer& filenames, itk::SmartPointer<Image> image, itk::ImageIOBase::IOComponentType comptype,  void* command); 
+
+  template <typename PixelType>
+  static void LoadSeriesTemplate(const DicomSeriesReader::StringContainer& filenames, itk::SmartPointer<Image> image, void* command);
 
 protected:
 
