@@ -92,6 +92,9 @@ public:
    */
   QStringList GetDecorations() const;
 
+  virtual void SetWindowPresetBeforeLoading();
+  virtual void SetWindowPresetAfterLoading();
+
   // -------------------  mitk::ILinkedRenderWindowPart  ----------------------
 
   mitk::SlicesRotator* GetSlicesRotator() const;

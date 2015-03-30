@@ -36,6 +36,88 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 namespace mitk
 {
+
+template <typename PixelType>
+void DicomSeriesReader::LoadSeriesTemplate(const DicomSeriesReader::StringContainer& filenames, Image::Pointer  image, void* command) 
+{
+  const int STATUS_LOAD_SLICE = 0;
+  const int STATUS_LOAD_COMPLETE = 100;
+
+  std::vector<std::string> copyFilenames(filenames);
+
+  typedef itk::Image<PixelType, 2> InputImageType;
+
+  typedef itk::ImageFileReader<InputImageType> ReaderType;
+  ReaderType::Pointer reader = ReaderType::New();
+  itk::GDCMImageIO::Pointer gdcmImageIO = itk::GDCMImageIO::New();
+  reader->SetImageIO(gdcmImageIO);
+
+  int filesCount = filenames.size();
+
+  for (int i = 1; i < filesCount; i++) {
+
+    reader->SetFileName(copyFilenames.at(i));
+    try {
+      reader->Update();
+    } catch (itk::ExceptionObject & e) {
+      MITK_INFO << "exception in file reader " << std::endl;
+      MITK_INFO << e << std::endl;
+    }
+    image->SetImportSlice(reader->GetOutput()->GetBufferPointer(), i);
+    MITK_INFO << "import slice" << i;
+
+    if (command) {
+      if (i < filesCount - 1) {
+        ((CallbackCommand*)command)->m_Callback(STATUS_LOAD_SLICE);
+      } else {
+        ((CallbackCommand*)command)->m_Callback(STATUS_LOAD_COMPLETE);
+      }
+    }
+  }
+}
+
+// TODO ism find aproach to avoid this
+void DicomSeriesReader::LoadSeries(const DicomSeriesReader::StringContainer& filenames, mitk::Image::Pointer image, itk::ImageIOBase::IOComponentType comptype,  void* command) 
+{
+  switch (comptype) 
+  {
+    case DcmIoType::UCHAR:
+      LoadSeriesTemplate<unsigned char>(filenames, image, command);
+      break;
+    case DcmIoType::CHAR:
+      LoadSeriesTemplate<char>(filenames, image, command);
+      break;
+    case DcmIoType::USHORT:
+      LoadSeriesTemplate<unsigned short>(filenames, image, command);
+      break;
+    case DcmIoType::SHORT:
+      LoadSeriesTemplate<short>(filenames, image, command);
+      break;
+    case DcmIoType::UINT:
+      LoadSeriesTemplate<unsigned int>(filenames, image, command);
+      break;
+    case DcmIoType::INT:
+      LoadSeriesTemplate<int>(filenames, image, command);
+      break;
+    case DcmIoType::ULONG:
+      LoadSeriesTemplate<long unsigned int>(filenames, image, command);
+      break;
+    case DcmIoType::LONG:
+      LoadSeriesTemplate<long int>(filenames, image, command);
+      break;
+    case DcmIoType::FLOAT:
+      LoadSeriesTemplate<float>(filenames, image, command);
+      break;
+    case DcmIoType::DOUBLE:
+      LoadSeriesTemplate<double>(filenames, image, command);
+      break;
+    default:
+      MITK_ERROR << "Unknown image pixel format";
+      break;
+  }
+  MITK_INFO << "Load series in thread complete";
+}
+
 std::string DicomSeriesReader::ReaderImplementationLevelToString( const ReaderImplementationLevel& enumValue )
 {
   switch (enumValue)
@@ -1458,7 +1540,7 @@ void DicomSeriesReader::LoadDicom(const StringContainer &filenames, DataNode &no
   ImageBlockDescriptor imageBlockDescriptor;
 
   const gdcm::Tag tagImagePositionPatient(0x0020,0x0032); // Image Position (Patient)
-  const gdcm::Tag    tagImageOrientation(0x0020, 0x0037); // Image Orientation
+  const gdcm::Tag tagImageOrientation(0x0020, 0x0037); // Image Orientation
   const gdcm::Tag tagSeriesInstanceUID(0x0020, 0x000e); // Series Instance UID
   const gdcm::Tag tagSOPClassUID(0x0008, 0x0016); // SOP class UID
   const gdcm::Tag tagModality(0x0008, 0x0060); // modality
@@ -1485,12 +1567,23 @@ void DicomSeriesReader::LoadDicom(const StringContainer &filenames, DataNode &no
       /* default case: assume "normal" image blocks, possibly 3D+t */
       bool canLoadAs4D(true);
       gdcm::Scanner scanner;
-      ScanForSliceInformation(filenames, scanner);
+
+      StringContainer slicesFileNameForScan;
+      // we checked series id for all slice, so we expect infos for another file be the same 
+      slicesFileNameForScan.push_back(filenames.at(0));
+
+      ScanForSliceInformation(slicesFileNameForScan, scanner);
 
       // need non-const access for map
       gdcm::Scanner::MappingType& tagValueMappings = const_cast<gdcm::Scanner::MappingType&>(scanner.GetMappings());
 
-      std::list<StringContainer> imageBlocks = SortIntoBlocksFor3DplusT( filenames, tagValueMappings, sort, canLoadAs4D );
+      //switch off sorting
+      // TODO this is need for correct Time working
+      //std::list<StringContainer> imageBlocks = SortIntoBlocksFor3DplusT( filenames, tagValueMappings, sort, canLoadAs4D );
+
+      std::list<StringContainer> imageBlocks;
+      imageBlocks.push_back(slicesFileNameForScan);
+
       unsigned int volume_count = imageBlocks.size();
 
       imageBlockDescriptor.SetSeriesInstanceUID( DicomSeriesReader::ConstCharStarToString( scanner.GetValue( filenames.front().c_str(), tagSeriesInstanceUID ) ) );
@@ -1537,6 +1630,8 @@ void DicomSeriesReader::LoadDicom(const StringContainer &filenames, DataNode &no
       if (volume_count == 1 || !canLoadAs4D || !load4D)
       {
         DcmIoType::Pointer io;
+        imageBlocks.clear();
+        imageBlocks.push_back(filenames);
         image = MultiplexLoadDICOMByITK( imageBlocks.front(), correctTilt, tiltInfo, io, command, preLoadedImageBlock ); // load first 3D block
 
         imageBlockDescriptor.AddFiles(imageBlocks.front()); // only the first part is loaded

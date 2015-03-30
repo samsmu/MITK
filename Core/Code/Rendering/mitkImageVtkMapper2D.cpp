@@ -737,6 +737,7 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::Ba
       min2ndValue = centralSliceImage->GetStatistics()->GetScalarValue2ndMin();
       max2ndValue = centralSliceImage->GetStatistics()->GetScalarValue2ndMax();
     }
+    /*
     if ((maxValue == min2ndValue && minValue == max2ndValue) || minValue == maxValue)
     {
       // centralSlice is strange, lets look at all data
@@ -746,6 +747,7 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::Ba
       max2ndValue = image->GetStatistics()->GetScalarValue2ndMaxNoRecompute();
     }
     isBinaryImage = ( maxValue == min2ndValue && minValue == max2ndValue );
+    */
   }
 
   // some more properties specific for a binary...
@@ -809,7 +811,7 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::Ba
         }
         else
         {
-          contrast.SetAuto( static_cast<mitk::Image*>(node->GetData()), false, true ); // we need this as a fallback
+          //contrast.SetAuto( static_cast<mitk::Image*>(node->GetData()), false, true ); // we need this as a fallback
         }
 
         contrast.SetLevelWindow( level, window, true );

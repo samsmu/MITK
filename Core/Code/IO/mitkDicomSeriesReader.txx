@@ -30,6 +30,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <limits>
 
 #include <mitkImage.h>
+#include <mitkImageCast.h>
+
+#include <thread>
 
 namespace mitk
 {
@@ -130,7 +133,7 @@ Image::Pointer DicomSeriesReader::LoadDICOMByITK( const StringContainer& filenam
 
   reader->SetImageIO(io);
   reader->ReverseOrderOff();
-
+ 
   if (command)
   {
     reader->AddObserver(itk::ProgressEvent(), command);
@@ -138,7 +141,16 @@ Image::Pointer DicomSeriesReader::LoadDICOMByITK( const StringContainer& filenam
 
   if (preLoadedImageBlock.IsNull())
   {
-    reader->SetFileNames(filenames);
+    StringContainer fileToImmediateLoading;
+    // ism: we load two slice for gathering spacing information
+    
+    fileToImmediateLoading.push_back(filenames.at(0));
+    if (filenames.size() > 1) {
+      fileToImmediateLoading.push_back(filenames.at(1));
+    }
+
+    reader->SetFileNames(fileToImmediateLoading);
+
     reader->Update();
     typename ImageType::Pointer readVolume = reader->GetOutput();
 
@@ -148,8 +160,12 @@ Image::Pointer DicomSeriesReader::LoadDICOMByITK( const StringContainer& filenam
       readVolume = InPlaceFixUpTiltedGeometry( reader->GetOutput(), tiltInfo );
     }
 
-    image->InitializeByItk(readVolume.GetPointer());
-    image->SetImportVolume(readVolume->GetBufferPointer());
+    image->InitializeByItk(readVolume.GetPointer(), 1, -1, filenames.size());
+    image->SetImportVolume(readVolume->GetBufferPointer(), 0, 0, mitk::Image::ImportMemoryManagementType::AsyncCopyMemory);
+
+    itk::ImageIOBase::IOComponentType comptype = io->GetComponentType();
+    std::thread thr(LoadSeries, std::ref(filenames), image, comptype, command);
+    thr.detach();
   }
   else
   {
