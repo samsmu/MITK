@@ -259,6 +259,7 @@ static itk::Index<2> GetFirstPoint(const mitk::CorrectorAlgorithm::TSegData &seg
       }
     }
   }
+  /*
   /// When it's impossible to find starting idex in near pixel
   /// Search for it in rage of near two pixels
   for (indexIterator = segment.points.begin(); indexIterator != indexEnd; ++indexIterator)
@@ -280,6 +281,7 @@ static itk::Index<2> GetFirstPoint(const mitk::CorrectorAlgorithm::TSegData &seg
           }
       }
   }
+  */
   mitkThrow() << "No Starting point is found next to the curve.";
 }
 
