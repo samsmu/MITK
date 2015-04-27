@@ -196,11 +196,9 @@ void QmitkDicomBrowser::CreateTemporaryDirectory()
 void QmitkDicomBrowser::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
   SetPluginDirectory();
-  berry::IPreferencesService::Pointer prefService=
-    berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
-  std::string targetPath = prefService->GetSystemPreferences()->Node("/org.mitk.views.dicomreader")->Get("default dicom path", m_PluginDirectory.toStdString());
-
-  m_DatabaseDirectory.clear();
-  m_DatabaseDirectory.append(targetPath.c_str());
+  //berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  berry::IPreferencesService::Pointer prefService =
+      berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  m_DatabaseDirectory = prefService->GetSystemPreferences()->Node("/org.mitk.views.dicomreader")->Get("default dicom path", m_PluginDirectory.toStdString()).c_str();
   m_Controls.internalDataWidget->SetDatabaseDirectory(m_DatabaseDirectory);
 }
