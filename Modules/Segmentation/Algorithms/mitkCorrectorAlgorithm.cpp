@@ -23,10 +23,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkContourModelUtils.h>
 
-
 #include "itkImageDuplicator.h"
 #include "itkImageRegionIterator.h"
 
+#include <mitkIOUtil.h>
 
 mitk::CorrectorAlgorithm::CorrectorAlgorithm()
 :ImageToImageFilter()
@@ -207,11 +207,7 @@ The algorithm is described in full length in Tobias Heimann's diploma thesis
 static void ColorSegment(const mitk::CorrectorAlgorithm::TSegData &segment, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic, int fillColor, int eraseColor)
 {
   int colorMode = (pic->GetPixel(segment.points[0]) == fillColor);
-  int color = 0;
-  if (colorMode)
-    color = eraseColor;
-  else
-    color = fillColor;
+  int color = colorMode ? eraseColor : fillColor;
 
   std::vector< itk::Index<2> >::const_iterator indexIterator;
   std::vector< itk::Index<2> >::const_iterator indexEnd;
@@ -223,6 +219,18 @@ static void ColorSegment(const mitk::CorrectorAlgorithm::TSegData &segment, itk:
   {
     pic->SetPixel(*indexIterator, color);
   }
+}
+
+static itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer CloneImage(itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic)
+{
+  typedef itk::Image< ipMITKSegmentationTYPE, 2 > ItkImageType;
+  typedef itk::ImageDuplicator< ItkImageType > DuplicatorType;
+
+  DuplicatorType::Pointer duplicator = DuplicatorType::New();
+  duplicator->SetInputImage(pic);
+  duplicator->Update();
+
+  return duplicator->GetOutput();
 }
 
 static itk::Index<2> GetFirstPoint(const mitk::CorrectorAlgorithm::TSegData &segment, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic, int fillColor)
@@ -251,21 +259,138 @@ static itk::Index<2> GetFirstPoint(const mitk::CorrectorAlgorithm::TSegData &seg
       }
     }
   }
+  /*
+  /// When it's impossible to find starting idex in near pixel
+  /// Search for it in rage of near two pixels
+  for (indexIterator = segment.points.begin(); indexIterator != indexEnd; ++indexIterator)
+  {
+      itk::Index<2> index;
+      for (int xOffset = -2; xOffset < 3; ++xOffset)
+      {
+          for (int yOffset = -2; yOffset < 3; ++yOffset)
+          {
+              //skip already tested variants
+              if (abs(xOffset) > 1 || abs(yOffset) > 1) {
+                  index[0] = (*indexIterator)[0] - xOffset;
+                  index[1] = (*indexIterator)[1] - yOffset;
+                  if ((pic->GetPixel(index) == fillColor) != colorMode)
+                  {
+                      return index;
+                  }
+              }
+          }
+      }
+  }
+  */
   mitkThrow() << "No Starting point is found next to the curve.";
 }
 
-static int FillRegion(const itk::Index<2> startIndex, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic, int fillColor, int eraseColor)
+static std::vector<itk::Index<2> > FindSeedPoints(const mitk::CorrectorAlgorithm::TSegData &segment, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic, int fillColor)
 {
-  int numberOfPixel = 0;
-  int mode = (pic->GetPixel(startIndex) == fillColor);
-  int drawColor = fillColor;
-  if (mode)
+  typedef itk::Image< ipMITKSegmentationTYPE, 2 > ItkImageType;
+  typedef itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer ItkImagePointerType;
+
+  int colorMode = (pic->GetPixel(segment.points[0]) == fillColor);
+  std::vector<itk::Index<2> > seedPoints;
+
+  try
   {
-    drawColor = eraseColor;
+    itk::Index<2> firstPoint = GetFirstPoint(segment,  pic, fillColor);
+    seedPoints.push_back(firstPoint);
+  }
+  catch (mitk::Exception e)
+  {
+    return seedPoints;
   }
 
+  if (segment.points.size() < 4)
+    return seedPoints;
+
+  std::vector< itk::Index<2> >::const_iterator indexIterator;
+  std::vector< itk::Index<2> >::const_iterator indexEnd;
+
+  indexIterator = segment.points.begin();
+  indexEnd = segment.points.end();
+
+  ItkImagePointerType listOfPoints = CloneImage(pic);
+  listOfPoints->FillBuffer(0);
+  listOfPoints->SetPixel(seedPoints[0],1);
+  for (; indexIterator != indexEnd; ++indexIterator)
+  {
+    listOfPoints->SetPixel(*indexIterator, 2);
+  }
+  indexIterator = segment.points.begin();
+  indexIterator++;
+  indexEnd--;
+  indexIterator++;
+  indexEnd--;
+  for (; indexIterator != indexEnd; ++indexIterator)
+  {
+    bool pointFound = true;
+    while (pointFound)
+    {
+      pointFound = false;
+      itk::Index<2> index;
+      itk::Index<2> index2;
+      for (int xOffset = -1 ; xOffset < 2; ++xOffset)
+      {
+        for (int yOffset = -1 ; yOffset < 2; ++yOffset)
+        {
+          index[0] = (*indexIterator)[0] - xOffset;
+          index[1] = (*indexIterator)[1] - yOffset;
+          index2 = index;
+
+          if (listOfPoints->GetPixel(index2) > 0)
+            continue;
+
+          index[0]--;
+          if (listOfPoints->GetPixel(index) == 1)
+          {
+            pointFound = true;
+            seedPoints.push_back(index2);
+            listOfPoints->SetPixel(index2,1);
+            continue;
+          }
+          index[0]=index[0] + 2;
+          if (listOfPoints->GetPixel(index) == 1)
+          {
+            pointFound = true;
+            seedPoints.push_back(index2);
+            listOfPoints->SetPixel(index2,1);
+            continue;
+          }
+          index[0]--;
+          index[1]--;
+          if (listOfPoints->GetPixel(index) == 1)
+          {
+            pointFound = true;
+            seedPoints.push_back(index2);
+            listOfPoints->SetPixel(index2,1);
+            continue;
+          }
+          index[1]=index[1] + 2;
+          if (listOfPoints->GetPixel(index) == 1)
+          {
+            pointFound = true;
+            seedPoints.push_back(index2);
+            listOfPoints->SetPixel(index2,1);
+            continue;
+          }
+        }
+      }
+    }
+  }
+  return seedPoints;
+}
+
+static int FillRegion(const std::vector<itk::Index<2> > &seedPoints, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic, int fillColor, int eraseColor)
+{
+  int numberOfPixel = 0;
+  int mode = (pic->GetPixel(seedPoints[0]) == fillColor);
+  int drawColor = mode ? eraseColor : fillColor;
+
   std::vector<itk::Index<2> > workPoints;
-  workPoints.push_back(startIndex);
+  workPoints = seedPoints;
   while (workPoints.size() > 0)
   {
     itk::Index<2> currentIndex = workPoints.back();
@@ -291,18 +416,6 @@ static int FillRegion(const itk::Index<2> startIndex, itk::Image< ipMITKSegmenta
   return numberOfPixel;
 }
 
-static itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer CloneImage(itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic)
-{
-  typedef itk::Image< ipMITKSegmentationTYPE, 2 > ItkImageType;
-
-  typedef itk::ImageDuplicator< ItkImageType > DuplicatorType;
-  DuplicatorType::Pointer duplicator = DuplicatorType::New();
-  duplicator->SetInputImage(pic);
-  duplicator->Update();
-
-  return duplicator->GetOutput();
-}
-
 static void OverwriteImage(itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer source, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer target)
 {
   typedef itk::Image< ipMITKSegmentationTYPE, 2 > ItkImageType;
@@ -320,41 +433,35 @@ static void OverwriteImage(itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer sour
 
 bool  mitk::CorrectorAlgorithm::ModifySegment(const TSegData &segment, itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer pic)
 {
-  try
-  {
     typedef itk::Image< ipMITKSegmentationTYPE, 2 >::Pointer ItkImagePointerType;
-    // Find the current ColorMode:
 
-      // Kein erster Punkt
-        // Erster Punkt finden
     ItkImagePointerType firstSideImage = CloneImage(pic);
     ColorSegment(segment, firstSideImage, m_FillColor, m_EraseColor);
     ItkImagePointerType secondSideImage = CloneImage(firstSideImage);
-    itk::Index<2> firstPoint = GetFirstPoint(segment,  firstSideImage, m_FillColor);
-    int firstSidePixel = FillRegion(firstPoint, firstSideImage, m_FillColor, m_EraseColor);
 
-    // TODO  Problem: Was ist wenn keine Zweite Seite vorhanden?
-    try
-    {
-      itk::Index<2> secondPoint = GetFirstPoint(segment, firstSideImage, m_FillColor);
-      int secondSidePixel = FillRegion(secondPoint, secondSideImage, m_FillColor, m_EraseColor);
+    std::vector<itk::Index<2> > seedPoints = FindSeedPoints(segment,firstSideImage,m_FillColor);
+    if (seedPoints.size() < 1)
+      return false;
+    int firstSidePixel = FillRegion(seedPoints, firstSideImage, m_FillColor, m_EraseColor);
 
-      if (firstSidePixel < secondSidePixel)
-      {
-        OverwriteImage(firstSideImage, pic);
-      } else
-      {
-        OverwriteImage(secondSideImage, pic);
-      }
-    }
-    catch (mitk::Exception e)
+    std::vector<itk::Index<2> > secondSeedPoints = FindSeedPoints(segment,firstSideImage,m_FillColor);
+    if ( secondSeedPoints.size() < 1)
+      return false;
+    int secondSidePixel = FillRegion(secondSeedPoints, secondSideImage, m_FillColor, m_EraseColor);
+
+    /* Display debug information
+    std::cout << "FirstSeeds:" << seedPoints.size() << std::endl
+              << "SecondSeeds:" << secondSeedPoints.size() << std::endl;
+    std::cout << "FirstRegion:" << firstSidePixel << std::endl
+              << "SecondRegion:" << secondSidePixel << std::endl;
+    std::cout << "----------------------------------------------------------------" << std::endl;
+    */
+    if (firstSidePixel < secondSidePixel)
     {
-      e.what();
+      OverwriteImage(firstSideImage, pic);
+    } else
+    {
+      OverwriteImage(secondSideImage, pic);
     }
     return true;
-  }
-  catch(...)
-  {
-    return false;
-  }
 }
