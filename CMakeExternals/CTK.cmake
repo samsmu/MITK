@@ -59,6 +59,8 @@ if(MITK_USE_CTK)
       ENDIF()
     ENDFOREACH()
 
+    set(CTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${MITK_SOURCE_DIR}/CMakeExternals/EmptyFileForPatching.dummy -P ${MITK_SOURCE_DIR}/CMakeExternals/PatchCTK.cmake)
+
     ExternalProject_Add(${proj}
       SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-src
       BINARY_DIR ${proj}-build
@@ -67,6 +69,7 @@ if(MITK_USE_CTK)
       URL_MD5 0bdb6e34552d6a547f29408b9bf82649
       UPDATE_COMMAND ""
       INSTALL_COMMAND ""
+      PATCH_COMMAND ${CTK_PATCH_COMMAND}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${ep_common_args}
