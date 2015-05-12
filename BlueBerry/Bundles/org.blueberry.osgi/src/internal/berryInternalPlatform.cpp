@@ -195,7 +195,7 @@ void InternalPlatform::Initialize(int& argc, char** argv, Poco::Util::AbstractCo
   {
     BERRY_INFO(m_ConsoleLog) << "Using provisioning file: " << provisioningFile;
 
-    ProvisioningInfo provInfo(QString::fromUtf8(provisioningFile.c_str()));
+    ProvisioningInfo provInfo(provisioningFile.c_str());
 
     // it can still happen, that the encoding is not compatible with the fromUtf8 function ( i.e. when manipulating the LANG variable
     // in such case, the QStringList in provInfo is empty which we can easily check for
