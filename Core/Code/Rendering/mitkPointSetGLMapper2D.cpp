@@ -459,7 +459,7 @@ void mitk::PointSetGLMapper2D::Paint( mitk::BaseRenderer *renderer )
               Vector2D pos2d = (lastPt2d.GetVectorFromOrigin()+pt2d.GetVectorFromOrigin())*0.5+vec2d*text2dDistance;
 
               mitk::VtkPropRenderer* OpenGLrenderer = dynamic_cast<mitk::VtkPropRenderer*>( renderer );
-              OpenGLrenderer->WriteSimpleText(buffer.str(), pos2d[0], pos2d[1]);
+              OpenGLrenderer->WriteSimpleText(buffer.str(), pos2d[0], pos2d[1], -1);
               //this->WriteTextXY(pos2d[0], pos2d[1], buffer.str(),renderer);
            }
 
@@ -479,7 +479,7 @@ void mitk::PointSetGLMapper2D::Paint( mitk::BaseRenderer *renderer )
               Vector2D pos2d = lastPt2d.GetVectorFromOrigin()+vec2d*text2dDistance*text2dDistance;
 
               mitk::VtkPropRenderer* OpenGLrenderer = dynamic_cast<mitk::VtkPropRenderer*>( renderer );
-              OpenGLrenderer->WriteSimpleText(buffer.str(), pos2d[0], pos2d[1]);
+              OpenGLrenderer->WriteSimpleText(buffer.str(), pos2d[0], pos2d[1], -1);
               //this->WriteTextXY(pos2d[0], pos2d[1], buffer.str(),renderer);
            }
         }

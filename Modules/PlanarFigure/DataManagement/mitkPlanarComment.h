@@ -22,6 +22,7 @@ public:
   itkCloneMacro(Self)
 
   void setText(const std::string& comment);
+  const std::string getText();
 
   /** \brief Place figure in its minimal configuration (a point at least)
    * onto the given 2D geometry.
@@ -34,14 +35,14 @@ public:
   /** \brief Line has 2 control points per definition. */
   unsigned int GetMinimumNumberOfControlPoints() const
   {
-    return 1;
+    return 2;
   }
 
 
   /** \brief Line has 2 control points per definition. */
   unsigned int GetMaximumNumberOfControlPoints() const
   {
-    return 1;
+    return 2;
   }
 
   virtual bool Equals(const mitk::PlanarFigure& other) const;

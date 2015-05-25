@@ -6,9 +6,9 @@
 
 
 mitk::PlanarComment::PlanarComment()
-: FEATURE_ID_LENGTH( this->AddFeature( "Length", "mm" ) )
+  : FEATURE_ID_LENGTH( this->AddFeature( "", "" ) )
 {
-  this->ResetNumberOfControlPoints(1);
+  this->ResetNumberOfControlPoints(2);
   this->SetNumberOfPolyLines(1);
 }
 
@@ -22,11 +22,17 @@ void mitk::PlanarComment::setText(const std::string& comment)
   m_commentText = comment;
 }
 
+const std::string mitk::PlanarComment::getText()
+{
+  return m_commentText;
+}
+
 void mitk::PlanarComment::GeneratePolyLine()
 {
   this->ClearPolyLines();
 
   this->AppendPointToPolyLine(0, this->GetControlPoint(0));
+  this->AppendPointToPolyLine(0, this->GetControlPoint(1));
 }
 
 void mitk::PlanarComment::GenerateHelperPolyLine(double /*mmPerDisplayUnit*/, unsigned int /*displayHeight*/)

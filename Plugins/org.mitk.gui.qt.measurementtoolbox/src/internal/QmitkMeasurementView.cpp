@@ -64,7 +64,8 @@ static T* GetService()
 struct QmitkPlanarFigureData
 {
   QmitkPlanarFigureData()
-    : m_Figure(0), m_EndPlacementObserverTag(0), m_SelectObserverTag(0), m_StartInteractionObserverTag(0), m_EndInteractionObserverTag(0)
+    : m_Figure(0), m_EndPlacementObserverTag(0), m_SelectObserverTag(0), m_StartInteractionObserverTag(0), m_EndInteractionObserverTag(0),
+      m_AddInitialPointObserverTag(0)
   {
   }
 
@@ -73,6 +74,7 @@ struct QmitkPlanarFigureData
   unsigned int m_SelectObserverTag;
   unsigned int m_StartInteractionObserverTag;
   unsigned int m_EndInteractionObserverTag;
+  unsigned int m_AddInitialPointObserverTag;
 };
 
 struct QmitkMeasurementViewData
@@ -121,16 +123,21 @@ struct QmitkMeasurementViewData
   QToolBar* m_DrawActionsToolBar;
   QActionGroup* m_DrawActionsGroup;
   QTextBrowser* m_SelectedPlanarFiguresText;
+  QTextBrowser* m_comment;
   QPushButton* m_CopyToClipboard;
+  QPushButton* m_CommentDone;
+  QPushButton* m_CommentCansel;
   QGridLayout* m_Layout;
 };
 
 const std::string QmitkMeasurementView::VIEW_ID = "org.mitk.views.measurement";
 
 
-const QString QmitkMeasurementView::TR_REF_IMAGE = QLabel::tr("Reference Image: "); 
-const QString QmitkMeasurementView::TR_CLIPBOARD_COPY = QPushButton::tr("Copy to Clipboard"); 
-const QString QmitkMeasurementView::TR_NO_AVAIBLE_IMAGE = QLabel::tr("No visible image available."); 
+const QString QmitkMeasurementView::TR_REF_IMAGE = QLabel::tr("Reference Image: ");
+const QString QmitkMeasurementView::TR_CLIPBOARD_COPY = QPushButton::tr("Copy to Clipboard");
+const QString QmitkMeasurementView::TR_NO_AVAIBLE_IMAGE = QLabel::tr("No visible image available.");
+const QString QmitkMeasurementView::TR_COMMENT_DONE = QPushButton::tr("DONE");
+const QString QmitkMeasurementView::TR_COMMENT_CANCEL = QPushButton::tr("CANCEL");
 
 QmitkMeasurementView::QmitkMeasurementView()
   : d( new QmitkMeasurementViewData )
@@ -163,7 +170,7 @@ void QmitkMeasurementView::CreateQtPartControl(QWidget* parent)
   d->m_DrawActionsGroup->addAction(currentAction);
 
   MEASUREMENT_DEBUG << "Draw Comment";
-  currentAction = d->m_DrawActionsToolBar->addAction(QIcon(""), "Draw Comment");
+  currentAction = d->m_DrawActionsToolBar->addAction(QIcon(":/measurement/comment.png"), "Draw Comment");
   currentAction->setCheckable(true);
   d->m_DrawComment = currentAction;
   d->m_DrawActionsToolBar->addAction(currentAction);
@@ -242,17 +249,32 @@ void QmitkMeasurementView::CreateQtPartControl(QWidget* parent)
   // planar figure details text
   d->m_SelectedPlanarFiguresText = new QTextBrowser;
 
+  d->m_comment = new QTextBrowser;
+
   // copy to clipboard button
   d->m_CopyToClipboard = new QPushButton(TR_CLIPBOARD_COPY);
+
+  d->m_CommentDone = new QPushButton(QString(TR_COMMENT_DONE));
+  d->m_CommentCansel = new QPushButton(QString(TR_COMMENT_CANCEL));
 
   d->m_Layout = new QGridLayout;
   d->m_Layout->addWidget(selectedImageLabel, 0, 0, 1, 1);
   d->m_Layout->addWidget(d->m_SelectedImageLabel, 0, 1, 1, 1);
   d->m_Layout->addWidget(d->m_DrawActionsToolBar, 1, 0, 1, 2);
   d->m_Layout->addWidget(d->m_SelectedPlanarFiguresText, 2, 0, 1, 2);
-  d->m_Layout->addWidget(d->m_CopyToClipboard, 3, 0, 1, 2);
+
+  d->m_Layout->addWidget(d->m_comment, 3, 0, 1, 2);
+  d->m_Layout->addWidget(d->m_CommentDone, 4, 0, 1, 1);
+  d->m_Layout->addWidget(d->m_CommentCansel, 4, 1, 1, 1);
+
+  d->m_Layout->addWidget(d->m_CopyToClipboard, 5, 0, 1, 2);
 
   d->m_Parent->setLayout(d->m_Layout);
+
+  d->m_comment->clear();
+  d->m_comment->setHidden(true);
+  d->m_CommentDone->setHidden(true);
+  d->m_CommentCansel->setHidden(true);
 
   // create connections
   this->CreateConnections();
@@ -275,6 +297,40 @@ void QmitkMeasurementView::CreateConnections()
   QObject::connect( d->m_DrawBezierCurve, SIGNAL( triggered(bool) ), this, SLOT( ActionDrawBezierCurveTriggered(bool) ) );
   QObject::connect( d->m_DrawSubdivisionPolygon, SIGNAL( triggered(bool) ), this, SLOT( ActionDrawSubdivisionPolygonTriggered(bool) ) );
   QObject::connect( d->m_CopyToClipboard, SIGNAL( clicked(bool) ), this, SLOT( CopyToClipboard(bool) ) );
+
+  QObject::connect(d->m_CommentDone, SIGNAL(clicked(bool)), this, SLOT(CommentDoneTriggered(bool)));
+  QObject::connect(d->m_CommentCansel, SIGNAL(clicked(bool)), this, SLOT(CommentCanselTriggered(bool)));
+}
+
+void QmitkMeasurementView::CommentDoneTriggered(bool checked)
+{
+  d->m_comment->setHidden(true);
+  d->m_CommentDone->setHidden(true);
+  d->m_CommentCansel->setHidden(true);
+
+  if (d->m_CurrentSelection.size())
+  {
+    mitk::PlanarComment* figure = dynamic_cast<mitk::PlanarComment*>(d->m_CurrentSelection.at(0)->GetData());
+
+    if (figure)
+    {
+      figure->setText(d->m_comment->toPlainText().toStdString());
+      this->RequestRenderWindowUpdate();
+    }
+  }
+
+  d->m_DrawComment->setChecked(false);
+  PlanarFigureInitialized();
+}
+
+void QmitkMeasurementView::CommentCanselTriggered(bool checked)
+{
+  d->m_comment->setHidden(true);
+  d->m_CommentDone->setHidden(true);
+  d->m_CommentCansel->setHidden(true);
+
+  d->m_DrawComment->setChecked(false);
+  PlanarFigureInitialized();
 }
 
 void QmitkMeasurementView::NodeAdded( const mitk::DataNode* node )
@@ -464,6 +520,18 @@ void QmitkMeasurementView::PlanarFigureSelected( itk::Object* object, const itk:
       MITK_DEBUG << "selected node found. enabling selection";
       node->SetSelected(true);
       d->m_CurrentSelection.push_back( node );
+
+      mitk::PlanarComment* comment = dynamic_cast<mitk::PlanarComment*>(node->GetData());
+      if (comment)
+      {
+          std::string text = comment->getText();
+
+          d->m_comment->clear();
+          d->m_comment->setText(QString(text.c_str()));
+          d->m_comment->setHidden(false);
+          d->m_CommentDone->setHidden(false);
+          d->m_CommentCansel->setHidden(false);
+      }
     }
     else
     {
@@ -644,14 +712,15 @@ void QmitkMeasurementView::ActionDrawCommentTriggered(bool checked)
 {
   Q_UNUSED(checked)
 
-  m_commentTextView.show();
+  d->m_comment->clear();
+  d->m_comment->setHidden(false);
+  d->m_comment->setReadOnly(false);
+  d->m_CommentDone->setHidden(false);
+  d->m_CommentCansel->setHidden(false);
 
   mitk::PlanarComment::Pointer figure = mitk::PlanarComment::New();
   QString qString = QString("Comment%1").arg(++d->m_CommentCounter);
   this->AddFigureToDataStorage(figure, qString);
-
-  std::string comment = m_commentTextView.getText().toStdString();
-  figure->setText(comment);
 
   MEASUREMENT_DEBUG << "PlanarComment initialized...";
 }
@@ -868,10 +937,13 @@ void QmitkMeasurementView::UpdateMeasurementText()
           || (planarFourPointAngle && k == planarFourPointAngle->FEATURE_ID_ANGLE))
         featureQuantity = featureQuantity * 180 / vnl_math::pi;
 
-      infoText.append(
-            QString("<i>%1</i>: %2 %3") .arg(QString(
-                                               _PlanarFigure->GetFeatureName(k))) .arg(featureQuantity, 0, 'f',
-                                                                                       2) .arg(QString(_PlanarFigure->GetFeatureUnit(k))));
+      QString featureName = QString(_PlanarFigure->GetFeatureName(k));
+      QString featureUnit = QString(_PlanarFigure->GetFeatureUnit(k));
+
+      if (featureName.size() && featureUnit.size())
+      {
+          infoText.append(QString("<i>%1</i>: %2 %3") .arg(featureName) .arg(featureQuantity, 0, 'f', 2) .arg(featureUnit));
+      }
 
       plainInfoText.append(
             QString("\n%1: %2 %3") .arg(QString(_PlanarFigure->GetFeatureName(k))) .arg(

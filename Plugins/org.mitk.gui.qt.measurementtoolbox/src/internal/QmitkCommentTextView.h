@@ -6,23 +6,24 @@
 
 class QmitkCommentTextView : public QDialog
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
 
-	QmitkCommentTextView();
-	~QmitkCommentTextView();
+  QmitkCommentTextView();
+  ~QmitkCommentTextView();
 
-	QString getText();
-	void show();
+  QString getText();
+  int show();
 
 private:
 
-	Ui::QmitkCommentTextView m_gui;
-	QString m_commentText;
+  Ui::QmitkCommentTextView m_gui;
+  QString m_commentText;
 
 private slots:
 
-	void done();
+  void done();
+  void cansel();
 };
 

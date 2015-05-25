@@ -73,6 +73,9 @@ public:
 
   int Render(RenderType type);
 
+  bool FindTextProperty(const DataNode* obj);
+  void AddTextProperty(const DataNode* obj);
+
   /** \brief This methods contains all method neceassary before a VTK Render() call */
   virtual void PrepareRender();
 
@@ -108,7 +111,11 @@ public:
   virtual mitk::DataNode *PickObject( const Point2D &displayPosition, Point3D &worldPosition ) const;
 
   // Simple text rendering method
-  int WriteSimpleText(std::string text, double posX, double posY, double color1 = 0.0, double color2 = 1.0, double color3 = 0.0, float opacity = 1.0);
+  int WriteSimpleText(std::string text, double posX, double posY, unsigned int orientation,
+    double color1 = 0.0, double color2 = 1.0, double color3 = 0.0, float opacity = 1.0);
+
+  int SetTextProperty(DataNode::Pointer node, const std::string& text, double posX, double posY, unsigned int orientation,
+    double color1 = 0.0, double color2 = 1.0, double color3 = 0.0, float opacity = 1.0);
 
   vtkTextProperty * GetTextLabelProperty(int text_id);
 
@@ -252,6 +259,8 @@ private:
 
   DataStorage::SetOfObjects::ConstPointer m_PickingObjects;
   DataStorage::SetOfObjects::const_iterator m_PickingObjectsIterator;
+
+  std::map<DataNode::Pointer, vtkTextActor*> m_objectToTextPropList;
 };
 } // namespace mitk
 
