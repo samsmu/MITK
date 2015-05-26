@@ -148,6 +148,8 @@ public:
 
   void setDisplayMetaInfo(bool metainfo);
 
+  void setSelectionMode(bool selection);
+
 protected:
 
   bool displayMetaInfo;
@@ -163,7 +165,6 @@ protected:
   vtkRenderer* ren[4];
 
   void setCornerAnnotation(int corner, int i, const char* text);
-  bool getDisplayMetaInfo();
 
   mitk::DataNode::Pointer GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes);
 

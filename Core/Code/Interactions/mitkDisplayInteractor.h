@@ -47,6 +47,7 @@ namespace mitk
      * It also checks if event is to be accepted when it already has been processed by a DataInteractor.
      */
     virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
+    void SetSelectionMode(bool selection);
   protected:
     DisplayInteractor();
     virtual ~DisplayInteractor();
@@ -71,6 +72,11 @@ namespace mitk
      * and set the member variables accordingly.
      */
     virtual bool FilterEvents(InteractionEvent* interactionEvent, DataNode* dataNode);
+
+    mitk::DataNode::Pointer m_CurrentNode;
+    mitk::DataNode::Pointer m_SelectedNode;
+    float m_OldColor[3];
+    bool m_Selector;
 
     virtual bool CheckPositionEvent( const InteractionEvent* interactionEvent );
     bool IsOverObject(const InteractionEvent* interactionEvent);
@@ -219,6 +225,10 @@ namespace mitk
      * Clock rotation spead for ctrl+arrow rotation
      */
     double m_ClockRotationSpeed;
+    /**
+    * 3D view selection mode
+    */
+    bool m_SelectionMode;
   };
 }
 #endif
