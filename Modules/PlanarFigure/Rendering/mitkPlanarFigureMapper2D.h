@@ -175,7 +175,7 @@ protected:
       DataNode* node,
       const std::string& text,
                           mitk::Point2D anchorPoint,
-                      unsigned int orientation,
+                          unsigned int orientation,
                           float globalOpacity,
                           PlanarFigureDisplayMode lineDisplayMode,
                           double &annotationOffset );

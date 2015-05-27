@@ -81,6 +81,7 @@ class QmitkMeasurementView : public QmitkAbstractView
     const static QString TR_NO_AVAIBLE_IMAGE;
     const static QString TR_COMMENT_DONE;
     const static QString TR_COMMENT_CANCEL;
+    const static QString TR_COMMENT_TEXT;
 
     void CreateConnections();
     mitk::DataNode::Pointer AddFigureToDataStorage(mitk::PlanarFigure* figure, const QString& name);
@@ -94,6 +95,9 @@ class QmitkMeasurementView : public QmitkAbstractView
     void AddInitialPoint();
     void CheckForTopMostVisibleImage(mitk::DataNode* _NodeToNeglect=0);
     mitk::DataStorage::SetOfObjects::ConstPointer GetAllPlanarFigures() const;
+
+    void hideCommentTextView();
+    void showCommentTextView(const std::string& text = std::string());
 
     QmitkMeasurementViewData* d;
 };

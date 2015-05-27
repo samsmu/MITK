@@ -127,6 +127,7 @@ struct QmitkMeasurementViewData
   QPushButton* m_CopyToClipboard;
   QPushButton* m_CommentDone;
   QPushButton* m_CommentCansel;
+  QLabel* m_CommentText;
   QGridLayout* m_Layout;
 };
 
@@ -136,8 +137,9 @@ const std::string QmitkMeasurementView::VIEW_ID = "org.mitk.views.measurement";
 const QString QmitkMeasurementView::TR_REF_IMAGE = QLabel::tr("Reference Image: ");
 const QString QmitkMeasurementView::TR_CLIPBOARD_COPY = QPushButton::tr("Copy to Clipboard");
 const QString QmitkMeasurementView::TR_NO_AVAIBLE_IMAGE = QLabel::tr("No visible image available.");
-const QString QmitkMeasurementView::TR_COMMENT_DONE = QPushButton::tr("DONE");
-const QString QmitkMeasurementView::TR_COMMENT_CANCEL = QPushButton::tr("CANCEL");
+const QString QmitkMeasurementView::TR_COMMENT_DONE = QPushButton::tr("Done");
+const QString QmitkMeasurementView::TR_COMMENT_CANCEL = QPushButton::tr("Cancel");
+const QString QmitkMeasurementView::TR_COMMENT_TEXT = QTextEdit::tr("Comment text:");
 
 QmitkMeasurementView::QmitkMeasurementView()
   : d( new QmitkMeasurementViewData )
@@ -250,6 +252,7 @@ void QmitkMeasurementView::CreateQtPartControl(QWidget* parent)
   d->m_SelectedPlanarFiguresText = new QTextBrowser;
 
   d->m_comment = new QTextBrowser;
+  d->m_CommentText = new QLabel(TR_COMMENT_TEXT);
 
   // copy to clipboard button
   d->m_CopyToClipboard = new QPushButton(TR_CLIPBOARD_COPY);
@@ -263,18 +266,17 @@ void QmitkMeasurementView::CreateQtPartControl(QWidget* parent)
   d->m_Layout->addWidget(d->m_DrawActionsToolBar, 1, 0, 1, 2);
   d->m_Layout->addWidget(d->m_SelectedPlanarFiguresText, 2, 0, 1, 2);
 
-  d->m_Layout->addWidget(d->m_comment, 3, 0, 1, 2);
-  d->m_Layout->addWidget(d->m_CommentDone, 4, 0, 1, 1);
-  d->m_Layout->addWidget(d->m_CommentCansel, 4, 1, 1, 1);
+  d->m_Layout->addWidget(d->m_CommentText, 3, 0, 1, 2);
+  d->m_Layout->addWidget(d->m_comment, 4, 0, 1, 2);
+  d->m_Layout->addWidget(d->m_CommentDone, 5, 0, 1, 1);
+  d->m_Layout->addWidget(d->m_CommentCansel, 5, 1, 1, 1);
 
-  d->m_Layout->addWidget(d->m_CopyToClipboard, 5, 0, 1, 2);
+  d->m_Layout->addWidget(d->m_CopyToClipboard, 6, 0, 1, 2);
 
   d->m_Parent->setLayout(d->m_Layout);
 
   d->m_comment->clear();
-  d->m_comment->setHidden(true);
-  d->m_CommentDone->setHidden(true);
-  d->m_CommentCansel->setHidden(true);
+  hideCommentTextView();
 
   // create connections
   this->CreateConnections();
@@ -304,9 +306,7 @@ void QmitkMeasurementView::CreateConnections()
 
 void QmitkMeasurementView::CommentDoneTriggered(bool checked)
 {
-  d->m_comment->setHidden(true);
-  d->m_CommentDone->setHidden(true);
-  d->m_CommentCansel->setHidden(true);
+  hideCommentTextView();
 
   if (d->m_CurrentSelection.size())
   {
@@ -325,9 +325,7 @@ void QmitkMeasurementView::CommentDoneTriggered(bool checked)
 
 void QmitkMeasurementView::CommentCanselTriggered(bool checked)
 {
-  d->m_comment->setHidden(true);
-  d->m_CommentDone->setHidden(true);
-  d->m_CommentCansel->setHidden(true);
+  hideCommentTextView();
 
   d->m_DrawComment->setChecked(false);
   PlanarFigureInitialized();
@@ -502,6 +500,24 @@ void QmitkMeasurementView::NodeRemoved(const mitk::DataNode* node)
   this->CheckForTopMostVisibleImage(nonConstNode);
 }
 
+void QmitkMeasurementView::hideCommentTextView()
+{
+  d->m_comment->setHidden(true);
+  d->m_CommentDone->setHidden(true);
+  d->m_CommentCansel->setHidden(true);
+  d->m_CommentText->setHidden(true);
+}
+
+void QmitkMeasurementView::showCommentTextView(const std::string& text)
+{
+  d->m_comment->clear();
+  d->m_comment->setText(QString(text.c_str()));
+  d->m_comment->setHidden(false);
+  d->m_comment->setReadOnly(false);
+  d->m_CommentDone->setHidden(false);
+  d->m_CommentCansel->setHidden(false);
+  d->m_CommentText->setHidden(false);
+}
 
 void QmitkMeasurementView::PlanarFigureSelected( itk::Object* object, const itk::EventObject& )
 {
@@ -521,16 +537,13 @@ void QmitkMeasurementView::PlanarFigureSelected( itk::Object* object, const itk:
       node->SetSelected(true);
       d->m_CurrentSelection.push_back( node );
 
+      hideCommentTextView();
+
       mitk::PlanarComment* comment = dynamic_cast<mitk::PlanarComment*>(node->GetData());
       if (comment)
       {
           std::string text = comment->getText();
-
-          d->m_comment->clear();
-          d->m_comment->setText(QString(text.c_str()));
-          d->m_comment->setHidden(false);
-          d->m_CommentDone->setHidden(false);
-          d->m_CommentCansel->setHidden(false);
+          showCommentTextView(text);
       }
     }
     else
@@ -567,6 +580,8 @@ void QmitkMeasurementView::PlanarFigureInitialized()
 void QmitkMeasurementView::SetFocus()
 {
   d->m_SelectedImageLabel->setFocus();
+
+  d->m_comment->setFocus();
 }
 
 void QmitkMeasurementView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*part*/,
@@ -694,6 +709,33 @@ void QmitkMeasurementView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*p
     break;
   }
 
+  hideCommentTextView();
+
+  int currentSelectedSize = d->m_CurrentSelection.size();
+  if (currentSelectedSize == 1)
+  {
+    mitk::DataNode::Pointer node = d->m_CurrentSelection.at(0);
+
+    mitk::PlanarComment* comment = dynamic_cast<mitk::PlanarComment*>(node->GetData());
+    mitk::PlanarLine* line = dynamic_cast<mitk::PlanarLine*>(node->GetData());
+
+    if (comment && node->IsSelected())
+    {
+      std::string text = comment->getText();
+      showCommentTextView(text);
+    }
+  }
+  else if (currentSelectedSize > 1)
+  {
+    hideCommentTextView();
+
+    QMessageBox msgBox;
+    msgBox.setText(QString("Found multiple selection of objects.\n"
+      "To view the properties of the object, select only one desired object."));
+    msgBox.setIcon(QMessageBox::Icon::Information);
+    msgBox.exec();
+  }
+
   this->RequestRenderWindowUpdate();
 }
 
@@ -712,11 +754,7 @@ void QmitkMeasurementView::ActionDrawCommentTriggered(bool checked)
 {
   Q_UNUSED(checked)
 
-  d->m_comment->clear();
-  d->m_comment->setHidden(false);
-  d->m_comment->setReadOnly(false);
-  d->m_CommentDone->setHidden(false);
-  d->m_CommentCansel->setHidden(false);
+  showCommentTextView();
 
   mitk::PlanarComment::Pointer figure = mitk::PlanarComment::New();
   QString qString = QString("Comment%1").arg(++d->m_CommentCounter);

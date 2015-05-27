@@ -39,6 +39,14 @@ class vtkAssemblyPath;
 
 namespace mitk
 {
+  enum TextOrientation
+  {
+    TextRigth = 0,
+    TextCenterBottom,
+    TextCenterTop,
+    TextLeft
+  };
+
 class Mapper;
 
 /*!
@@ -111,13 +119,11 @@ public:
   virtual mitk::DataNode *PickObject( const Point2D &displayPosition, Point3D &worldPosition ) const;
 
   // Simple text rendering method
-  int WriteSimpleText(std::string text, double posX, double posY, unsigned int orientation,
+  void WriteSimpleText(std::string text, double posX, double posY,
     double color1 = 0.0, double color2 = 1.0, double color3 = 0.0, float opacity = 1.0);
 
   int SetTextProperty(DataNode::Pointer node, const std::string& text, double posX, double posY, unsigned int orientation,
     double color1 = 0.0, double color2 = 1.0, double color3 = 0.0, float opacity = 1.0);
-
-  vtkTextProperty * GetTextLabelProperty(int text_id);
 
   // Initialization / geometry handling
 
@@ -253,14 +259,13 @@ private:
   MappersMapType m_MappersMap;
 
   // rendering of text
-  vtkRenderer * m_TextRenderer;
-  typedef std::map<unsigned int,vtkTextActor*> TextMapType;
-  TextMapType m_TextCollection;
+  vtkRenderer* m_TextRenderer;
 
   DataStorage::SetOfObjects::ConstPointer m_PickingObjects;
   DataStorage::SetOfObjects::const_iterator m_PickingObjectsIterator;
 
   std::map<DataNode::Pointer, vtkTextActor*> m_objectToTextPropList;
+  std::vector<vtkTextActor*> m_simpleTextPropList;
 };
 } // namespace mitk
 

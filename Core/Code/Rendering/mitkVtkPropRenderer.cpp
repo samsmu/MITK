@@ -208,34 +208,46 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
   if (lastVtkBased == false)
     Disable2DOpenGL();
 
-  // Render text
-  if (type == VtkPropRenderer::Overlay)
+  if (m_simpleTextPropList.size())
   {
-  m_TextRenderer->SetViewport( this->GetVtkRenderer()->GetViewport() );
-
-  std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.begin();
-  for (; iter != m_objectToTextPropList.end(); ++iter)
-  {
-    bool find = false;
-
-    DataStorage::SetOfObjects::ConstPointer allObjects = m_DataStorage->GetAll();
-    for (DataStorage::SetOfObjects::ConstIterator objectIter = allObjects->Begin(); objectIter != allObjects->End(); ++objectIter)
+    std::vector<vtkTextActor*>::iterator iter = m_simpleTextPropList.begin();
+    for (; iter != m_simpleTextPropList.end(); ++iter)
     {
-      if (iter->first == objectIter->Value())
-      {
-        find = true;
-        break;
-      }
-    }
+      m_TextRenderer->RemoveViewProp(*iter);
+      (*iter)->Delete();
 
-    if (!find)
-    {
-      m_TextRenderer->RemoveViewProp(iter->second);
-      iter = m_objectToTextPropList.erase(iter);
+      iter = m_simpleTextPropList.erase(iter);
     }
   }
 
-  m_TextRenderer->Render();
+  // Render text
+  if (type == VtkPropRenderer::Overlay)
+  {
+    m_TextRenderer->SetViewport( this->GetVtkRenderer()->GetViewport() );
+
+    std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.begin();
+    for (; iter != m_objectToTextPropList.end(); ++iter)
+    {
+      bool find = false;
+
+      DataStorage::SetOfObjects::ConstPointer allObjects = m_DataStorage->GetAll();
+      for (DataStorage::SetOfObjects::ConstIterator objectIter = allObjects->Begin(); objectIter != allObjects->End(); ++objectIter)
+      {
+        if (iter->first == objectIter->Value())
+        {
+          find = true;
+          break;
+        }
+      }
+
+      if (!find)
+      {
+        m_TextRenderer->RemoveViewProp(iter->second);
+        iter = m_objectToTextPropList.erase(iter);
+      }
+    }
+
+    m_TextRenderer->Render();
   }
   return 1;
 }
@@ -246,27 +258,55 @@ bool mitk::VtkPropRenderer::FindTextProperty(const DataNode* obj)
   return iter != m_objectToTextPropList.end();
 }
 
+void mitk::VtkPropRenderer::WriteSimpleText(std::string text, double posX, double posY,
+  double color1, double color2, double color3, float opacity)
+{
+  vtkTextActor* textActor = vtkTextActor::New();
+  vtkTextProperty* textProperty = textActor->GetTextProperty();
+  textProperty->SetFontFamilyToArial();
+
+  Point2D p;
+  p[0] = posX;
+  p[1] = posY;
+  p = TransformOpenGLPointToViewport(p);
+
+  textActor->SetPosition(p[0], p[1]);
+  textActor->SetInput(text.c_str());
+  textActor->SetTextScaleModeToNone();
+
+  textProperty->SetColor(color1, color2, color3);
+  textProperty->SetOpacity( opacity );
+  textActor->SetTextProperty(textProperty);
+
+  textActor->SetTextProperty(textProperty);
+  textActor->SetTextScaleModeToNone();
+
+  m_simpleTextPropList.push_back(textActor);
+  m_TextRenderer->AddViewProp(textActor);
+}
+
 void mitk::VtkPropRenderer::AddTextProperty(const DataNode* obj)
 {
   vtkTextActor* textActor = vtkTextActor::New();
-  vtkTextProperty* tp = textActor->GetTextProperty();
+  vtkTextProperty* textProperty = textActor->GetTextProperty();
 
-  tp->SetFontFamily(VTK_FONT_FILE);
-  std::string filePath = std::string("E:\\font\\DejaVuSans.ttf");
+  textProperty->SetFontFamily(VTK_FONT_FILE);
+
+  std::string filePath = std::string("Fonts\\DejaVuSans.ttf");
 
   Poco::File fontFile(filePath);
 
   if (fontFile.exists())
   {
-    tp->SetFontFile(filePath.c_str());
+    textProperty->SetFontFile(filePath.c_str());
   }
   else
   {
-    tp->SetFontFile(" ");
-    //itkExceptionMacro(<< "file font\\DejaVuSans.ttf not found!");
+    textProperty->SetFontFile(" ");
+    itkExceptionMacro(<< "file Fonts\\DejaVuSans.ttf not found!");
   }
 
-  textActor->SetTextProperty(tp);
+  textActor->SetTextProperty(textProperty);
   textActor->SetTextScaleModeToNone();
 
   m_objectToTextPropList.insert(std::make_pair(const_cast<DataNode*>(obj), textActor));
@@ -289,7 +329,6 @@ void mitk::VtkPropRenderer::PrepareMapperQueue()
   }
   else if (m_MapperID>=1 && m_MapperID < 6)
     Update();
-
 
   // clear priority_queue
   m_MappersMap.clear();
@@ -684,41 +723,41 @@ int mitk::VtkPropRenderer::SetTextProperty(DataNode::Pointer node, const std::st
 
   if(!text.empty())
   {
-    vtkTextProperty* tp = iter->second->GetTextProperty();
+    vtkTextProperty* textProperty = iter->second->GetTextProperty();
 
     Point2D p;
     p[0] = posX;
     p[1] = posY;
     p = TransformOpenGLPointToViewport(p);
 
-    if (orientation == -1 || orientation == 0)
+    if (orientation == mitk::TextOrientation::TextRigth)
     {
-      tp->SetJustificationToLeft();
-      tp->SetVerticalJustificationToTop();
+      textProperty->SetJustificationToLeft();
+      textProperty->SetVerticalJustificationToTop();
     }
-    else if (orientation == 1)
+    else if (orientation == mitk::TextOrientation::TextCenterBottom)
     {
-      tp->SetJustificationToCentered();
-      tp->SetVerticalJustificationToTop();
+      textProperty->SetJustificationToCentered();
+      textProperty->SetVerticalJustificationToTop();
     }
-    else if (orientation == 2)
+    else if (orientation == mitk::TextOrientation::TextCenterTop)
     {
-      tp->SetJustificationToCentered();
-      tp->SetVerticalJustificationToBottom();
+      textProperty->SetJustificationToCentered();
+      textProperty->SetVerticalJustificationToBottom();
     }
-    else if (orientation == 3)
+    else if (orientation == mitk::TextOrientation::TextLeft)
     {
-      tp->SetJustificationToRight();
-      tp->SetVerticalJustificationToTop();
+      textProperty->SetJustificationToRight();
+      textProperty->SetVerticalJustificationToTop();
     }
 
     iter->second->SetPosition(p[0], p[1]);
     iter->second->SetInput(text.c_str());
     iter->second->SetTextScaleModeToNone();
 
-    tp->SetColor(color1, color2, color3);
-    tp->SetOpacity( opacity );
-    iter->second->SetTextProperty(tp);
+    textProperty->SetColor(color1, color2, color3);
+    textProperty->SetOpacity( opacity );
+    iter->second->SetTextProperty(textProperty);
 
     return -1;
   }
@@ -726,133 +765,6 @@ int mitk::VtkPropRenderer::SetTextProperty(DataNode::Pointer node, const std::st
   {
     return -1;
   }
-}
-
-/*!
-\brief Writes some 2D text as overlay. Function returns an unique int Text_ID for each call, which can be used via the GetTextLabelProperty(int text_id) function
-in order to get a vtkTextProperty. This property enables the setup of font, font size, etc.
-*/
-int mitk::VtkPropRenderer::WriteSimpleText(std::string text, double posX, double posY, unsigned int orientation,
-  double color1, double color2, double color3, float opacity)
-{
-  if(!text.empty())
-  {
-    Point2D p;
-    p[0] = posX;
-    p[1] = posY;
-    p = TransformOpenGLPointToViewport(p);
-
-    vtkTextActor* textActor = vtkTextActor::New();
-    vtkTextProperty* tp = textActor->GetTextProperty();
-
-    tp->SetFontFamily(VTK_FONT_FILE);
-    std::string filePath = std::string("E:\\font\\DejaVuSans.ttf");
-
-    Poco::File fontFile(filePath);
-
-    if (fontFile.exists())
-    {
-      tp->SetFontFile(filePath.c_str());
-    }
-    else
-    {
-      tp->SetFontFile(" ");
-      //itkExceptionMacro(<< "file font\\DejaVuSans.ttf not found!");
-    }
-
-    if (orientation == -1 || orientation == 0)
-    {
-      tp->SetJustificationToLeft();
-      tp->SetVerticalJustificationToTop();
-    }
-    else if (orientation == 1)
-    {
-      tp->SetJustificationToCentered();
-      tp->SetVerticalJustificationToTop();
-    }
-    else if (orientation == 2)
-    {
-      tp->SetJustificationToCentered();
-      tp->SetVerticalJustificationToBottom();
-    }
-    else if (orientation == 3)
-    {
-      tp->SetJustificationToRight();
-      tp->SetVerticalJustificationToTop();
-    }
-
-    textActor->SetTextProperty(tp);
-
-    textActor->SetPosition(p[0], p[1]);
-    textActor->SetInput(text.c_str());
-    textActor->SetTextScaleModeToNone();
-    textActor->GetTextProperty()->SetColor(color1, color2, color3); //TODO: Read color from node property
-    textActor->GetTextProperty()->SetOpacity( opacity );
-
-    int text_id = m_TextCollection.size();
-
-    bool find = false;
-    mitk::VtkPropRenderer::TextMapType::iterator iter = m_TextCollection.begin();
-    for (; iter != m_TextCollection.end(); ++iter)
-    {
-        vtkTextProperty* textProp = iter->second->GetTextProperty();
-        double cl1;
-        double cl2;
-        double cl3;
-        textProp->GetColor(cl1, cl2, cl3);
-        if (std::string(iter->second->GetInput()) == text && cl1 == color1 && cl2 == color2 && cl3 == color3)
-        {
-            find = true;
-            break;
-        }
-    }
-
-    if (!find)
-    {
-        m_TextCollection.insert(TextMapType::value_type(text_id, textActor));
-    }
-    else
-    {
-        iter->second->SetPosition(p[0], p[1]);
-        iter->second->GetTextProperty()->SetColor(color1, color2, color3);
-        iter->second->GetTextProperty()->SetOpacity( opacity );
-
-        if (orientation == -1 || orientation == 0)
-        {
-            iter->second->GetTextProperty()->SetJustificationToLeft();
-            iter->second->GetTextProperty()->SetVerticalJustificationToTop();
-        }
-        else if (orientation == 1)
-        {
-            iter->second->GetTextProperty()->SetJustificationToCentered();
-            iter->second->GetTextProperty()->SetVerticalJustificationToTop();
-        }
-        else if (orientation == 2)
-        {
-            iter->second->GetTextProperty()->SetJustificationToCentered();
-            iter->second->GetTextProperty()->SetVerticalJustificationToBottom();
-        }
-        else if (orientation == 3)
-        {
-            iter->second->GetTextProperty()->SetJustificationToRight();
-            iter->second->GetTextProperty()->SetVerticalJustificationToTop();
-        }
-    }
-
-    return text_id;
-  }
-  else
-  {
-    return -1;
-  }
-}
-
-/*!
-\brief Can be used in order to get a vtkTextProperty for a specific text_id. This property enables the setup of font, font size, etc.
-*/
-vtkTextProperty* mitk::VtkPropRenderer::GetTextLabelProperty(int text_id)
-{
-  return this->m_TextCollection[text_id]->GetTextProperty();
 }
 
 void mitk::VtkPropRenderer::InitPathTraversal()

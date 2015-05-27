@@ -131,7 +131,7 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
 
   mitk::Point2D anchorPoint; anchorPoint[0] = 0; anchorPoint[1] = 1;
 
-  unsigned int orientation = -1;
+  unsigned int orientation = mitk::TextOrientation::TextRigth;
   // render the actual lines of the PlanarFigure
   RenderLines(lineDisplayMode, planarFigure, anchorPoint, orientation, planarFigurePlaneGeometry, rendererPlaneGeometry, displayGeometry);
 
@@ -209,28 +209,33 @@ void mitk::PlanarFigureMapper2D::PaintPolyLine(
   {
       rightMostPoint = pointlist[1];
 
-      orientation = -1;
+      // The calculation of the position of the text commentary on the checkpoint line.
+      // mitk::TextOrientation::TextRigth - the text is to the right of the marker point line.
+      // mitk::TextOrientation::TextCenterBottom - the text is centered at the marker point line.
+      // mitk::TextOrientation::TextCenterTop - the text is centered on the point of the line convenience store.
+      // mitk::TextOrientation::TextLeft - the text is to the left of the line marker points.
+      orientation = mitk::TextOrientation::TextRigth;
       mitk::Point2D begin = pointlist[0];
       mitk::Point2D end = pointlist[1];
 
       if (begin[0] > end[0])
       {
-          orientation = 3;
+        orientation = mitk::TextOrientation::TextLeft;
       }
       else if (begin[0] == end[0])
       {
           if (end[1] > begin[1])
           {
-              orientation = 2;
+            orientation = mitk::TextOrientation::TextCenterTop;
           }
           else if ((end[1] < begin[1]) || (end[1] == begin[1]))
           {
-              orientation = 1;
+            orientation = mitk::TextOrientation::TextCenterBottom;
           }
       }
       else
       {
-          orientation = 0;
+        orientation = mitk::TextOrientation::TextRigth;
       }
   }
   else
@@ -306,7 +311,7 @@ void mitk::PlanarFigureMapper2D::DrawHelperLines(
       continue;
     }
 
-    unsigned int orientation = -1;
+    unsigned int orientation = mitk::TextOrientation::TextRigth;
     // ... and once normally above the shadow.
     this->PaintPolyLine( helperPolyLine, false,
         anchorPoint, orientation, planarFigurePlaneGeometry,
@@ -741,15 +746,15 @@ void mitk::PlanarFigureMapper2D::RenderAnnotations( mitk::BaseRenderer * rendere
     x = anchorPoint[0] + 6.0;
     y = anchorPoint[1] + 4.0;
 
-    if (orientation == 3)
+    if (orientation == mitk::TextOrientation::TextLeft)
     {
         x = anchorPoint[0] - 6.0;
     }
-    else if (orientation == 2)
+    else if (orientation == mitk::TextOrientation::TextCenterTop)
     {
         y = anchorPoint[1] + 6.0;
     }
-    else if (orientation == 1)
+    else if (orientation == mitk::TextOrientation::TextCenterBottom)
     {
         y = anchorPoint[1] - 9.0;
     }
@@ -768,15 +773,15 @@ void mitk::PlanarFigureMapper2D::RenderAnnotations( mitk::BaseRenderer * rendere
     x = anchorPoint[0] + 5.0;
     y = anchorPoint[1] + 5.0;
 
-    if (orientation == 3)
+    if (orientation == mitk::TextOrientation::TextLeft)
     {
         x = anchorPoint[0] - 5.0;
     }
-    else if (orientation == 2)
+    else if (orientation == mitk::TextOrientation::TextCenterTop)
     {
         y = anchorPoint[1] + 7.0;
     }
-    else if (orientation == 1)
+    else if (orientation == mitk::TextOrientation::TextCenterBottom)
     {
         y = anchorPoint[1] - 10.0;
     }
@@ -826,7 +831,6 @@ void mitk::PlanarFigureMapper2D::RenderQuantities( mitk::PlanarFigure * planarFi
   {
     openGLrenderer->WriteSimpleText( quantityString.str().c_str(),
       anchorPoint[0] + 6.0, anchorPoint[1] + 4.0 + annotationOffset,
-      -1,
       0,
       0,
       0,
@@ -834,7 +838,6 @@ void mitk::PlanarFigureMapper2D::RenderQuantities( mitk::PlanarFigure * planarFi
 
     openGLrenderer->WriteSimpleText( quantityString.str().c_str(),
       anchorPoint[0] + 5.0, anchorPoint[1] + 5.0 + annotationOffset,
-      -1,
       m_LineColor[lineDisplayMode][0],
       m_LineColor[lineDisplayMode][1],
       m_LineColor[lineDisplayMode][2],
