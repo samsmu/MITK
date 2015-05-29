@@ -266,6 +266,8 @@ private:
 
   std::map<DataNode::Pointer, vtkTextActor*> m_objectToTextPropList;
   std::vector<vtkTextActor*> m_simpleTextPropList;
+
+  std::string m_programPath;
 };
 } // namespace mitk
 

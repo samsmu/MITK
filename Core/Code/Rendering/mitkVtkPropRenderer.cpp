@@ -15,6 +15,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 #include <Poco\File.h>
+#include <Poco\Path.h>
+#include <Poco\Util\Application.h>
 
 #include "mitkVtkPropRenderer.h"
 
@@ -88,6 +90,15 @@ mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renW
   m_TextRenderer->SetRenderWindow(renWin);
   m_TextRenderer->SetInteractive(0);
   m_TextRenderer->SetErase(0);
+
+  Poco::Util::Application& program = Poco::Util::Application::instance();
+  m_programPath = program.commandPath();
+
+  std::string::size_type pos = m_programPath.rfind(Poco::Path::separator());
+  if (pos != std::string::npos)
+  {
+    m_programPath.erase(pos, m_programPath.size());
+  }
 }
 
 /*!
@@ -292,10 +303,10 @@ void mitk::VtkPropRenderer::AddTextProperty(const DataNode* obj)
 
   textProperty->SetFontFamily(VTK_FONT_FILE);
 
-  std::string filePath = std::string("Fonts\\DejaVuSans.ttf");
+  itkAssertInDebugAndIgnoreInReleaseMacro(m_programPath.size() != 0);
+  std::string filePath = m_programPath + std::string("\\Fonts\\DejaVuSans.ttf");
 
   Poco::File fontFile(filePath);
-
   if (fontFile.exists())
   {
     textProperty->SetFontFile(filePath.c_str());
