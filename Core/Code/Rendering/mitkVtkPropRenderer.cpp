@@ -14,6 +14,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+#include <Poco\File.h>
+#include <Poco\Path.h>
+#include <Poco\Util\Application.h>
+
 #include "mitkVtkPropRenderer.h"
 
 // MAPPERS
@@ -86,6 +90,15 @@ mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renW
   m_TextRenderer->SetRenderWindow(renWin);
   m_TextRenderer->SetInteractive(0);
   m_TextRenderer->SetErase(0);
+
+  Poco::Util::Application& program = Poco::Util::Application::instance();
+  m_programPath = program.commandPath();
+
+  std::string::size_type pos = m_programPath.rfind(Poco::Path::separator());
+  if (pos != std::string::npos)
+  {
+    m_programPath.erase(pos, m_programPath.size());
+  }
 }
 
 /*!
@@ -206,18 +219,109 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
   if (lastVtkBased == false)
     Disable2DOpenGL();
 
+  if (m_simpleTextPropList.size())
+  {
+    std::vector<vtkTextActor*>::iterator iter = m_simpleTextPropList.begin();
+    for (; iter != m_simpleTextPropList.end(); ++iter)
+    {
+      m_TextRenderer->RemoveViewProp(*iter);
+      (*iter)->Delete();
+
+      iter = m_simpleTextPropList.erase(iter);
+    }
+  }
+
   // Render text
   if (type == VtkPropRenderer::Overlay)
   {
-    if (m_TextCollection.size() > 0)
+    m_TextRenderer->SetViewport( this->GetVtkRenderer()->GetViewport() );
+
+    std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.begin();
+    for (; iter != m_objectToTextPropList.end(); ++iter)
     {
-      m_TextRenderer->SetViewport( this->GetVtkRenderer()->GetViewport() );
-      for (TextMapType::iterator it = m_TextCollection.begin(); it != m_TextCollection.end() ; it++)
-        m_TextRenderer->AddViewProp((*it).second);
-      m_TextRenderer->Render();
+      bool find = false;
+
+      DataStorage::SetOfObjects::ConstPointer allObjects = m_DataStorage->GetAll();
+      for (DataStorage::SetOfObjects::ConstIterator objectIter = allObjects->Begin(); objectIter != allObjects->End(); ++objectIter)
+      {
+        if (iter->first == objectIter->Value())
+        {
+          find = true;
+          break;
+        }
+      }
+
+      if (!find)
+      {
+        m_TextRenderer->RemoveViewProp(iter->second);
+        iter = m_objectToTextPropList.erase(iter);
+      }
     }
+
+    m_TextRenderer->Render();
   }
   return 1;
+}
+
+bool mitk::VtkPropRenderer::FindTextProperty(const DataNode* obj)
+{
+  std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.find(const_cast<DataNode*>(obj));
+  return iter != m_objectToTextPropList.end();
+}
+
+void mitk::VtkPropRenderer::WriteSimpleText(std::string text, double posX, double posY,
+  double color1, double color2, double color3, float opacity)
+{
+  vtkTextActor* textActor = vtkTextActor::New();
+  vtkTextProperty* textProperty = textActor->GetTextProperty();
+  textProperty->SetFontFamilyToArial();
+
+  Point2D p;
+  p[0] = posX;
+  p[1] = posY;
+  p = TransformOpenGLPointToViewport(p);
+
+  textActor->SetPosition(p[0], p[1]);
+  textActor->SetInput(text.c_str());
+  textActor->SetTextScaleModeToNone();
+
+  textProperty->SetColor(color1, color2, color3);
+  textProperty->SetOpacity( opacity );
+  textActor->SetTextProperty(textProperty);
+
+  textActor->SetTextProperty(textProperty);
+  textActor->SetTextScaleModeToNone();
+
+  m_simpleTextPropList.push_back(textActor);
+  m_TextRenderer->AddViewProp(textActor);
+}
+
+void mitk::VtkPropRenderer::AddTextProperty(const DataNode* obj)
+{
+  vtkTextActor* textActor = vtkTextActor::New();
+  vtkTextProperty* textProperty = textActor->GetTextProperty();
+
+  textProperty->SetFontFamily(VTK_FONT_FILE);
+
+  itkAssertInDebugAndIgnoreInReleaseMacro(m_programPath.size() != 0);
+  std::string filePath = m_programPath + std::string("\\Fonts\\DejaVuSans.ttf");
+
+  Poco::File fontFile(filePath);
+  if (fontFile.exists())
+  {
+    textProperty->SetFontFile(filePath.c_str());
+  }
+  else
+  {
+    textProperty->SetFontFile(" ");
+    itkExceptionMacro(<< "file Fonts\\DejaVuSans.ttf not found!");
+  }
+
+  textActor->SetTextProperty(textProperty);
+  textActor->SetTextScaleModeToNone();
+
+  m_objectToTextPropList.insert(std::make_pair(const_cast<DataNode*>(obj), textActor));
+  m_TextRenderer->AddViewProp(textActor);
 }
 
 /*!
@@ -236,15 +340,6 @@ void mitk::VtkPropRenderer::PrepareMapperQueue()
   }
   else if (m_MapperID>=1 && m_MapperID < 6)
     Update();
-
-  // remove all text properties before mappers will add new ones
-  m_TextRenderer->RemoveAllViewProps();
-
-  for ( unsigned int i=0; i<m_TextCollection.size(); i++ )
-  {
-    m_TextCollection[i]->Delete();
-  }
-  m_TextCollection.clear();
 
   // clear priority_queue
   m_MappersMap.clear();
@@ -628,42 +723,59 @@ mitk::DataNode *
   }
 };
 
-/*!
-\brief Writes some 2D text as overlay. Function returns an unique int Text_ID for each call, which can be used via the GetTextLabelProperty(int text_id) function
-in order to get a vtkTextProperty. This property enables the setup of font, font size, etc.
-*/
-int mitk::VtkPropRenderer::WriteSimpleText(std::string text, double posX, double posY, double color1, double color2, double color3, float opacity)
+int mitk::VtkPropRenderer::SetTextProperty(DataNode::Pointer node, const std::string& text, double posX, double posY, unsigned int orientation,
+  double color1, double color2, double color3, float opacity)
 {
+  std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.find(node);
+  if (iter == m_objectToTextPropList.end())
+  {
+    return -1;
+  }
+
   if(!text.empty())
   {
+    vtkTextProperty* textProperty = iter->second->GetTextProperty();
+
     Point2D p;
     p[0] = posX;
     p[1] = posY;
     p = TransformOpenGLPointToViewport(p);
 
-    vtkTextActor* textActor = vtkTextActor::New();
+    if (orientation == mitk::TextOrientation::TextRigth)
+    {
+      textProperty->SetJustificationToLeft();
+      textProperty->SetVerticalJustificationToTop();
+    }
+    else if (orientation == mitk::TextOrientation::TextCenterBottom)
+    {
+      textProperty->SetJustificationToCentered();
+      textProperty->SetVerticalJustificationToTop();
+    }
+    else if (orientation == mitk::TextOrientation::TextCenterTop)
+    {
+      textProperty->SetJustificationToCentered();
+      textProperty->SetVerticalJustificationToBottom();
+    }
+    else if (orientation == mitk::TextOrientation::TextLeft)
+    {
+      textProperty->SetJustificationToRight();
+      textProperty->SetVerticalJustificationToTop();
+    }
 
-    textActor->SetPosition(p[0], p[1]);
-    textActor->SetInput(text.c_str());
-    textActor->SetTextScaleModeToNone();
-    textActor->GetTextProperty()->SetColor(color1, color2, color3); //TODO: Read color from node property
-    textActor->GetTextProperty()->SetOpacity( opacity );
-    int text_id = m_TextCollection.size();
-    m_TextCollection.insert(TextMapType::value_type(text_id,textActor));
-    return text_id;
+    iter->second->SetPosition(p[0], p[1]);
+    iter->second->SetInput(text.c_str());
+    iter->second->SetTextScaleModeToNone();
+
+    textProperty->SetColor(color1, color2, color3);
+    textProperty->SetOpacity( opacity );
+    iter->second->SetTextProperty(textProperty);
+
+    return -1;
   }
   else
   {
     return -1;
   }
-}
-
-/*!
-\brief Can be used in order to get a vtkTextProperty for a specific text_id. This property enables the setup of font, font size, etc.
-*/
-vtkTextProperty* mitk::VtkPropRenderer::GetTextLabelProperty(int text_id)
-{
-  return this->m_TextCollection[text_id]->GetTextProperty();
 }
 
 void mitk::VtkPropRenderer::InitPathTraversal()

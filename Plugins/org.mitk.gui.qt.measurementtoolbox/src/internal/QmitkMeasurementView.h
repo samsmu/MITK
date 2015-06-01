@@ -58,6 +58,7 @@ class QmitkMeasurementView : public QmitkAbstractView
     void PlanarFigureSelected( itk::Object* object, const itk::EventObject& );
   protected slots:
     ///# draw actions
+    void ActionDrawCommentTriggered(bool checked = false);
     void ActionDrawLineTriggered( bool checked = false );
     void ActionDrawPathTriggered( bool checked = false );
     void ActionDrawAngleTriggered( bool checked = false );
@@ -70,12 +71,17 @@ class QmitkMeasurementView : public QmitkAbstractView
     void ActionDrawBezierCurveTriggered( bool checked = false );
     void ActionDrawSubdivisionPolygonTriggered( bool checked = false );
     void CopyToClipboard( bool checked = false );
+    void CommentDoneTriggered( bool checked = false );
+    void CommentCanselTriggered( bool checked = false );
 
   private:
 
-    const static QString TR_REF_IMAGE; 
-    const static QString TR_CLIPBOARD_COPY; 
-    const static QString TR_NO_AVAIBLE_IMAGE; 
+    const static QString TR_REF_IMAGE;
+    const static QString TR_CLIPBOARD_COPY;
+    const static QString TR_NO_AVAIBLE_IMAGE;
+    const static QString TR_COMMENT_DONE;
+    const static QString TR_COMMENT_CANCEL;
+    const static QString TR_COMMENT_TEXT;
 
     void CreateConnections();
     mitk::DataNode::Pointer AddFigureToDataStorage(mitk::PlanarFigure* figure, const QString& name);
@@ -86,8 +92,12 @@ class QmitkMeasurementView : public QmitkAbstractView
     void EnableCrosshairNavigation();
     void DisableCrosshairNavigation();
     void PlanarFigureInitialized();
+    void AddInitialPoint();
     void CheckForTopMostVisibleImage(mitk::DataNode* _NodeToNeglect=0);
     mitk::DataStorage::SetOfObjects::ConstPointer GetAllPlanarFigures() const;
+
+    void hideCommentTextView();
+    void showCommentTextView(const std::string& text = std::string());
 
     QmitkMeasurementViewData* d;
 };

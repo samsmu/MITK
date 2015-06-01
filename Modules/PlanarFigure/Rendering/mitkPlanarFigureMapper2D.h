@@ -153,6 +153,7 @@ protected:
   void RenderLines( PlanarFigureDisplayMode lineDisplayMode,
                     mitk::PlanarFigure * planarFigure,
                     mitk::Point2D &anchorPoint,
+                    unsigned int& orientation,
                     mitk::PlaneGeometry * planarFigurePlaneGeometry,
                     const mitk::PlaneGeometry * rendererPlaneGeometry,
                     mitk::DisplayGeometry * displayGeometry );
@@ -171,8 +172,10 @@ protected:
   * \brief Renders the text annotations.
   */
   void RenderAnnotations( mitk::BaseRenderer * renderer,
-                          std::string name,
+      DataNode* node,
+      const std::string& text,
                           mitk::Point2D anchorPoint,
+                          unsigned int orientation,
                           float globalOpacity,
                           PlanarFigureDisplayMode lineDisplayMode,
                           double &annotationOffset );
@@ -212,6 +215,7 @@ protected:
   void PaintPolyLine( mitk::PlanarFigure::PolyLineType vertices,
     bool closed,
     Point2D& anchorPoint,
+    unsigned int& orientation,
     const PlaneGeometry* planarFigurePlaneGeometry,
     const PlaneGeometry* rendererPlaneGeometry,
     const DisplayGeometry* displayGeometry);
@@ -222,6 +226,7 @@ protected:
   */
   void DrawMainLines( mitk::PlanarFigure* figure,
     Point2D& anchorPoint,
+    unsigned int& orientation,
     const PlaneGeometry* planarFigurePlaneGeometry,
     const PlaneGeometry* rendererPlaneGeometry,
     const DisplayGeometry* displayGeometry) ;
