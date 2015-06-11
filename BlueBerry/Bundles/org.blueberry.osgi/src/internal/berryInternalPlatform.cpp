@@ -452,7 +452,12 @@ const Poco::Path& InternalPlatform::GetInstancePath()
 bool InternalPlatform::GetStatePath(Poco::Path& statePath, IBundle::Pointer bundle, bool create)
 {
   statePath = m_BaseStatePath;
-  statePath.pushDirectory(bundle->GetSymbolicName());
+
+  if (bundle)
+  {
+    statePath.pushDirectory(bundle->GetSymbolicName());
+  }
+
   try
   {
   Poco::File stateFile(statePath);
