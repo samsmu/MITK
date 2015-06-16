@@ -255,6 +255,11 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
       {
         m_TextRenderer->RemoveViewProp(iter->second);
         iter = m_objectToTextPropList.erase(iter);
+
+        if (iter == m_objectToTextPropList.end())
+        {
+          break;
+        }
       }
     }
 
