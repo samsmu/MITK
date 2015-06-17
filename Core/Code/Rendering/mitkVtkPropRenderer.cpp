@@ -99,6 +99,8 @@ mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renW
   {
     m_programPath.erase(pos, m_programPath.size());
   }
+
+  m_notDrawText = false;
 }
 
 /*!
@@ -247,6 +249,10 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
         if (iter->first == objectIter->Value())
         {
           find = true;
+          if (!m_notDrawText)
+          {
+            m_TextRenderer->AddViewProp(iter->second);
+          }
           break;
         }
       }
@@ -327,6 +333,16 @@ void mitk::VtkPropRenderer::AddTextProperty(const DataNode* obj)
 
   m_objectToTextPropList.insert(std::make_pair(const_cast<DataNode*>(obj), textActor));
   m_TextRenderer->AddViewProp(textActor);
+}
+
+void mitk::VtkPropRenderer::ClearTextProperty()
+{
+  m_TextRenderer->RemoveAllViewProps();
+}
+
+void mitk::VtkPropRenderer::SetNotDrawText(bool notDrawText)
+{
+  m_notDrawText = notDrawText;
 }
 
 /*!
