@@ -421,6 +421,14 @@ QmitkExtWorkbenchWindowAdvisor::QmitkExtWorkbenchWindowAdvisor(berry::WorkbenchA
 {
     productName = QCoreApplication::applicationName().toStdString();
     viewExcludeList.push_back("org.mitk.views.viewnavigatorview");
+
+    berry::IPreferencesService::Pointer prefService =
+      berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+
+    berry::IPreferences::Pointer segmentationPreferencesNode = prefService->GetSystemPreferences()->Node("/org.mitk.views.segmentation");
+
+    int value = segmentationPreferencesNode->GetInt("queue size", mitk::DEF_DEQUE_SIZE);
+    mitk::LimitedLinearUndo::setDequeSize(value);
 }
 
 berry::ActionBarAdvisor::Pointer QmitkExtWorkbenchWindowAdvisor::CreateActionBarAdvisor(
