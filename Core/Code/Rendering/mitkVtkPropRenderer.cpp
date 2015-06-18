@@ -100,7 +100,7 @@ mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renW
     m_programPath.erase(pos, m_programPath.size());
   }
 
-  m_notDrawText = false;
+  m_needDrawText = true;
 }
 
 /*!
@@ -249,7 +249,7 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
         if (iter->first == objectIter->Value())
         {
           find = true;
-          if (!m_notDrawText)
+          if (m_needDrawText)
           {
             m_TextRenderer->AddViewProp(iter->second);
           }
@@ -340,9 +340,9 @@ void mitk::VtkPropRenderer::ClearTextProperty()
   m_TextRenderer->RemoveAllViewProps();
 }
 
-void mitk::VtkPropRenderer::SetNotDrawText(bool notDrawText)
+void mitk::VtkPropRenderer::SetNeedDrawText(bool needDrawText)
 {
-  m_notDrawText = notDrawText;
+  m_needDrawText = needDrawText;
 }
 
 /*!
