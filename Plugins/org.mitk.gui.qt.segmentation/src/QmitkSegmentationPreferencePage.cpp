@@ -107,10 +107,12 @@ void QmitkSegmentationPreferencePage::CreateQtControl(QWidget* parent)
   surfaceLayout->addRow("Closing Ratio", m_ClosingSpinBox);
 
   m_dequeMaxSize = new QSpinBox(m_MainControl);
-  m_dequeMaxSize->setMinimum(mitk::MIN_DEQUE_SIZE);
-  m_dequeMaxSize->setMaximum(mitk::MAX_DEQUE_SIZE);
-  m_dequeMaxSize->setValue(m_SegmentationPreferencesNode->GetInt("queue size", mitk::MAX_DEQUE_SIZE));
-  surfaceLayout->addRow("Max queue size", m_dequeMaxSize);
+  m_dequeMaxSize->setMinimum(mitk::LimitedLinearUndo::MIN_DEQUE_SIZE);
+  m_dequeMaxSize->setMaximum(mitk::LimitedLinearUndo::MAX_DEQUE_SIZE);
+  int currentDequeSise = m_SegmentationPreferencesNode->GetInt("queue size", mitk::LimitedLinearUndo::DEFAULT_DEQUE_SIZE);
+  m_dequeMaxSize->setValue(currentDequeSise);
+  mitk::LimitedLinearUndo::setDequeSize(currentDequeSise);
+  surfaceLayout->addRow("Undo operations limit", m_dequeMaxSize);
 
   m_SelectionModeCheckBox = new QCheckBox("Enable auto-selection mode", m_MainControl);
   m_SelectionModeCheckBox->setToolTip("If checked the segmentation plugin ensures that only one segmentation and the according greyvalue image are visible at one time.");
@@ -138,7 +140,11 @@ bool QmitkSegmentationPreferencePage::PerformOk()
   m_SegmentationPreferencesNode->PutDouble("decimation rate", m_DecimationSpinBox->value());
   m_SegmentationPreferencesNode->PutDouble("closing ratio", m_ClosingSpinBox->value());
   m_SegmentationPreferencesNode->PutBool("auto selection", m_SelectionModeCheckBox->isChecked());
-  m_SegmentationPreferencesNode->PutInt("queue size", m_dequeMaxSize->value());
+
+  int value = m_dequeMaxSize->value();
+  mitk::LimitedLinearUndo::setDequeSize(value);
+  m_SegmentationPreferencesNode->PutInt("queue size", value);
+
   return true;
 }
 

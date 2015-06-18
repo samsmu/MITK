@@ -32,9 +32,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 namespace mitk {
 
-const unsigned int MIN_DEQUE_SIZE = 10;
-const unsigned int MAX_DEQUE_SIZE = 10000;
-
 //##Documentation
 //## @brief A linear undo model with one undo and one redo stack.
 //##
@@ -45,6 +42,10 @@ class MITK_CORE_EXPORT LimitedLinearUndo : public UndoModel
 public:
   typedef std::deque<UndoStackItem*> UndoContainer;
   typedef std::deque<UndoStackItem*>::reverse_iterator UndoContainerRevIter;
+
+  static const unsigned int MIN_DEQUE_SIZE = 10;
+  static const unsigned int MAX_DEQUE_SIZE = 10000;
+  static const unsigned int DEFAULT_DEQUE_SIZE = 30;
 
   static void setDequeSize(unsigned int size);
   static unsigned int getDequeSize();
