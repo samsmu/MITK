@@ -59,7 +59,7 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
     if (propRender)
     {
       propRender->ClearTextProperty();
-      propRender->SetNotDrawText(true);
+      propRender->SetNeedDrawText(true);
     }
 
     return;
@@ -105,7 +105,7 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
       if (propRender)
       {
         propRender->ClearTextProperty();
-        propRender->SetNotDrawText(true);
+        propRender->SetNeedDrawText(true);
       }
       return;
     }
@@ -171,7 +171,7 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
   VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
   if ( m_DrawName && propRender)
   {
-    propRender->SetNotDrawText(false);
+    propRender->SetNeedDrawText(false);
     bool find = propRender->FindTextProperty(node);
     if (!find)
     {
