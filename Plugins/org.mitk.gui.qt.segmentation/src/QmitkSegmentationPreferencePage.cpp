@@ -107,11 +107,11 @@ void QmitkSegmentationPreferencePage::CreateQtControl(QWidget* parent)
   surfaceLayout->addRow("Closing Ratio", m_ClosingSpinBox);
 
   m_dequeMaxSize = new QSpinBox(m_MainControl);
-  m_dequeMaxSize->setMinimum(mitk::MIN_DEQUE_SIZE);
-  m_dequeMaxSize->setMaximum(mitk::MAX_DEQUE_SIZE);
-  int value = m_SegmentationPreferencesNode->GetInt("queue size", mitk::DEF_DEQUE_SIZE);
-  m_dequeMaxSize->setValue(value);
-  mitk::LimitedLinearUndo::setDequeSize(value);
+  m_dequeMaxSize->setMinimum(mitk::LimitedLinearUndo::MIN_DEQUE_SIZE);
+  m_dequeMaxSize->setMaximum(mitk::LimitedLinearUndo::MAX_DEQUE_SIZE);
+  int currentDequeSise = m_SegmentationPreferencesNode->GetInt("queue size", mitk::LimitedLinearUndo::DEFAULT_DEQUE_SIZE);
+  m_dequeMaxSize->setValue(currentDequeSise);
+  mitk::LimitedLinearUndo::setDequeSize(currentDequeSise);
   surfaceLayout->addRow("Undo operations limit", m_dequeMaxSize);
 
   m_SelectionModeCheckBox = new QCheckBox("Enable auto-selection mode", m_MainControl);
