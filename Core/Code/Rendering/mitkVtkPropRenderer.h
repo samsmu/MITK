@@ -83,6 +83,8 @@ public:
 
   bool FindTextProperty(const DataNode* obj);
   void AddTextProperty(const DataNode* obj);
+  void ClearTextProperty();
+  void SetNeedDrawText(bool needDrawText);
 
   /** \brief This methods contains all method neceassary before a VTK Render() call */
   virtual void PrepareRender();
@@ -268,6 +270,7 @@ private:
   std::vector<vtkTextActor*> m_simpleTextPropList;
 
   std::string m_programPath;
+  bool m_needDrawText;
 };
 } // namespace mitk
 

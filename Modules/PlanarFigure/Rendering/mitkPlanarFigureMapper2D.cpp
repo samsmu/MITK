@@ -53,8 +53,17 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
   bool visible = true;
 
   GetDataNode()->GetVisibility(visible, renderer, "visible");
-  if ( !visible ) return;
+  if (!visible)
+  {
+    VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
+    if (propRender)
+    {
+      propRender->ClearTextProperty();
+      propRender->SetNeedDrawText(true);
+    }
 
+    return;
+  }
 
   // Get PlanarFigure from input
   mitk::PlanarFigure *planarFigure = const_cast< mitk::PlanarFigure * >(
@@ -91,6 +100,13 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
     {
       // Planes are not parallel or renderer plane is not within PlanarFigure
       // geometry bounds --> exit
+
+      VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
+      if (propRender)
+      {
+        propRender->ClearTextProperty();
+        propRender->SetNeedDrawText(true);
+      }
       return;
     }
   }
@@ -155,13 +171,14 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
   VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
   if ( m_DrawName && propRender)
   {
-      bool find = propRender->FindTextProperty(node);
-      if (!find)
-      {
-          propRender->AddTextProperty(node);
-      }
+    propRender->SetNeedDrawText(false);
+    bool find = propRender->FindTextProperty(node);
+    if (!find)
+    {
+      propRender->AddTextProperty(node);
+    }
 
-      RenderAnnotations(renderer, const_cast<DataNode*>(node), label, anchorPoint, orientation, globalOpacity, lineDisplayMode, annotationOffset);
+    RenderAnnotations(renderer, const_cast<DataNode*>(node), label, anchorPoint, orientation, globalOpacity, lineDisplayMode, annotationOffset);
   }
 
   // draw feature quantities (if requested) next to the anchor point,
