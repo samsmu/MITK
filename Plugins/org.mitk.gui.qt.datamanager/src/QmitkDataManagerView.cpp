@@ -994,7 +994,6 @@ void QmitkDataManagerView::NodeSelectionChanged( const QItemSelection & /*select
   {
     if (node.IsNotNull()) {
       node->SetBoolProperty("selected", false);
-      //node->SetBoolProperty("material.edgeVisibility", false);
     }
   }
 
@@ -1005,8 +1004,6 @@ void QmitkDataManagerView::NodeSelectionChanged( const QItemSelection & /*select
   {
     if (node.IsNotNull()) {
       node->SetBoolProperty("selected", true);
-      //mitk::
-      //node->SetBoolProperty("material.edgeVisibility", true);
     }
   }
   //changing the selection does NOT require any rendering processes!
