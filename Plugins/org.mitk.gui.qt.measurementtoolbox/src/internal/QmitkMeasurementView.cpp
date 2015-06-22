@@ -729,11 +729,16 @@ void QmitkMeasurementView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*p
   {
     hideCommentTextView();
 
-    QMessageBox msgBox;
+    /// <summary>
+    /// Disable dialog message about multiple selection, replace with MITK_WARN
+    /// </summary>
+    /*QMessageBox msgBox;
     msgBox.setText(QString("Found multiple selection of objects.\n"
       "To view the properties of the object, select only one desired object."));
     msgBox.setIcon(QMessageBox::Icon::Information);
-    msgBox.exec();
+    msgBox.exec();*/
+    MITK_WARN("Found multiple selection of objects.");
+    MITK_WARN("To view the properties of the object, select only one desired object.");
   }
 
   this->RequestRenderWindowUpdate();
