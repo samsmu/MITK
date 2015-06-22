@@ -8,7 +8,7 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
 endif()
 
 set(proj ITK)
-set(proj_DEPENDENCIES GDCM)
+set(proj_DEPENDENCIES GDCM VTK)
 
 if(MITK_USE_OpenCV)
   list(APPEND proj_DEPENDENCIES OpenCV)
@@ -40,6 +40,11 @@ if(NOT DEFINED ITK_DIR)
   # see MITK bug #17338
   list(APPEND additional_cmake_args
     -DModule_ITKReview:BOOL=ON
+  )
+
+  list(APPEND additional_cmake_args
+    -DModule_ITKVtkGlue:BOOL=ON
+    -DVTK_DIR:PATH=${VTK_DIR}
   )
 
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${MITK_SOURCE_DIR}/CMakeExternals/EmptyFileForPatching.dummy -P ${MITK_SOURCE_DIR}/CMakeExternals/PatchITK-4.5.1.cmake)
