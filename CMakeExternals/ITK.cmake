@@ -8,7 +8,7 @@ if(DEFINED ITK_DIR AND NOT EXISTS ${ITK_DIR})
 endif()
 
 set(proj ITK)
-set(proj_DEPENDENCIES GDCM VTK)
+set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_OpenCV)
   list(APPEND proj_DEPENDENCIES OpenCV)
@@ -41,6 +41,8 @@ if(NOT DEFINED ITK_DIR)
   list(APPEND additional_cmake_args
     -DModule_ITKReview:BOOL=ON
   )
+
+  list(APPEND proj_DEPENDENCIES VTK)
 
   list(APPEND additional_cmake_args
     -DModule_ITKVtkGlue:BOOL=ON
