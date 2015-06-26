@@ -52,14 +52,14 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
 {
   bool visible = true;
 
+  const mitk::DataNode* node = GetDataNode();
   GetDataNode()->GetVisibility(visible, renderer, "visible");
   if (!visible)
   {
     VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
     if (propRender)
     {
-      propRender->ClearTextProperty();
-      propRender->SetNeedDrawText(true);
+      propRender->SetNeedDrawText(node, false);
     }
 
     return;
@@ -104,8 +104,7 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
       VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
       if (propRender)
       {
-        propRender->ClearTextProperty();
-        propRender->SetNeedDrawText(true);
+        propRender->SetNeedDrawText(node, false);
       }
       return;
     }
@@ -131,7 +130,6 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
   glEnable(GL_DEPTH_TEST);
 
   // Get properties from node (if present)
-  const mitk::DataNode* node=this->GetDataNode();
   this->InitializePlanarFigurePropertiesFromDataNode( node );
 
   PlanarFigureDisplayMode lineDisplayMode = PF_DEFAULT;
@@ -171,7 +169,7 @@ void mitk::PlanarFigureMapper2D::Paint( mitk::BaseRenderer *renderer )
   VtkPropRenderer* propRender = dynamic_cast<VtkPropRenderer*>(renderer);
   if ( m_DrawName && propRender)
   {
-    propRender->SetNeedDrawText(false);
+    propRender->SetNeedDrawText(node, true);
     bool find = propRender->FindTextProperty(node);
     if (!find)
     {
@@ -757,38 +755,11 @@ void mitk::PlanarFigureMapper2D::RenderAnnotations( mitk::BaseRenderer * rendere
                                                     PlanarFigureDisplayMode lineDisplayMode,
                                                     double &annotationOffset )
 {
-    float x;
-    float y;
-
-    x = anchorPoint[0] + 6.0;
-    y = anchorPoint[1] + 4.0;
-
-    if (orientation == mitk::TextOrientation::TextLeft)
-    {
-        x = anchorPoint[0] - 6.0;
-    }
-    else if (orientation == mitk::TextOrientation::TextCenterTop)
-    {
-        y = anchorPoint[1] + 6.0;
-    }
-    else if (orientation == mitk::TextOrientation::TextCenterBottom)
-    {
-        y = anchorPoint[1] - 9.0;
-    }
-
   mitk::VtkPropRenderer* openGLrenderer = dynamic_cast<mitk::VtkPropRenderer*>( renderer );
   if ( openGLrenderer )
   {
-      openGLrenderer->SetTextProperty(node, text,
-      x, y,
-      orientation,
-      0,
-      0,
-      0,
-      globalOpacity); //this is a shadow
-
-    x = anchorPoint[0] + 5.0;
-    y = anchorPoint[1] + 5.0;
+    float x = anchorPoint[0] + 5.0;
+    float y = anchorPoint[1] + 5.0;
 
     if (orientation == mitk::TextOrientation::TextLeft)
     {
@@ -807,10 +778,6 @@ void mitk::PlanarFigureMapper2D::RenderAnnotations( mitk::BaseRenderer * rendere
       x, y,
       orientation,
       1, 1, 0, 0.8);
-      //m_LineColor[lineDisplayMode][0],
-      //m_LineColor[lineDisplayMode][1],
-      //m_LineColor[lineDisplayMode][2],
-      //globalOpacity );
 
     // If drawing is successful, add approximate height to annotation offset
     annotationOffset -= 15.0;

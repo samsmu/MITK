@@ -83,8 +83,7 @@ public:
 
   bool FindTextProperty(const DataNode* obj);
   void AddTextProperty(const DataNode* obj);
-  void ClearTextProperty();
-  void SetNeedDrawText(bool needDrawText);
+  void SetNeedDrawText(const DataNode* obj, bool needDrawText);
 
   /** \brief This methods contains all method neceassary before a VTK Render() call */
   virtual void PrepareRender();
@@ -266,11 +265,16 @@ private:
   DataStorage::SetOfObjects::ConstPointer m_PickingObjects;
   DataStorage::SetOfObjects::const_iterator m_PickingObjectsIterator;
 
-  std::map<DataNode::Pointer, vtkTextActor*> m_objectToTextPropList;
+  struct AnnotationsParams
+  {
+    vtkTextActor* m_TextActor;
+    bool m_NeedDrawText;
+  };
+
+  std::map<DataNode::Pointer, AnnotationsParams> m_ObjectToTextPropList;
   std::vector<vtkTextActor*> m_simpleTextPropList;
 
   std::string m_programPath;
-  bool m_needDrawText;
 };
 } // namespace mitk
 
