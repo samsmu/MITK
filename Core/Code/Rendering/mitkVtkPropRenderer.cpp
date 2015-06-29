@@ -99,8 +99,6 @@ mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renW
   {
     m_programPath.erase(pos, m_programPath.size());
   }
-
-  m_needDrawText = true;
 }
 
 /*!
@@ -192,6 +190,8 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
   bool lastVtkBased = true;
   //bool sthVtkBased = false;
 
+  m_TextRenderer->RemoveAllViewProps();
+
   for(MappersMapType::iterator it = m_MappersMap.begin(); it != m_MappersMap.end(); it++)
   {
     Mapper * mapper = (*it).second;
@@ -221,25 +221,13 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
   if (lastVtkBased == false)
     Disable2DOpenGL();
 
-  if (m_simpleTextPropList.size())
-  {
-    std::vector<vtkTextActor*>::iterator iter = m_simpleTextPropList.begin();
-    for (; iter != m_simpleTextPropList.end(); ++iter)
-    {
-      m_TextRenderer->RemoveViewProp(*iter);
-      (*iter)->Delete();
-
-      iter = m_simpleTextPropList.erase(iter);
-    }
-  }
-
   // Render text
   if (type == VtkPropRenderer::Overlay)
   {
     m_TextRenderer->SetViewport( this->GetVtkRenderer()->GetViewport() );
 
-    std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.begin();
-    for (; iter != m_objectToTextPropList.end(); ++iter)
+    std::map<DataNode::Pointer, mitk::VtkPropRenderer::AnnotationsParams>::iterator iter = m_ObjectToTextPropList.begin();
+    for (; iter != m_ObjectToTextPropList.end(); ++iter)
     {
       bool find = false;
 
@@ -249,9 +237,9 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
         if (iter->first == objectIter->Value())
         {
           find = true;
-          if (m_needDrawText)
+          if (iter->second.m_NeedDrawText)
           {
-            m_TextRenderer->AddViewProp(iter->second);
+            m_TextRenderer->AddViewProp(iter->second.m_TextActor);
           }
           break;
         }
@@ -259,10 +247,10 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
 
       if (!find)
       {
-        m_TextRenderer->RemoveViewProp(iter->second);
-        iter = m_objectToTextPropList.erase(iter);
+        m_TextRenderer->RemoveViewProp(iter->second.m_TextActor);
+        iter = m_ObjectToTextPropList.erase(iter);
 
-        if (iter == m_objectToTextPropList.end())
+        if (iter == m_ObjectToTextPropList.end())
         {
           break;
         }
@@ -276,8 +264,8 @@ int mitk::VtkPropRenderer::Render(mitk::VtkPropRenderer::RenderType type)
 
 bool mitk::VtkPropRenderer::FindTextProperty(const DataNode* obj)
 {
-  std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.find(const_cast<DataNode*>(obj));
-  return iter != m_objectToTextPropList.end();
+  std::map<DataNode::Pointer, mitk::VtkPropRenderer::AnnotationsParams>::iterator iter = m_ObjectToTextPropList.find(const_cast<DataNode*>(obj));
+  return iter != m_ObjectToTextPropList.end();
 }
 
 void mitk::VtkPropRenderer::WriteSimpleText(std::string text, double posX, double posY,
@@ -331,18 +319,21 @@ void mitk::VtkPropRenderer::AddTextProperty(const DataNode* obj)
   textActor->SetTextProperty(textProperty);
   textActor->SetTextScaleModeToNone();
 
-  m_objectToTextPropList.insert(std::make_pair(const_cast<DataNode*>(obj), textActor));
+  mitk::VtkPropRenderer::AnnotationsParams params;
+  params.m_NeedDrawText = true;
+  params.m_TextActor = textActor;
+
+  m_ObjectToTextPropList.insert(std::make_pair(const_cast<DataNode*>(obj), params));
   m_TextRenderer->AddViewProp(textActor);
 }
 
-void mitk::VtkPropRenderer::ClearTextProperty()
+void mitk::VtkPropRenderer::SetNeedDrawText(const DataNode* obj, bool needDrawText)
 {
-  m_TextRenderer->RemoveAllViewProps();
-}
-
-void mitk::VtkPropRenderer::SetNeedDrawText(bool needDrawText)
-{
-  m_needDrawText = needDrawText;
+  std::map<DataNode::Pointer, mitk::VtkPropRenderer::AnnotationsParams>::iterator iter = m_ObjectToTextPropList.find(const_cast<DataNode*>(obj));
+  if (iter != m_ObjectToTextPropList.end())
+  {
+    iter->second.m_NeedDrawText = needDrawText;
+  }
 }
 
 /*!
@@ -747,15 +738,15 @@ mitk::DataNode *
 int mitk::VtkPropRenderer::SetTextProperty(DataNode::Pointer node, const std::string& text, double posX, double posY, unsigned int orientation,
   double color1, double color2, double color3, float opacity)
 {
-  std::map<DataNode::Pointer, vtkTextActor*>::iterator iter = m_objectToTextPropList.find(node);
-  if (iter == m_objectToTextPropList.end())
+  std::map<DataNode::Pointer, mitk::VtkPropRenderer::AnnotationsParams>::iterator iter = m_ObjectToTextPropList.find(node);
+  if (iter == m_ObjectToTextPropList.end())
   {
     return -1;
   }
 
   if(!text.empty())
   {
-    vtkTextProperty* textProperty = iter->second->GetTextProperty();
+    vtkTextProperty* textProperty = iter->second.m_TextActor->GetTextProperty();
 
     Point2D p;
     p[0] = posX;
@@ -783,13 +774,14 @@ int mitk::VtkPropRenderer::SetTextProperty(DataNode::Pointer node, const std::st
       textProperty->SetVerticalJustificationToTop();
     }
 
-    iter->second->SetPosition(p[0], p[1]);
-    iter->second->SetInput(text.c_str());
-    iter->second->SetTextScaleModeToNone();
+    iter->second.m_TextActor->SetPosition(p[0], p[1]);
+    iter->second.m_TextActor->SetInput(text.c_str());
+    iter->second.m_TextActor->SetTextScaleModeToNone();
 
     textProperty->SetColor(color1, color2, color3);
     textProperty->SetOpacity( opacity );
-    iter->second->SetTextProperty(textProperty);
+    textProperty->ShadowOn();
+    iter->second.m_TextActor->SetTextProperty(textProperty);
 
     return -1;
   }
