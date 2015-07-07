@@ -139,7 +139,7 @@ public:
 
 protected:
 
-  bool displayMetaInfo;
+  bool m_displayMetaInfo;
 
   void UpdateAllWidgets();
   void HideAllWidgetToolbars();
