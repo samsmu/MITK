@@ -49,7 +49,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkVtkLayerController.h"
 
-#include <iomanip>
+#include <Interactions/mitkDataNodePickingEventObserver.h>
 
 QmitkStdMultiWidget::QmitkStdMultiWidget(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager, mitk::BaseRenderer::RenderingMode::Type renderingMode, const QString& name)
   : QWidget(parent, f),
@@ -1648,12 +1648,13 @@ void QmitkStdMultiWidget::setCornerAnnotation(int corner, int i, const char* tex
 
 void QmitkStdMultiWidget::setDisplayMetaInfo(bool metainfo)
 {
-  displayMetaInfo = metainfo;
+  m_displayMetaInfo = metainfo;
 }
 
 void QmitkStdMultiWidget::setSelectionMode(bool selection)
 {
   m_MouseModeSwitcher->SetSelectionMode(selection);
+  mitk::DataNodePickingEventObserver::SetEnabled(selection);
 }
 
 void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
@@ -1743,7 +1744,7 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
       char mi[3]; mi[2] = 0;
       char ss[3]; ss[2] = 0;
 
-      if ( displayMetaInfo && ( birthday != "" ) ) {
+      if (m_displayMetaInfo && (birthday != "")) {
         sscanf (birthday.c_str(),"%4c%2c%2c",yy,mm,dd);
         infoStringStream[0] 
           << "\n\n" << patient.c_str()
@@ -1752,7 +1753,7 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
           << "\n" << institution.c_str();
       }
 
-      if ( displayMetaInfo && ( studyDate != "" && studyTime != "" ) ) {
+      if (m_displayMetaInfo && (studyDate != "" && studyTime != "")) {
         sscanf (studyDate.c_str(),"%4c%2c%2c",yy,mm,dd);
         sscanf (studyTime.c_str(),"%2c%2c%2c",hh,mi,ss);
         infoStringStream[1]
