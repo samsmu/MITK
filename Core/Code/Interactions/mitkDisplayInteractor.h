@@ -119,7 +119,7 @@ namespace mitk
     virtual bool RotateBackClock(StateMachineAction*, InteractionEvent*);
 
     /**
-    /* Change Clock rotation spead for ctrl+arrow rotation
+    /* \brief Change Clock rotation spead for ctrl+arrow rotation
     */
     double GetClockRotationSpeed();
     void SetClockRotationSpeed(double newRotationSpeed);
