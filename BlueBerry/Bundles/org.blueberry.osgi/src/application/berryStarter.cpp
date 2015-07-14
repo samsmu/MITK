@@ -95,7 +95,7 @@ int Starter::Run(int& argc, char** argv,
     {
       pathList += (pathList.isEmpty() ? "" : ", ") + libPath.toUtf8();
     }
-    BERRY_INFO << "Qt library search paths: " << pathList;
+    BERRY_INFO << "Qt library search paths: " << pathList.toStdString();
   }
 
   // run the application
