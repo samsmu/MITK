@@ -42,6 +42,13 @@ if(NOT DEFINED ITK_DIR)
     -DModule_ITKReview:BOOL=ON
   )
 
+  list(APPEND proj_DEPENDENCIES VTK)
+
+  list(APPEND additional_cmake_args
+    -DModule_ITKVtkGlue:BOOL=ON
+    -DVTK_DIR:PATH=${VTK_DIR}
+  )
+
   set(ITK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${MITK_SOURCE_DIR}/CMakeExternals/EmptyFileForPatching.dummy -P ${MITK_SOURCE_DIR}/CMakeExternals/PatchITK-4.5.1.cmake)
 
   ExternalProject_Add(${proj}
