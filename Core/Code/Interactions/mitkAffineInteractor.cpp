@@ -77,7 +77,7 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
       /* now we have a worldpoint. check if it is inside our object and select/deselect it accordingly */
       mitk::BoolProperty::Pointer selected;
       mitk::ColorProperty::Pointer color;
-      std::unique_ptr<StateEvent> newStateEvent;
+      std::shared_ptr<StateEvent> newStateEvent;
 
       selected = dynamic_cast<mitk::BoolProperty*>(m_DataNode->GetProperty("selected"));
 
@@ -124,7 +124,7 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
   case AcADD:
     {
       mitk::Point3D worldPoint = event->GetWorldPosition();
-      std::unique_ptr<StateEvent> newStateEvent;
+      std::shared_ptr<StateEvent> newStateEvent;
       if (this->CheckSelected(worldPoint, m_TimeStep))
       {
         newStateEvent.reset(new mitk::StateEvent(EIDYES, event));
