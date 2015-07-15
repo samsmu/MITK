@@ -36,6 +36,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 //#include "mitkBoundingObject.h"
 #include "mitkRenderingManager.h"
 
+#include <memory>
 #include <math.h>
 
 #include <vtkWorldPointPicker.h>
