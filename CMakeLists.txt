@@ -6,6 +6,17 @@ else()
   cmake_minimum_required(VERSION 2.8.12)
 endif()
 
+# ensure that C++11 standard is used
+macro(use_cxx11)
+  if (CMAKE_VERSION VERSION_LESS "3.1")
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+      set (CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_C_FLAGS}")
+    endif ()
+  else ()
+    set (CMAKE_CXX_STANDARD 11)
+  endif ()
+endmacro(use_cxx11)
+
 #-----------------------------------------------------------------------------
 # Include ctest launchers for dashboard in case of makefile generator
 #-----------------------------------------------------------------------------
