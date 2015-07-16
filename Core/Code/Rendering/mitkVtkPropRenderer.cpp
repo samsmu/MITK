@@ -14,9 +14,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <Poco\File.h>
-#include <Poco\Path.h>
-#include <Poco\Util\Application.h>
+#include <Poco/File.h>
+#include <Poco/Path.h>
+#include <Poco/Util/Application.h>
 
 #include "mitkVtkPropRenderer.h"
 
