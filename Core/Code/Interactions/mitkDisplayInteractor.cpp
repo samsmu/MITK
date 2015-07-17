@@ -24,6 +24,7 @@
 #include "mitkNodePredicateDataType.h"
 #include "mitkLevelWindowProperty.h"
 #include "mitkLevelWindow.h"
+#include <vtkInteractorObserver.h>
 
 void mitk::DisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
 {
@@ -37,7 +38,8 @@ void mitk::DisplayInteractor::Notify(InteractionEvent* interactionEvent, bool is
 
 void mitk::DisplayInteractor::ConnectActionsAndFunctions()
 {
-  CONNECT_CONDITION( "check_position_event", CheckPositionEvent );
+  CONNECT_CONDITION("check_position_event", CheckPositionEvent);
+  CONNECT_CONDITION("isOverObject", IsOverObject);
 
   CONNECT_FUNCTION("init", Init);
   CONNECT_FUNCTION("move", Move);
@@ -52,6 +54,8 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("rotateDown", RotateDown);
   CONNECT_FUNCTION("rotateClock", RotateClock);
   CONNECT_FUNCTION("rotateBackClock", RotateBackClock);
+  CONNECT_FUNCTION("selectObject", SelectObject);
+  CONNECT_FUNCTION("deSelectObject", DeSelectObject);
 }
 
 mitk::DisplayInteractor::DisplayInteractor()
@@ -64,6 +68,8 @@ mitk::DisplayInteractor::DisplayInteractor()
 , m_AlwaysReact(false)
 , m_ZoomFactor(2)
 , m_ClockRotationSpeed(5)
+, m_SelectionMode(false)
+, m_Selector(true)
 {
   m_StartDisplayCoordinate.Fill(0);
   m_LastDisplayCoordinate.Fill(0);
@@ -77,12 +83,83 @@ mitk::DisplayInteractor::~DisplayInteractor()
 bool mitk::DisplayInteractor::CheckPositionEvent( const InteractionEvent* interactionEvent )
 {
   const InteractionPositionEvent* positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
-  if (positionEvent == NULL)
-  {
+  return positionEvent != nullptr;
+}
+
+void mitk::DisplayInteractor::SetSelectionMode(bool selection)
+{
+  m_SelectionMode = selection;
+}
+
+bool mitk::DisplayInteractor::IsOverObject(const InteractionEvent* interactionEvent)
+{
+  if (!m_SelectionMode) return false;
+
+  const InteractionPositionEvent* positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
+  if (positionEvent == nullptr)
     return false;
+
+  Point2D currentPickedDisplayPoint = positionEvent->GetPointerPositionOnScreen();
+  Point3D currentPickedPoint;
+
+  m_CurrentNode = interactionEvent->GetSender()->PickObject(currentPickedDisplayPoint, currentPickedPoint);
+  if (m_CurrentNode) {
+    /// <summary>
+    /// TODO: select world point on multiwidget
+    /// </summary>
+    /*
+    vtkInteractorObserver::ComputeDisplayToWorld(
+      interactionEvent->GetSender()->GetVtkRenderer(),
+      currentPickedDisplayPoint[0],
+      currentPickedDisplayPoint[1],
+      0.0,
+      m_InitialPickedWorldPoint);
+    */
+    return true;
   }
 
-  return true;
+  return false;
+}
+
+bool mitk::DisplayInteractor::SelectObject(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  if (m_Selector && m_CurrentNode != m_SelectedNode) {
+    m_SelectedNode = m_CurrentNode;
+    if (m_SelectedNode) {
+      m_SelectedNode->GetColor(m_OldColor);
+      /// <summary>
+      /// TODO: proper incremention
+      /// </summary>
+      float new_Color0 = (m_OldColor[0] + 0.2 < 1) ? m_OldColor[0] + 0.2 : m_OldColor[0];
+      float new_Color1 = (m_OldColor[1] + 0.2 < 1) ? m_OldColor[1] + 0.2 : m_OldColor[1];
+      float new_Color2 = (m_OldColor[2] + 0.2 < 1) ? m_OldColor[2] + 0.2 : m_OldColor[2];
+      m_SelectedNode->SetColor(new_Color0, new_Color1, new_Color2);
+      interactionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
+      m_Selector = false;
+    }
+    return true;
+  }
+  return false;
+}
+
+bool mitk::DisplayInteractor::DeSelectObject(StateMachineAction*, InteractionEvent* interactionEvent)
+{
+  const InteractionPositionEvent* positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
+  if (positionEvent == nullptr)
+    return false;
+  Point2D currentPickedDisplayPoint = positionEvent->GetPointerPositionOnScreen();
+  Point3D currentPickedPoint;
+  m_CurrentNode = interactionEvent->GetSender()->PickObject(currentPickedDisplayPoint, currentPickedPoint);
+  if (m_CurrentNode != m_SelectedNode) {
+    if (m_SelectedNode) {
+      m_SelectedNode->SetColor(m_OldColor[0], m_OldColor[1], m_OldColor[2]);
+      interactionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
+      m_Selector = true;
+    }
+    m_SelectedNode = nullptr;
+    return true;
+  }
+  return false;
 }
 
 bool mitk::DisplayInteractor::Init(StateMachineAction*, InteractionEvent* interactionEvent)

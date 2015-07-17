@@ -47,6 +47,7 @@ namespace mitk
      * It also checks if event is to be accepted when it already has been processed by a DataInteractor.
      */
     virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
+    void SetSelectionMode(bool selection);
   protected:
     DisplayInteractor();
     virtual ~DisplayInteractor();
@@ -72,8 +73,15 @@ namespace mitk
      */
     virtual bool FilterEvents(InteractionEvent* interactionEvent, DataNode* dataNode);
 
-    virtual bool CheckPositionEvent( const InteractionEvent* interactionEvent );
+    mitk::DataNode::Pointer m_CurrentNode;
+    mitk::DataNode::Pointer m_SelectedNode;
+    float m_OldColor[3];
+    bool m_Selector;
 
+    virtual bool CheckPositionEvent( const InteractionEvent* interactionEvent );
+    bool IsOverObject(const InteractionEvent* interactionEvent);
+    bool SelectObject(StateMachineAction*, InteractionEvent* interactionEvent);
+    bool DeSelectObject(StateMachineAction*, InteractionEvent* interactionEvent);
     /**
      * \brief Initializes an interaction, saves the pointers start position for further reference.
      */
@@ -131,6 +139,7 @@ namespace mitk
     bool GetBoolProperty( mitk::PropertyList::Pointer propertyList, const char* propertyName, bool defaultValue );
 
   private:
+
     /**
      * \brief Coordinate of the pointer at begin of an interaction
      */
@@ -217,6 +226,17 @@ namespace mitk
      * Clock rotation spead for ctrl+arrow rotation
      */
     double m_ClockRotationSpeed;
+    /**
+    * 3D view selection mode
+    */
+    bool m_SelectionMode;
+    /// <summary>
+    /// TODO: select world point on multiwidget
+    /// </summary>
+    /**
+    * \brief Coordinate of the picked pointer in the world
+    */
+    //double m_InitialPickedWorldPoint[4];
   };
 }
 #endif

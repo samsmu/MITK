@@ -673,9 +673,10 @@ mitk::DataNode *
       if ( node == NULL )
         continue;
 
-      bool pickable = false;
+      bool pickable = true, helper = false;
       node->GetBoolProperty( "pickable", pickable );
-      if ( !pickable )
+      node->GetBoolProperty("helper object", helper);
+      if ( !pickable || helper )
         continue;
 
       VtkMapper *mapper = dynamic_cast < VtkMapper * >  ( node->GetMapper( m_MapperID ) );
