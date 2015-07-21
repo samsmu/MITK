@@ -74,6 +74,7 @@ std::string get_selfpath() {
       buff[len] = '\0';
       return std::string(buff);
     }
+    return nullptr;
     /* handle error condition */
 }
 #endif
