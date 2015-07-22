@@ -93,7 +93,8 @@ int Starter::Run(int& argc, char** argv,
     std::string pathList;
     foreach(QString libPath, QCoreApplication::libraryPaths())
     {
-      pathList += (pathList.empty() ? "" : ", ") + libPath.toUtf8();
+      if (!pathList.empty()) pathList += ", ";
+      pathList += libPath.toUtf8().constData();
     }
     BERRY_INFO << "Qt library search paths: " << pathList;
   }

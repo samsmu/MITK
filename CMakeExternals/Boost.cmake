@@ -74,7 +74,7 @@ if(MITK_USE_Boost)
             ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q install)
       else()
         set(_boost_build_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bjam --build-dir=${CMAKE_CURRENT_BINARY_DIR}/${proj}-build --prefix=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install ${_boost_toolset} ${_boost_address_model}
-            ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q install)
+            ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q --ignore-site-config install)
       endif()
 
       set(_boost_cfg_cmd ${CMAKE_CURRENT_BINARY_DIR}/${proj}-src/bootstrap${_shell_extension})

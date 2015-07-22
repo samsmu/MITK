@@ -14,9 +14,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <Poco\File.h>
-#include <Poco\Path.h>
-#include <Poco\Util\Application.h>
+#include <Poco/File.h>
+#include <Poco/Path.h>
+#include <Poco/Util/Application.h>
 
 #include "mitkVtkPropRenderer.h"
 
@@ -63,6 +63,22 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkTransform.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 
+#ifndef _WIN32
+#include <unistd.h>
+#include <limits.h>
+
+std::string get_selfpath() {
+    char buff[PATH_MAX];
+    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+    if (len != -1) {
+      buff[len] = '\0';
+      return std::string(buff);
+    }
+    return nullptr;
+    /* handle error condition */
+}
+#endif
+
 mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renWin, mitk::RenderingManager* rm, mitk::BaseRenderer::RenderingMode::Type renderingMode )
   : BaseRenderer(name,renWin, rm, renderingMode ),
   m_VtkMapperPresent(false),
@@ -91,8 +107,12 @@ mitk::VtkPropRenderer::VtkPropRenderer( const char* name, vtkRenderWindow * renW
   m_TextRenderer->SetInteractive(0);
   m_TextRenderer->SetErase(0);
 
+#ifdef _WIN32
   Poco::Util::Application& program = Poco::Util::Application::instance();
   m_programPath = program.commandPath();
+#else
+  m_programPath = get_selfpath();
+#endif
 
   std::string::size_type pos = m_programPath.rfind(Poco::Path::separator());
   if (pos != std::string::npos)

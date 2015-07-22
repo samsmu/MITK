@@ -48,7 +48,7 @@ void DicomSeriesReader::LoadSeriesTemplate(const DicomSeriesReader::StringContai
   typedef itk::Image<PixelType, 2> InputImageType;
 
   typedef itk::ImageFileReader<InputImageType> ReaderType;
-  ReaderType::Pointer reader = ReaderType::New();
+  typename ReaderType::Pointer reader = ReaderType::New();
   itk::GDCMImageIO::Pointer gdcmImageIO = itk::GDCMImageIO::New();
   reader->SetImageIO(gdcmImageIO);
 

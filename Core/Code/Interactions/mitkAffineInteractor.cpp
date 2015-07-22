@@ -36,6 +36,11 @@ See LICENSE.txt or http://www.mitk.org for details.
 //#include "mitkBoundingObject.h"
 #include "mitkRenderingManager.h"
 
+#ifdef _WIN32
+#include <memory>
+#else
+#include <tr1/memory>
+#endif
 #include <math.h>
 
 #include <vtkWorldPointPicker.h>
@@ -76,7 +81,11 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
       /* now we have a worldpoint. check if it is inside our object and select/deselect it accordingly */
       mitk::BoolProperty::Pointer selected;
       mitk::ColorProperty::Pointer color;
-      std::auto_ptr<StateEvent> newStateEvent;
+#ifdef _WIN32
+      std::shared_ptr<StateEvent> newStateEvent;
+#else
+      std::tr1::shared_ptr<StateEvent> newStateEvent;
+#endif
 
       selected = dynamic_cast<mitk::BoolProperty*>(m_DataNode->GetProperty("selected"));
 
@@ -123,7 +132,11 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
   case AcADD:
     {
       mitk::Point3D worldPoint = event->GetWorldPosition();
-      std::auto_ptr<StateEvent> newStateEvent;
+#ifdef _WIN32
+      std::shared_ptr<StateEvent> newStateEvent;
+#else
+      std::tr1::shared_ptr<StateEvent> newStateEvent;
+#endif
       if (this->CheckSelected(worldPoint, m_TimeStep))
       {
         newStateEvent.reset(new mitk::StateEvent(EIDYES, event));
