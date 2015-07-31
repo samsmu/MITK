@@ -220,6 +220,11 @@ void mitk::PlanarFigureMapper2D::PaintPolyLine(
     pointlist.push_back(displayPoint);
   }
 
+  if (!pointlist.size())
+  {
+    return;
+  }
+
   if (pointlist.size() == 2)
   {
       rightMostPoint = pointlist[1];
