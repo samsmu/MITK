@@ -125,6 +125,7 @@ if(MITK_USE_Boost)
         ${_boost_address_model}
         threading=multi
         runtime-link=shared
+        --ignore-site-config
         -q
     )
 
