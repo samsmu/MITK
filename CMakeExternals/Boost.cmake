@@ -97,9 +97,11 @@ if(MITK_USE_Boost)
 
     set(_boost_variant "$<$<CONFIG:Debug>:debug>$<$<CONFIG:Release>:release>")
     set(_boost_link shared)
+
     if(NOT BUILD_SHARED_LIBS)
       set(_boost_link static)
     endif()
+
     set(_boost_cxxflags )
     if(CMAKE_CXX_FLAGS OR MITK_CXX11_FLAG)
       set(_boost_cxxflags "cxxflags=${MITK_CXX11_FLAG} ${CMAKE_CXX_FLAGS}")
@@ -124,7 +126,7 @@ if(MITK_USE_Boost)
         ${_boost_linkflags}
         ${_boost_address_model}
         threading=multi
-        runtime-link=shared
+        runtime-link=${_boost_link}
         --ignore-site-config
         -q
     )
@@ -144,6 +146,9 @@ if(MITK_USE_Boost)
       URL_MD5 a744cf167b05d72335f27c88115f211d
       # We use in-source builds for Boost
       BINARY_DIR ${ep_prefix}/src/${proj}
+      # Add to fix bug with Boost filesystem. "filesystem library with -std=c++11 causes undefined reference to copy_file".
+      # https://svn.boost.org/trac/boost/ticket/10038
+      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/boost-1.56.0_copy_file.diff
       CONFIGURE_COMMAND "<SOURCE_DIR>/bootstrap${_shell_extension}"
         --with-toolset=${_boost_with_toolset}
         --with-libraries=${_boost_libs}
