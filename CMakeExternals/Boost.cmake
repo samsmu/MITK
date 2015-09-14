@@ -148,6 +148,24 @@ if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
     DEPENDS ${proj_DEPENDENCIES}
     )
 
+  ExternalProject_Add(${proj}
+      LIST_SEPARATOR ${sep}
+      URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/boost_${_boost_version}_0.tar.bz2
+      URL_MD5 a744cf167b05d72335f27c88115f211d
+      # We use in-source builds for Boost
+      BINARY_DIR ${ep_prefix}/src/${proj}
+      # Add to fix bug with Boost filesystem. "filesystem library with -std=c++11 causes undefined reference to copy_file".
+      # https://svn.boost.org/trac/boost/ticket/10038
+      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/boost-1.56.0_copy_file.diff
+      CONFIGURE_COMMAND "<SOURCE_DIR>/bootstrap${_shell_extension}"
+        --with-toolset=${_boost_with_toolset}
+        --with-libraries=${_boost_libs}
+        "--prefix=<INSTALL_DIR>"
+      ${_boost_build_cmd}
+      INSTALL_COMMAND ${_install_cmd}
+      DEPENDS ${proj_DEPENDENCIES}
+      )
+
   ExternalProject_Get_Property(${proj} install_dir)
 
   if(WIN32)
