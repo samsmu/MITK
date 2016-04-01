@@ -728,7 +728,7 @@ bool
 SliceNavigationController
 ::ExecuteAction( Action* action, StateEvent const* stateEvent )
 {
-  bool ok = false;
+/*  bool ok = false;
 
   const PositionEvent* posEvent = dynamic_cast< const PositionEvent * >(
     stateEvent->GetEvent() );
@@ -827,8 +827,8 @@ SliceNavigationController
                   stream << "No image information at this position!";
                 }
 
-                statusText = stream.str();
-                mitk::StatusBar::GetInstance()->DisplayGreyValueText(statusText.c_str());
+                //statusText = stream.str();
+                //mitk::StatusBar::GetInstance()->DisplayGreyValueText(statusText.c_str());
               }
             }
             ok = true;
@@ -850,6 +850,6 @@ SliceNavigationController
     return true;
   }
 
-  return false;
+  return false;*/
 }
 } // namespace
