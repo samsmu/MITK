@@ -1820,7 +1820,7 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
   }
 }
 
-void QmitkStdMultiWidget::drawTextInStatusBar(bool draw)
+void QmitkStdMultiWidget::setDisplayPositionText(bool draw)
 {
   m_drawTextInStatusBar = draw;
 }

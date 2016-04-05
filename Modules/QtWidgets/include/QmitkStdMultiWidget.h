@@ -80,7 +80,7 @@ public:
 
   QmitkRenderWindow* GetRenderWindow4() const;
 
-  void drawTextInStatusBar(bool draw = true);
+  void setDisplayPositionText(bool draw = true);
   
   /**
   * \deprecatedSince{2015_05} GetLastLeftClickPosition is deprecated. Function will be removed and funtionality will move into mitk::DisplayInteractor.
