@@ -54,6 +54,8 @@ void QmitkProgressBar::SetPercentageVisible(bool visible)
  */
 void QmitkProgressBar::AddStepsToDo(unsigned int steps)
 {
+  Reset();
+
   emit SignalAddStepsToDo(steps);
 }
 
@@ -132,6 +134,7 @@ void QmitkProgressBar::SlotAddStepsToDo(unsigned int steps)
   this->setValue(m_Progress);
   if (m_TotalSteps > 0)
   {
+    setTextVisible(true);
     this->show();
   }
   else
@@ -140,6 +143,7 @@ void QmitkProgressBar::SlotAddStepsToDo(unsigned int steps)
 
     setRange(0, 0);
     setValue(0);
+    setTextVisible(false);
 
     m_timer->start(100);
 
