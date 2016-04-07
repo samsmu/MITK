@@ -152,12 +152,11 @@ void mitk::TextOverlay2D::UpdateVtkOverlay2D(mitk::BaseRenderer *renderer)
     ls->m_STextActor->SetInput(GetText().c_str());
 
     mitk::Point2D posT, posS;
-    posT[0] = GetPosition2D(renderer)[0]+GetOffsetVector(renderer)[0];
-    posT[1] = GetPosition2D(renderer)[1]+GetOffsetVector(renderer)[1];
-    posS[0] = posT[0]+1;
-    posS[1] = posT[1]-1;
-    posT = TransformDisplayPointToViewport(posT,renderer);
-    posS = TransformDisplayPointToViewport(posS,renderer);
+
+    posT[0] = GetPosition2D(renderer)[0] + GetOffsetVector(renderer)[0];
+    posT[1] = GetPosition2D(renderer)[1] + GetOffsetVector(renderer)[1];
+    posS[0] = posT[0] + 1;
+    posS[1] = posT[1] - 1;
 
     applyTextOrientation(ls->m_TextProp, m_Orientation);
     applyTextOrientation(ls->m_STextProp, m_Orientation);
@@ -170,8 +169,9 @@ void mitk::TextOverlay2D::UpdateVtkOverlay2D(mitk::BaseRenderer *renderer)
     calculateTextPosWithOffset(xt, yt);
     calculateTextPosWithOffset(xs, ys);
 
-    ls->m_TextActor->SetPosition(xt, yt);
-    ls->m_STextActor->SetPosition(xs, ys);
+    ls->m_TextActor->SetDisplayPosition(posT[0], posT[1]);
+    ls->m_STextActor->SetDisplayPosition(posS[0], posS[1]);
+
     ls->UpdateGenerateDataTime();
   }
 }
