@@ -78,12 +78,12 @@ bool mitk::SceneReaderV1::LoadScene( TiXmlDocument& document, const std::string&
     ++listSize;
   }
 
-  ProgressBar::GetInstance()->AddStepsToDo(listSize * 2);
+  //ProgressBar::GetInstance()->AddStepsToDo(listSize * 2); // <---<<<
 
   for (TiXmlElement* element = document.FirstChildElement("node"); element != NULL; element = element->NextSiblingElement("node"))
   {
       DataNodes.push_back(LoadBaseDataFromDataTag(element->FirstChildElement("data"), workingDirectory, error));
-      ProgressBar::GetInstance()->Progress();
+      //ProgressBar::GetInstance()->Progress(); // <---<<<
   }
 
   // iterate all nodes
@@ -148,7 +148,7 @@ bool mitk::SceneReaderV1::LoadScene( TiXmlDocument& document, const std::string&
       }
     }
 
-    ProgressBar::GetInstance()->Progress();
+    //ProgressBar::GetInstance()->Progress(); // <---<<<
   } // end for all <node>
 
   // sort our nodes by their "layer" property
