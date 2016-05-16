@@ -188,6 +188,7 @@ mitk::DataStorage::Pointer mitk::SceneIO::LoadScene( const std::string& filename
     return storage;
   }
 
+  ProgressBar::GetInstance()->AddStepsToDo(0);
   // unzip all filenames contents to temp dir
   m_UnzipErrors = 0;
   Poco::Zip::Decompress unzipper( file, Poco::Path( m_WorkingDirectory ) );
@@ -196,6 +197,8 @@ mitk::DataStorage::Pointer mitk::SceneIO::LoadScene( const std::string& filename
   unzipper.decompressAllFiles();
   unzipper.EError -= Poco::Delegate<SceneIO, std::pair<const Poco::Zip::ZipLocalFileHeader, const std::string> >(this, &SceneIO::OnUnzipError);
   unzipper.EOk    -= Poco::Delegate<SceneIO, std::pair<const Poco::Zip::ZipLocalFileHeader, const Poco::Path> >(this, &SceneIO::OnUnzipOk);
+  
+  ProgressBar::GetInstance()->Reset();
 
   if ( m_UnzipErrors )
   {

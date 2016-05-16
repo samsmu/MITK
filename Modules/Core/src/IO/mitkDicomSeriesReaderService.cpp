@@ -66,8 +66,8 @@ std::vector<itk::SmartPointer<BaseData> > DicomSeriesReaderService::Read()
                                                                                   true); // true = group gantry tilt images
   const unsigned int size = imageBlocks.size();
 
-  //ProgressBar::GetInstance()->AddStepsToDo(size); // <---<<<
-  //ProgressBar::GetInstance()->Progress(); // <---<<<
+  ProgressBar::GetInstance()->AddStepsToDo(size);
+  ProgressBar::GetInstance()->Progress();
 
   unsigned int outputIndex = 0u;
   const DicomSeriesReader::FileNamesGrouping::const_iterator n_end = imageBlocks.end();
@@ -117,7 +117,7 @@ std::vector<itk::SmartPointer<BaseData> > DicomSeriesReaderService::Read()
       MITK_ERROR << "DicomSeriesReader: Skipping series " << outputIndex << " due to some unspecified error..." << std::endl;
     }
 
-    //ProgressBar::GetInstance()->Progress(); // <---<<<
+    ProgressBar::GetInstance()->Progress();
   }
 
   setlocale(LC_NUMERIC, previousCLocale);

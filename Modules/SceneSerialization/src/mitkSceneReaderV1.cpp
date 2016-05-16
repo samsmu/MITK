@@ -70,6 +70,9 @@ bool mitk::SceneReaderV1::LoadScene( TiXmlDocument& document, const std::string&
     //        - if successful, call the new node's SetData(..)
 
     // create a node for the tag "data" and test if node was created
+  
+  ProgressBar::GetInstance()->AddStepsToDo(0);
+  
   typedef std::vector<mitk::DataNode::Pointer> DataNodeVector;
   DataNodeVector DataNodes;
   unsigned int listSize = 0;
@@ -77,15 +80,18 @@ bool mitk::SceneReaderV1::LoadScene( TiXmlDocument& document, const std::string&
   {
     ++listSize;
   }
-
-  //ProgressBar::GetInstance()->AddStepsToDo(listSize * 2); // <---<<<
+  
+  ProgressBar::GetInstance()->Reset();
+  ProgressBar::GetInstance()->AddStepsToDo(listSize);
 
   for (TiXmlElement* element = document.FirstChildElement("node"); element != NULL; element = element->NextSiblingElement("node"))
   {
       DataNodes.push_back(LoadBaseDataFromDataTag(element->FirstChildElement("data"), workingDirectory, error));
-      //ProgressBar::GetInstance()->Progress(); // <---<<<
+      ProgressBar::GetInstance()->Progress();
   }
-
+  
+  ProgressBar::GetInstance()->Reset();
+  ProgressBar::GetInstance()->AddStepsToDo(0);
   // iterate all nodes
   // first level nodes should be <node> elements
   DataNodeVector::iterator nit = DataNodes.begin();
@@ -147,8 +153,6 @@ bool mitk::SceneReaderV1::LoadScene( TiXmlDocument& document, const std::string&
         m_OrderedNodePairs.back().second.push_back( std::string(sourceUID) );
       }
     }
-
-    //ProgressBar::GetInstance()->Progress(); // <---<<<
   } // end for all <node>
 
   // sort our nodes by their "layer" property
@@ -235,6 +239,7 @@ bool mitk::SceneReaderV1::LoadScene( TiXmlDocument& document, const std::string&
     error = true;
   }
 
+  ProgressBar::GetInstance()->Reset();
   return !error;
 }
 
