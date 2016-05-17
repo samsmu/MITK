@@ -188,6 +188,7 @@ mitk::DataStorage::Pointer mitk::SceneIO::LoadScene( const std::string& filename
     return storage;
   }
 
+  ProgressBar::GetInstance()->AddStepsToDo(0);
   // unzip all filenames contents to temp dir
   m_UnzipErrors = 0;
   Poco::Zip::Decompress unzipper( file, Poco::Path( m_WorkingDirectory ) );
@@ -196,6 +197,8 @@ mitk::DataStorage::Pointer mitk::SceneIO::LoadScene( const std::string& filename
   unzipper.decompressAllFiles();
   unzipper.EError -= Poco::Delegate<SceneIO, std::pair<const Poco::Zip::ZipLocalFileHeader, const std::string> >(this, &SceneIO::OnUnzipError);
   unzipper.EOk    -= Poco::Delegate<SceneIO, std::pair<const Poco::Zip::ZipLocalFileHeader, const Poco::Path> >(this, &SceneIO::OnUnzipOk);
+  
+  ProgressBar::GetInstance()->Reset();
 
   if ( m_UnzipErrors )
   {
@@ -258,6 +261,8 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
 
   try
   {
+    ProgressBar::GetInstance()->AddStepsToDo(0);
+    
     m_FailedNodes = DataStorage::SetOfObjects::New();
     m_FailedProperties = PropertyList::New();
 
@@ -291,10 +296,9 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
       if (m_WorkingDirectory.empty())
       {
         MITK_ERROR << "Could not create temporary directory. Cannot create scene files.";
+        ProgressBar::GetInstance()->Reset();
         return false;
       }
-
-      ProgressBar::GetInstance()->AddStepsToDo( sceneNodes->size() );
 
       // find out about dependencies
       typedef std::map< DataNode*, std::string > UIDMapType;
@@ -419,7 +423,6 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
             
             if (dataElement == nullptr)
             {
-              ProgressBar::GetInstance()->Progress();
               return;
             }
 
@@ -460,15 +463,18 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
         {
           MITK_WARN << "Ignoring NULL node during scene serialization.";
         }
-
-        ProgressBar::GetInstance()->Progress();
       };
 
+      ProgressBar::GetInstance()->Reset();
+      ProgressBar::GetInstance()->AddStepsToDo(sceneNodes->size());
       // write out objects, dependencies and properties
       for (auto node : sceneNodes->CastToSTLConstContainer())
       {
         serialize(node);
+        ProgressBar::GetInstance()->Progress();
       } // end for all nodes
+      
+      ProgressBar::GetInstance()->Reset();
 
       if (Logger::Options::get().datastoragelog && Logger::Log::get().getDataBackend())
       {
@@ -479,10 +485,12 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
       }
     } // end if sceneNodes
 
+    ProgressBar::GetInstance()->AddStepsToDo(0);
     std::string defaultLocale_WorkingDirectory = Poco::Path::transcode( m_WorkingDirectory );
     if ( !document.SaveFile( defaultLocale_WorkingDirectory + Poco::Path::separator() + "index.xml" ) )
     {
       MITK_ERROR << "Could not write scene to " << defaultLocale_WorkingDirectory << Poco::Path::separator() << "index.xml" << "\nTinyXML reports '" << document.ErrorDesc() << "'";
+      ProgressBar::GetInstance()->Reset();
       return false;
     }
     else
@@ -501,6 +509,7 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
         if (!file.good())
         {
           MITK_ERROR << "Could not open a zip file for writing: '" << defaultLocaleFilename << "'";
+          ProgressBar::GetInstance()->Reset();
           return false;
         }
         else
@@ -518,22 +527,27 @@ bool mitk::SceneIO::SaveScene( DataStorage::SetOfObjects::ConstPointer sceneNode
         catch(...)
         {
           MITK_ERROR << "Could not delete temporary directory " << m_WorkingDirectory;
+          ProgressBar::GetInstance()->Reset();
           return false; // ok?
         }
       }
       catch(std::exception& e)
       {
         MITK_ERROR << "Could not create ZIP file from " << m_WorkingDirectory << "\nReason: " << e.what();
+        ProgressBar::GetInstance()->Reset();
         return false;
       }
-      return true;
     }
+    ProgressBar::GetInstance()->Reset();
   }
   catch(std::exception& e)
   {
     MITK_ERROR << "Caught exception during saving temporary files to disk. Error description: '" << e.what() << "'";
+    ProgressBar::GetInstance()->Reset();
     return false;
   }
+  
+  return true;
 }
 
 TiXmlElement* mitk::SceneIO::SaveBaseData( BaseData* data, const std::string& filenamehint, bool& error )
