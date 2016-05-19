@@ -38,9 +38,9 @@ set(mitk_modules
   SegmentationUI
   DiffusionImaging
   GPGPU
-  OpenIGTLink
-  IGTBase
-  IGT
+  #OpenIGTLink
+  #IGTBase
+  #IGT
   CameraCalibration
   RigidRegistration
   RigidRegistrationUI
@@ -60,8 +60,8 @@ set(mitk_modules
   Python
   QtPython
   Persistence
-  OpenIGTLinkUI
-  IGTUI
+  #OpenIGTLinkUI
+  #IGTUI
   VtkShaders
   DicomRT
   RTUI
