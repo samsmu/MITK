@@ -4,73 +4,18 @@
 set(mitk_modules
   Logging
   Core
-  CommandLine
   AppUtil
-  DCMTesting
-  RDF
-  LegacyIO
   DataTypesExt
   Overlays
   LegacyGL
   AlgorithmsExt
-  MapperExt
-  DICOMReader
-  DICOMReaderServices
-  DICOMTesting
   SceneSerializationBase
   PlanarFigure
-  ImageDenoising
   ImageExtraction
   ImageStatistics
-  LegacyAdaptors
   SceneSerialization
-  Gizmo
-  GraphAlgorithms
-  Multilabel
-  ContourModel
-  SurfaceInterpolation
-  Segmentation
-  PlanarFigureSegmentation
-  OpenViewCore
-  QmlItems
   QtWidgets
   QtWidgetsExt
-  SegmentationUI
-  DiffusionImaging
-  GPGPU
-  #OpenIGTLink
-  #IGTBase
-  #IGT
-  CameraCalibration
-  RigidRegistration
-  RigidRegistrationUI
-  DeformableRegistration
-  DeformableRegistrationUI
-  OpenCL
-  OpenCVVideoSupport
-  QtOverlays
-  ToFHardware
-  ToFProcessing
-  ToFUI
-  US
-  USUI
-  DicomUI
-  Simulation
-  Remeshing
-  Python
-  QtPython
-  Persistence
-  #OpenIGTLinkUI
-  #IGTUI
-  VtkShaders
-  DicomRT
-  RTUI
-  IOExt
-  XNAT
-  TubeGraph
-  BiophotonicsHardware
-  Classification
-  TumorInvasionAnalysis
 )
 
 if(MITK_ENABLE_PIC_READER)
