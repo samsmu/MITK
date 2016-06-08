@@ -654,7 +654,6 @@ std::string IOUtil::Load(std::vector<LoadInfo>& loadInfos,
   }
 
   int filesToRead = loadInfos.size();
-  mitk::ProgressBar::GetInstance()->AddStepsToDo(2*filesToRead);
 
   std::string errMsg;
 
@@ -792,7 +791,6 @@ std::string IOUtil::Load(std::vector<LoadInfo>& loadInfos,
     {
       errMsg += "Exception occured when reading file " + loadInfo.m_Path + ":\n" + e.what() + "\n\n";
     }
-    mitk::ProgressBar::GetInstance()->Progress(2);
     --filesToRead;
   }
 
@@ -800,8 +798,6 @@ std::string IOUtil::Load(std::vector<LoadInfo>& loadInfos,
   {
     MITK_ERROR << errMsg;
   }
-
-  mitk::ProgressBar::GetInstance()->Progress(2*filesToRead);
 
   return errMsg;
 }
@@ -949,7 +945,6 @@ std::string IOUtil::Save(std::vector<SaveInfo>& saveInfos, WriterOptionsFunctorB
   }
 
   int filesToWrite = saveInfos.size();
-  mitk::ProgressBar::GetInstance()->AddStepsToDo(2*filesToWrite);
 
   std::string errMsg;
 
@@ -1029,7 +1024,6 @@ std::string IOUtil::Save(std::vector<SaveInfo>& saveInfos, WriterOptionsFunctorB
     {
       errMsg += std::string("Exception occurred when writing to ") + saveInfo.m_Path + ":\n" + e.what() + "\n";
     }
-    mitk::ProgressBar::GetInstance()->Progress(2);
     --filesToWrite;
   }
 
@@ -1037,8 +1031,6 @@ std::string IOUtil::Save(std::vector<SaveInfo>& saveInfos, WriterOptionsFunctorB
   {
     MITK_ERROR << errMsg;
   }
-
-  mitk::ProgressBar::GetInstance()->Progress(2*filesToWrite);
 
   return errMsg;
 }
