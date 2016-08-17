@@ -81,7 +81,7 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
       if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
       {
         d->m_StdMultiWidget->RemovePlanesFromDataStorage();
-        stdMultiWidgetEditor->RequestActivateMenuWidget(false);
+        //stdMultiWidgetEditor->RequestActivateMenuWidget(false);
       }
     }
   }
@@ -95,7 +95,7 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
       if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
       {
         d->m_StdMultiWidget->RemovePlanesFromDataStorage();
-        stdMultiWidgetEditor->RequestActivateMenuWidget(false);
+        //stdMultiWidgetEditor->RequestActivateMenuWidget(false);
       }
     }
   }
