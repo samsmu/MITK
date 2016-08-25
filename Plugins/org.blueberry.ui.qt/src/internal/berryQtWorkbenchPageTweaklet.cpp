@@ -36,7 +36,12 @@ QWidget* QtWorkbenchPageTweaklet::CreateClientComposite(QWidget* pageControl)
   QWidget* parent = static_cast<QWidget*>(pageControl);
   auto   client = new QtControlWidget(parent, nullptr);
   client->setObjectName("ClientComposite");
-  parent->layout()->addWidget(client);
+  //parent->layout()->addWidget(client);
+  
+  QVBoxLayout* vbl = new QVBoxLayout();
+  vbl->addWidget(client);
+  
+  parent->setLayout(vbl);
 
   // we have to enable visibility to get a proper layout (see bug #1654)
   client->setVisible(true);

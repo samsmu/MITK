@@ -729,11 +729,16 @@ QWidget *WorkbenchWindow::CreatePageComposite(QWidget *parent)
 {
   auto   pageArea = new QtControlWidget(parent, nullptr);
   pageArea->setObjectName("Page Composite");
-  new QHBoxLayout(pageArea);
-  if (qobject_cast<QMainWindow*> (parent) != nullptr)
-    qobject_cast<QMainWindow*> (parent)->setCentralWidget(pageArea);
-  else
-    parent->layout()->addWidget(pageArea);
+  //new QHBoxLayout(pageArea);
+  //if (qobject_cast<QMainWindow*> (parent) != nullptr)
+    //qobject_cast<QMainWindow*> (parent)->setCentralWidget(pageArea);
+  //else
+    //parent->layout()->addWidget(pageArea);
+  
+  QVBoxLayout* vbl = new QVBoxLayout();
+  vbl->addWidget(pageArea);
+  
+  parent->setLayout(vbl);
 
   // we have to enable visibility to get a proper layout (see bug #1654)
   pageArea->setVisible(true);

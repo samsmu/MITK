@@ -211,18 +211,19 @@ void QmitkAbstractView::CreatePartControl(QWidget* parent)
   //scrollArea->setLayout(scrollAreaLayout);
 
   // set the widget now
-  scrollArea->setWidgetResizable(true);
-  scrollArea->setWidget(d->m_Parent);
+  //scrollArea->setWidgetResizable(true);
+  //scrollArea->setWidget(d->m_Parent);
 
   // add the scroll area to the real parent (the view tabbar)
-  QWidget* parentQWidget = static_cast<QWidget*>(parent);
-  auto   parentLayout = new QVBoxLayout(parentQWidget);
+  //QWidget* parentQWidget = static_cast<QWidget*>(parent);
+  auto   parentLayout = new QVBoxLayout();
   parentLayout->setMargin(0);
   parentLayout->setSpacing(0);
-  parentLayout->addWidget(scrollArea);
+  //parentLayout->addWidget(scrollArea);
+  parentLayout->addWidget(d->m_Parent);
 
   // finally set the layout containing the scroll area to the parent widget (= show it)
-  parentQWidget->setLayout(parentLayout);
+  parent->setLayout(parentLayout);
 
   this->AfterCreateQtPartControl();
 }
