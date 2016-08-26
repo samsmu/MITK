@@ -45,7 +45,7 @@ EditorManager::EditorManager(WorkbenchWindow::Pointer wind,
     WorkbenchPage::Pointer workbenchPage,
     EditorAreaHelper* pres)
  : editorPresentation(pres), window(wind.GetPointer()), page(workbenchPage.GetPointer()) {
-  poco_check_ptr(editorPresentation);
+  //poco_check_ptr(editorPresentation);
   poco_assert(window != nullptr);
   poco_assert(page != nullptr);
 
@@ -415,12 +415,12 @@ QList<IEditorReference::Pointer> EditorManager::GetEditors()
 
 IEditorPart::Pointer EditorManager::GetVisibleEditor()
 {
-  IEditorReference::Pointer ref = editorPresentation->GetVisibleEditor();
-  if (ref.IsNull())
-  {
+  //IEditorReference::Pointer ref = nullptr;//editorPresentation->GetVisibleEditor();
+  //if (ref.IsNull())
+  //{
     return IEditorPart::Pointer(nullptr);
-  }
-  return ref->GetPart(true).Cast<IEditorPart>();
+  //}
+  //return ref->GetPart(true).Cast<IEditorPart>();
 }
 
 bool EditorManager::IsSaveAllNeeded()
@@ -574,7 +574,7 @@ IEditorReference::Pointer EditorManager::OpenEditorFromDescriptor(
 
 void EditorManager::CreateEditorTab(EditorReference::Pointer ref, const QString& workbookId)
 {
-  editorPresentation->AddEditor(ref, workbookId);
+  //editorPresentation->AddEditor(ref, workbookId);
 }
 
 EditorSite::Pointer EditorManager::CreateSite(IEditorReference::Pointer ref,
@@ -719,7 +719,7 @@ IEditorPart::Pointer EditorManager::CreatePart(EditorDescriptor::Pointer desc) c
       if (areaMem)
       {
         //result.add(editorPresentation.restoreState(areaMem));
-        editorPresentation->RestoreState(areaMem);
+        //editorPresentation->RestoreState(areaMem);
         areaMem->GetString(WorkbenchConstants::TAG_ACTIVE_WORKBOOK, activeWorkbookID);
       }
 
@@ -737,7 +737,7 @@ IEditorPart::Pointer EditorManager::CreatePart(EditorDescriptor::Pointer desc) c
       if (areaMem)
       {
         //result.add(editorPresentation.restorePresentationState(areaMem));
-        result &= editorPresentation->RestorePresentationState(areaMem);
+        //result &= editorPresentation->RestorePresentationState(areaMem);
       }
       try
       {
@@ -755,7 +755,7 @@ IEditorPart::Pointer EditorManager::CreatePart(EditorDescriptor::Pointer desc) c
                 // Update the active workbook
                 if (!activeWorkbookID.isEmpty())
                 {
-                  editorPresentation->SetActiveEditorWorkbookFromID(activeWorkbookID);
+                  //editorPresentation->SetActiveEditorWorkbookFromID(activeWorkbookID);
                 }
 
                 if (!activeEditor.empty() && activeEditor[0])
@@ -1020,14 +1020,14 @@ IEditorPart::Pointer EditorManager::CreatePart(EditorDescriptor::Pointer desc) c
       // Save the editor area workbooks layout/relationship
       IMemento::Pointer editorAreaMem = memento->CreateChild(WorkbenchConstants::TAG_AREA);
       //result.add(editorPresentation.saveState(editorAreaMem));
-      result &= editorPresentation->SaveState(editorAreaMem);
+      //result &= editorPresentation->SaveState(editorAreaMem);
 
       // Save the active workbook id
-      editorAreaMem->PutString(WorkbenchConstants::TAG_ACTIVE_WORKBOOK,
-          editorPresentation->GetActiveEditorWorkbookID());
+      //editorAreaMem->PutString(WorkbenchConstants::TAG_ACTIVE_WORKBOOK,
+          //editorPresentation->GetActiveEditorWorkbookID());
 
       // Get each workbook
-      QList<PartStack::Pointer> workbooks(editorPresentation->GetWorkbooks());
+      QList<PartStack::Pointer> workbooks;//(/*editorPresentation->GetWorkbooks()*/);
 
       for (QList<PartStack::Pointer>::iterator iter = workbooks.begin();
           iter != workbooks.end(); ++iter)
@@ -1065,7 +1065,7 @@ IEditorPart::Pointer EditorManager::CreatePart(EditorDescriptor::Pointer desc) c
     bool EditorManager::SetVisibleEditor(IEditorReference::Pointer newEd,
         bool setFocus)
     {
-      return editorPresentation->SetVisibleEditor(newEd, setFocus);
+      return true; //return editorPresentation->SetVisibleEditor(newEd, setFocus);
     }
 
     IPathEditorInput::Pointer EditorManager::GetPathEditorInput(

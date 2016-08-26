@@ -1708,10 +1708,10 @@ void WorkbenchPage::CreateClientComposite()
   //
   //      public void WorkbenchPage::runWithException()
   //        {
-  composite
-      = Tweaklets::Get(WorkbenchPageTweaklet::KEY)->CreateClientComposite(
-          parent);
-  Tweaklets::Get(GuiWidgetsTweaklet::KEY)->SetVisible(composite, false); // Make visible on activate.
+  composite = new QWidget(parent);
+      //= Tweaklets::Get(WorkbenchPageTweaklet::KEY)->CreateClientComposite(
+         // parent);
+  //Tweaklets::Get(GuiWidgetsTweaklet::KEY)->SetVisible(composite, false); // Make visible on activate.
   // force the client composite to be layed out
   //          parent.layout();
   //        }
@@ -2333,9 +2333,9 @@ void WorkbenchPage::Init(WorkbenchWindow* w, const QString& layoutID,
 
   // Create presentation.
   this->CreateClientComposite();
-  editorPresentation = new EditorAreaHelper(this);
-  editorMgr = new EditorManager(WorkbenchWindow::Pointer(window),
-      WorkbenchPage::Pointer(this), editorPresentation);
+  //editorPresentation = new EditorAreaHelper(this);
+  //editorMgr = new EditorManager(WorkbenchWindow::Pointer(window),
+      //WorkbenchPage::Pointer(this), editorPresentation);
 
   //TODO WorkbenchPage perspective reorder listener?
   //    // add this page as a client to be notified when the UI has re-ordered perspectives

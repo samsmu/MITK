@@ -233,7 +233,7 @@ QList<PartStack::Pointer> EditorAreaHelper::GetWorkbooks()
 QList<IEditorReference::Pointer> EditorAreaHelper::GetEditors()
 {
   QList<IEditorReference::Pointer> result;
-  QList<PartStack::Pointer> workbooks = editorArea->GetEditorWorkbooks();
+  /*QList<PartStack::Pointer> workbooks = editorArea->GetEditorWorkbooks();
 
   for (QList<PartStack::Pointer>::iterator iter = workbooks.begin();
        iter != workbooks.end(); ++iter)
@@ -249,7 +249,7 @@ QList<IEditorReference::Pointer> EditorAreaHelper::GetEditors()
 
       result.push_back(part.Cast<PartPane>()->GetPartReference().Cast<IEditorReference>());
     }
-  }
+  }*/
 
   return result;
 }

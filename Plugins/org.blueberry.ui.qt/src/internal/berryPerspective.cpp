@@ -68,7 +68,7 @@ void Perspective::Init(WorkbenchPage::Pointer page)
   presentation = nullptr;
   shouldHideEditorsOnActivate = false;
   this->page = page.GetPointer();
-  this->editorArea = page->GetEditorPresentation()->GetLayoutPart();
+  //this->editorArea = page->GetEditorPresentation()->GetLayoutPart();
   this->viewFactory = page->GetViewFactory();
 }
 
@@ -288,7 +288,7 @@ void Perspective::HideEditorArea()
 
 void Perspective::HideEditorAreaLocal()
 {
-  if (editorHolder != 0)
+  /*if (editorHolder != 0)
   {
     return;
   }
@@ -296,7 +296,7 @@ void Perspective::HideEditorAreaLocal()
   // Replace the editor area with a placeholder so we
   // know where to put it back on show editor area request.
   editorHolder = new PartPlaceholder(editorArea->GetID());
-  presentation->GetLayout()->Replace(editorArea, editorHolder);
+  presentation->GetLayout()->Replace(editorArea, editorHolder);*/
 }
 
 bool Perspective::HideView(IViewReference::Pointer ref)
@@ -579,13 +579,13 @@ void Perspective::LoadPredefinedPersp(PerspectiveDescriptor::Pointer persp)
 void Perspective::OnActivate()
 {
   // Update editor area state.
-  if (editorArea->GetControl() != nullptr)
+  /*if (editorArea->GetControl() != nullptr)
   {
     bool visible = this->IsEditorAreaVisible();
     bool inTrim = editorAreaState == IStackPresentationSite::STATE_MINIMIZED;
 
     editorArea->SetVisible(visible && !inTrim);
-  }
+  }*/
 
 //  // Update fast views.
 //  // Make sure the control for the fastviews are created so they can
@@ -614,14 +614,14 @@ void Perspective::OnActivate()
 
   // Trim Stack Support
   bool useNewMinMax = Perspective::UseNewMinMax(Perspective::Pointer(this));
-  bool hideEditorArea = shouldHideEditorsOnActivate || (editorHidden && editorHolder == 0);
+  bool hideEditorArea = true;//shouldHideEditorsOnActivate || (editorHidden && editorHolder == 0);
 
   // We have to set the editor area's stack state -before-
   // activating the presentation since it's used there to determine
   // size of the resulting stack
   if (useNewMinMax && !hideEditorArea)
   {
-    this->RefreshEditorAreaVisibility();
+    //this->RefreshEditorAreaVisibility();
   }
 
   // Show the layout
@@ -693,7 +693,7 @@ void Perspective::OnActivate()
 //  }
 
   // We hide the editor area -after- the presentation activates
-  if (hideEditorArea)
+  /*if (hideEditorArea)
   {
     // We do this here to ensure that createPartControl is called on the
     // top editor
@@ -704,7 +704,7 @@ void Perspective::OnActivate()
 //    // this is an override so it should handle both states
 //    if (useNewMinMax)
 //    setEditorAreaTrimVisibility(editorAreaState == IStackPresentationSite.STATE_MINIMIZED);
-  }
+  }*/
 
   // Fix perspectives whose contributing bundle has gone away
   FixOrphan();
@@ -920,7 +920,7 @@ bool Perspective::RestoreState()
   //      void runWithException() throws Throwable
   //      {
           // Add the editor workbook. Do not hide it now.
-          pres->ReplacePlaceholderWithPart(editorArea);
+          //pres->ReplacePlaceholderWithPart(editorArea);
   //      }});
 
   // Add the visible views.
@@ -1503,14 +1503,14 @@ void Perspective::ShowEditorArea()
 
 void Perspective::ShowEditorAreaLocal()
 {
-  if (editorHolder == 0 || editorHidden)
+  /*if (editorHolder == 0 || editorHidden)
   {
     return;
   }
 
   // Replace the part holder with the editor area.
   presentation->GetLayout()->Replace(editorHolder, editorArea);
-  editorHolder = nullptr;
+  editorHolder = nullptr;*/
 }
 
 void Perspective::SetEditorAreaState(int newState)

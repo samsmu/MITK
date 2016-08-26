@@ -551,7 +551,7 @@ void PartSashContainer::SetActive(bool isActive)
         resizeListener);
 
     DragUtil::AddDragTarget(parent, this);
-    DragUtil::AddDragTarget(Tweaklets::Get(GuiWidgetsTweaklet::KEY)->GetShell(parent)->GetControl(), this);
+    //DragUtil::AddDragTarget(Tweaklets::Get(GuiWidgetsTweaklet::KEY)->GetShell(parent)->GetControl(), this);
 
     ILayoutContainer::ChildrenType children = this->children;
     for (ILayoutContainer::ChildrenType::iterator childIter = children.begin(); childIter
@@ -622,12 +622,12 @@ void PartSashContainer::CreateControl(QWidget* parentWidget)
 
   parent = this->CreateParent(parentWidget);
 
-  ILayoutContainer::ChildrenType children = this->children;
+  /*ILayoutContainer::ChildrenType children = this->children;
   for (ILayoutContainer::ChildrenType::iterator childIter = children.begin(); childIter
       != children.end(); ++childIter)
   {
     (*childIter)->CreateControl(parent);
-  }
+  }*/
 
 }
 

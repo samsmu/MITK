@@ -121,7 +121,7 @@ void WorkbenchWindowAdvisor::PostWindowClose()
 
 void WorkbenchWindowAdvisor::CreateWindowContents(Shell::Pointer shell)
 {
-  this->GetWindowConfigurer().Cast<WorkbenchWindowConfigurer>()->CreateDefaultContents(shell);
+  //this->GetWindowConfigurer().Cast<WorkbenchWindowConfigurer>()->CreateDefaultContents(shell);
 }
 
 QWidget* WorkbenchWindowAdvisor::CreateEmptyWindowContents(QWidget*  /*parent*/)
