@@ -1037,10 +1037,10 @@ mitk::IRenderWindowPart* QmitkDataManagerView::OpenRenderWindowPart(bool activat
 {
   if (activatedEditor)
   {
-    return this->GetRenderWindowPart(QmitkAbstractView::ACTIVATE | QmitkAbstractView::OPEN);
+    return this->GetRenderWindowPart(QmitkAbstractView::ACTIVATE);
   }
   else
   {
-    return this->GetRenderWindowPart(QmitkAbstractView::BRING_TO_FRONT | QmitkAbstractView::OPEN);
+    return this->GetRenderWindowPart(QmitkAbstractView::BRING_TO_FRONT);
   }
 }
