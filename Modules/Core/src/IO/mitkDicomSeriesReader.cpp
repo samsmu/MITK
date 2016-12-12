@@ -35,6 +35,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkProperties.h"
 
+#include "CustomGDCMImageIO.h"
+
 namespace mitk
 {
 
@@ -50,7 +52,7 @@ void DicomSeriesReader::LoadSeriesTemplate(const DicomSeriesReader::StringContai
 
   typedef itk::ImageFileReader<InputImageType> ReaderType;
   typename ReaderType::Pointer reader = ReaderType::New();
-  itk::GDCMImageIO::Pointer gdcmImageIO = itk::GDCMImageIO::New();
+  itk::GDCMImageIO::Pointer gdcmImageIO = static_cast<itk::SmartPointer<itk::GDCMImageIO>>(CustomGDCMImageIO::New());
   reader->SetImageIO(gdcmImageIO);
 
   int filesCount = filenames.size();
