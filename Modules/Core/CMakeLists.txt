@@ -20,7 +20,6 @@ MITK_CREATE_MODULE(
     PRIVATE ITK
     PUBLIC  VTK|vtkFiltersTexture+vtkFiltersParallel+vtkImagingStencil+vtkImagingMath+vtkInteractionStyle+vtkRenderingOpenGL+vtkRenderingVolumeOpenGL+vtkRenderingFreeType+vtkRenderingLabel+vtkInteractionWidgets+vtkIOGeometry+vtkIOXML
     PUBLIC  Boost
-    PUBLIC  Qt5|Core
   WARNINGS_AS_ERRORS
   SUBPROJECTS MITK-Core
   # Do not automatically create CppMicroServices initialization code.
