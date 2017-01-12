@@ -98,6 +98,8 @@ private:
 
   void calculateTextPosWithOffset(float& x, float& y);
   void applyTextOrientation(vtkSmartPointer<vtkTextProperty>& textProperty, mitk::TextOrientation& orientation);
+  
+  void forAxialViewDirection(mitk::BaseRenderer* renderer);
 };
 
 } // namespace mitk
