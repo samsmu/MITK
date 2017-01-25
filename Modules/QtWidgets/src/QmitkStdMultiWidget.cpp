@@ -320,21 +320,6 @@ void QmitkStdMultiWidget::InitializeWidget()
   mitkWidget1->GetSliceNavigationController()->crosshairPositionEvent.AddListener(mitk::MessageDelegate<QmitkStdMultiWidget>(this, &QmitkStdMultiWidget::HandleCrosshairPositionEvent));
   mitkWidget2->GetSliceNavigationController()->crosshairPositionEvent.AddListener(mitk::MessageDelegate<QmitkStdMultiWidget>(this, &QmitkStdMultiWidget::HandleCrosshairPositionEvent));
   mitkWidget3->GetSliceNavigationController()->crosshairPositionEvent.AddListener(mitk::MessageDelegate<QmitkStdMultiWidget>(this, &QmitkStdMultiWidget::HandleCrosshairPositionEvent));
-
-  // setup the department logo rendering
-  if (!m_displayMetaInfo)
-  {
-    m_LogoRendering = mitk::LogoAnnotation::New();
-    mitk::BaseRenderer::Pointer renderer4 = mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow());
-    m_LogoRendering->SetOpacity(0.5);
-    mitk::Point2D offset;
-    offset.Fill(0.03);
-    m_LogoRendering->SetOffsetVector(offset);
-    m_LogoRendering->SetRelativeSize(0.25);
-    m_LogoRendering->SetCornerPosition(1);
-    SetDepartmentLogo(":/org.mitk.gui.qt.stdmultiwidgeteditor/defaultWatermark.png");
-    mitk::ManualPlacementAnnotationRenderer::AddAnnotation(m_LogoRendering.GetPointer(), renderer4);
-  }
 }
 
 void QmitkStdMultiWidget::FillGradientBackgroundWithBlack()
