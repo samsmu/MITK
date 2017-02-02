@@ -88,14 +88,8 @@ void mitk::VtkMapper::MitkRenderTranslucentGeometry(BaseRenderer* renderer)
   }
 }
 
-void mitk::VtkMapper::ApplyShaderProperties(mitk::BaseRenderer* renderer)
+void mitk::VtkMapper::ApplyShaderProperties(mitk::BaseRenderer *)
 {
-  IShaderRepository* shaderRepo = CoreServices::GetShaderRepository();
-  if (shaderRepo)
-  {
-    VtkMapperLocalStorage *ls = m_VtkMapperLSH.GetLocalStorage(renderer);
-    shaderRepo->UpdateShaderProgram(ls->m_ShaderProgram,this->GetDataNode(),renderer);
-  }
 }
 
 void mitk::VtkMapper::MitkRenderVolumetricGeometry(BaseRenderer* renderer)
