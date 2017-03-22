@@ -116,6 +116,7 @@ const DicomSeriesReader::TagToPropertyMapType& DicomSeriesReader::GetDICOMTagsTo
     dictionary["0018|5100"] = "dicom.series.PatientPosition";
     dictionary["0028|0108"] = "dicom.series.SmallestPixelValueInSeries";
     dictionary["0028|0109"] = "dicom.series.LargestPixelValueInSeries";
+    dictionary["0020|4000"] = "dicom.series.ImageComments";
 
     // VOI LUT module
     dictionary["0028|1050"] = "dicom.voilut.WindowCenter";
