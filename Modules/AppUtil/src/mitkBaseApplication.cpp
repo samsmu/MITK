@@ -815,7 +815,7 @@ QHash<QString, QVariant> BaseApplication::getFrameworkProperties() const
 
 static const int PROGRESS_X_PX = 200;
 static const int PROGRESS_Y_PX = 650;
-static const int PROGRESS_WIDTH_PX = 700;
+static const int PROGRESS_WIDTH_PX = 870;
 static const int PROGRESS_HEIGHT_PX = 30;
 
 void BaseApplication::initializeSplashScreen(QCoreApplication * application)
