@@ -57,13 +57,13 @@ public:
     while (m_working)
     {
       boost::this_thread::sleep(boost::posix_time::milliseconds(50));
-      if (m_progress >= 1)
+      if (m_progress >= 1.f)
       {
-        m_progress = 0;
+        m_progress = 0.f;
       }
       else
       {
-        m_progress += .1;
+        m_progress += .1f;
       }
       m_drawProgress(m_progress);
     }
@@ -77,7 +77,7 @@ public:
 
 private:
   bool m_working;
-  float m_progress = 0;
+  float m_progress = 0.f;
   boost::thread m_workThread;
   QSplashScreen* m_Splashscreen;
   std::function<void(float)> m_drawProgress;
