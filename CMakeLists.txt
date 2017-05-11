@@ -320,6 +320,18 @@ mitkFunctionFindWhitelists(MITK)
 option(MITK_USE_SYSTEM_Boost "Use the system Boost" OFF)
 set(MITK_USE_Boost_LIBRARIES "" CACHE STRING "A semi-colon separated list of required Boost libraries")
 
+# loggin needs regex and log libraries
+list(FIND MITK_USE_Boost_LIBRARIES regex _result)
+if(_result LESS 0)
+  message("> Adding 'regex' to MITK_USE_Boost_LIBRARIES.")
+  list(APPEND MITK_USE_Boost_LIBRARIES regex)
+endif()
+list(FIND MITK_USE_Boost_LIBRARIES log _result)
+if(_result LESS 0)
+  message("> Adding 'log' to MITK_USE_Boost_LIBRARIES.")
+  list(APPEND MITK_USE_Boost_LIBRARIES log)
+endif()
+
 # only windows can't build python in debug mode
 if(MITK_USE_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
   message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windowsis not supported!")
