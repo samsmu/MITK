@@ -114,6 +114,154 @@ mitk::TextOverlay2D::LocalStorage::LocalStorage()
   m_Assembly->AddPart(m_TextActor);
 }
 
+void mitk::TextOverlay2D::forAxialViewDirection(mitk::BaseRenderer* renderer)
+{
+  mitk::Overlay::Bounds bounds = GetBoundsOnDisplay(renderer);
+  
+  double xpos = bounds.Position[0];
+  double ypos = bounds.Position[1];
+  
+  double xsize = bounds.Size[0];
+  double ysize = bounds.Size[1];
+  
+  // x(0,0)
+  mitk::Point2D xpos2d;
+  xpos2d[0] = xpos;
+  xpos2d[1] = ypos;
+  
+  mitk::Point3D xpos3d;
+  
+  renderer->DisplayToWorld(xpos2d, xpos3d);
+  
+  // xmax(0 + sizex, 0 + sizey)
+  mitk::Point2D xmax2d;
+  
+  if (m_Orientation == mitk::TextOrientation::TextRigth)
+  {
+    xmax2d[0] = xpos + xsize;
+    xmax2d[1] = ypos - ysize;
+  }
+  else if (m_Orientation == mitk::TextOrientation::TextLeft)
+  {
+    xmax2d[0] = xpos - xsize;
+    xmax2d[1] = ypos + ysize;
+  }
+  
+  mitk::Point3D xmax3d;
+  
+  renderer->DisplayToWorld(xmax2d, xmax3d);
+  
+  std::cout << "xpos = " << xpos3d[0] << "; ypos = " << xpos3d[1] << "; zpos = " << xpos3d[2] << std::endl;
+  std::cout << "xmax = " << xmax3d[0] << "; ymax = " << xmax3d[1] << "; zmax = " << xmax3d[2] << std::endl;
+  
+  const double* wbounds = renderer->GetBounds();
+  
+  std::cout << "xmin = " << wbounds[0] << "; xmax = " << wbounds[1] << std::endl;
+  std::cout << "ymin = " << wbounds[2] << "; ymax = " << wbounds[3] << std::endl;
+  std::cout << "zmin = " << wbounds[4] << "; zmax = " << wbounds[5] << std::endl;
+  
+  LocalStorage* ls = this->m_LSH.GetLocalStorage(renderer);
+  
+  // ось X
+  if (xmax3d[0] > wbounds[1])
+  {
+    double xdel = xmax3d[0] - wbounds[1];
+
+    xpos3d[0] = xpos3d[0] - xdel;
+
+    mitk::Point2D newPos2d;
+
+    renderer->WorldToDisplay(xpos3d, newPos2d);
+
+    ls->m_TextActor->SetDisplayPosition(newPos2d[0], newPos2d[1]);
+  }
+
+  if (xmax3d[0] < wbounds[0] && m_Orientation == mitk::TextOrientation::TextLeft)
+  {
+    double xdel = wbounds[0] - xmax3d[0];
+
+    xpos3d[0] = xpos3d[0] + xdel;
+
+    mitk::Point2D newPos2d;
+
+    renderer->WorldToDisplay(xpos3d, newPos2d);
+
+    ls->m_TextActor->SetDisplayPosition(newPos2d[0], newPos2d[1]);
+  }
+  
+  // TODO: This code is necessary to find a more optimal solution to the problem.
+  /*int index = -1;
+  mitk::SliceNavigationController::ViewDirection viewDirection = renderer->GetSliceNavigationController()->GetViewDirection();
+  if (viewDirection == mitk::SliceNavigationController::ViewDirection::Axial)
+  {
+    index = 1;
+  }
+  else
+  {
+    index = 2;
+  }
+
+  // Ось Y
+
+  double checkPosY = 0.0;
+  if (xpos3d[index] > xmax3d[index])
+  {
+    checkPosY = xmax3d[index];
+  }
+  else if (xmax3d[index] > xpos3d[index])
+  {
+    checkPosY = xpos3d[index];
+  }
+
+  std::cout << "checkPosY = " << checkPosY << std::endl;
+
+  if (wbounds[2] > checkPosY)
+  {
+    double xdel = wbounds[2] - checkPosY;
+
+    std::cout << "xdel = " << xdel << std::endl;
+
+    xpos3d[index] = xpos3d[index] + xdel;
+
+    std::cout << "xpos3d[index] = " << xpos3d[index] << std::endl;
+
+    mitk::Point2D newPos2d;
+
+    renderer->WorldToDisplay(xpos3d, newPos2d);
+
+    std::cout << "newPos2d_x = " << newPos2d[0] << "; newPos2d_y = " << newPos2d[1] << std::endl;
+
+    ls->m_TextActor->SetDisplayPosition(newPos2d[0], newPos2d[1]);
+  }*/
+
+
+  /*if (xmax3d[index] > wbounds[3])
+  {
+    double xdel = xmax3d[index] - wbounds[3];
+
+    xpos3d[index] = xpos3d[index] - xdel;
+
+    mitk::Point2D newPos2d;
+
+    renderer->WorldToDisplay(xpos3d, newPos2d);
+
+    ls->m_TextActor->SetDisplayPosition(newPos2d[0], newPos2d[1]);
+  }
+
+  if (xpos3d[index] > wbounds[2])
+  {
+    double xdel = wbounds[2] - xpos3d[index];
+
+    xpos3d[index] = xpos3d[index] + xdel;
+
+    mitk::Point2D newPos2d;
+
+    renderer->WorldToDisplay(xpos3d, newPos2d);
+
+    ls->m_TextActor->SetDisplayPosition(newPos2d[0], newPos2d[1]);
+  }*/
+}
+
 void mitk::TextOverlay2D::UpdateVtkOverlay2D(mitk::BaseRenderer *renderer)
 {
   LocalStorage* ls = this->m_LSH.GetLocalStorage(renderer);
@@ -181,6 +329,126 @@ void mitk::TextOverlay2D::UpdateVtkOverlay2D(mitk::BaseRenderer *renderer)
 
     ls->m_TextActor->SetDisplayPosition(xt, yt);
     ls->m_STextActor->SetDisplayPosition(xs, ys);
+    
+    mitk::SliceNavigationController::ViewDirection viewDirection = renderer->GetSliceNavigationController()->GetViewDirection();
+    if (viewDirection == mitk::SliceNavigationController::ViewDirection::Axial)
+    {
+      mitk::Overlay::Bounds bounds = GetBoundsOnDisplay(renderer);
+      double xpos = bounds.Position[0];
+      double ypos = bounds.Position[1];
+
+      double xsize = bounds.Size[0];
+      double ysize = bounds.Size[1];
+
+      mitk::Point2D xpos2d;
+      xpos2d[0] = xpos;
+      xpos2d[1] = ypos;
+
+      mitk::Point3D xpos3d;
+
+      renderer->DisplayToWorld(xpos2d, xpos3d);
+
+      mitk::Point2D xmax2d;
+
+      if (m_Orientation == mitk::TextOrientation::TextRigth)
+      {
+        xmax2d[0] = xpos + xsize;
+        xmax2d[1] = ypos - ysize;
+      }
+      else if (m_Orientation == mitk::TextOrientation::TextLeft)
+      {
+        xmax2d[0] = xpos - xsize;
+        xmax2d[1] = ypos + ysize;
+      }
+      
+      mitk::Point3D xmax3d;
+      
+      renderer->DisplayToWorld(xmax2d, xmax3d);
+      
+      std::cout << "xpos = " << xpos3d[0] << "; ypos = " << xpos3d[1] << "; zpos = " << xpos3d[2] << std::endl;
+      std::cout << "xmax = " << xmax3d[0] << "; ymax = " << xmax3d[1] << "; zmax = " << xmax3d[2] << std::endl;
+      
+      const double* wbounds = renderer->GetBounds();
+      
+      std::cout << "xmin = " << wbounds[0] << "; xmax = " << wbounds[1] << std::endl;
+      std::cout << "ymin = " << wbounds[2] << "; ymax = " << wbounds[3] << std::endl;
+      std::cout << "zmin = " << wbounds[4] << "; zmax = " << wbounds[5] << std::endl;
+      
+      mitk::Point3D bordermin3d;
+      bordermin3d[0] = wbounds[0];
+      bordermin3d[1] = wbounds[2];
+      bordermin3d[2] = wbounds[4];
+      
+      mitk::Point3D bordermax3d;
+      bordermax3d[0] = wbounds[1];
+      bordermax3d[1] = wbounds[3];
+      bordermax3d[2] = wbounds[4];
+      
+      mitk::Point2D bmin;
+      mitk::Point2D bmax;
+      
+      renderer->WorldToDisplay(bordermin3d, bmin);
+      renderer->WorldToDisplay(bordermax3d, bmax);
+      
+      std::cout << "xpos = " << xpos << "; ypos = " << ypos << std::endl;
+      std::cout << "xmax2d = " << xmax2d[0] << "; xmax2d = " << xmax2d[1] << std::endl;
+      std::cout << "bmin_x = " << bmin[0] << "; bmin_y = " << bmin[1] << std::endl;
+      std::cout << "bmax_x = " << bmax[0] << "; bmax_y = " << bmax[1] << std::endl;
+      
+      if (xmax2d[0] > bmax[0])
+      {
+        double del = xmax2d[0] - bmax[0];
+        
+        xpos2d[0] = xpos2d[0] - del;
+        
+        ls->m_TextActor->SetDisplayPosition(xpos2d[0], xpos2d[1]);
+      }
+      
+      if (xmax2d[0] < bmin[0])
+      {
+        double del = bmin[0] - xmax2d[0];
+        
+        xpos2d[0] = xpos2d[0] + del;
+        
+        ls->m_TextActor->SetDisplayPosition(xpos2d[0], xpos2d[1]);
+      }
+      
+      if (xmax2d[1] > bmin[1] && m_Orientation == mitk::TextOrientation::TextLeft)
+      {
+        double del = xmax2d[1] - bmin[1];
+        
+        xpos2d[1] = xpos2d[1] - del;
+        
+        ls->m_TextActor->SetDisplayPosition(xpos2d[0], xpos2d[1]);
+      }
+      
+      if (xpos2d[1] > bmin[1] && m_Orientation == mitk::TextOrientation::TextRigth)
+      {
+        double del = xpos2d[1] - bmin[1];
+        
+        xpos2d[1] = xpos2d[1] - del;
+        
+        ls->m_TextActor->SetDisplayPosition(xpos2d[0], xpos2d[1]);
+      }
+
+      if (xpos2d[1] < bmax[1] && m_Orientation == mitk::TextOrientation::TextLeft)
+      {
+        double del = bmax[1] - xpos2d[1];
+        
+        xpos2d[1] = xpos2d[1] + del;
+        
+        ls->m_TextActor->SetDisplayPosition(xpos2d[0], xpos2d[1]);
+      }
+
+      if (xmax2d[1] < bmax[1] && m_Orientation == mitk::TextOrientation::TextLeft)
+      {
+        double del = bmax[1] - xmax2d[1];
+        
+        xpos2d[1] = xpos2d[1] + del;
+        
+        ls->m_TextActor->SetDisplayPosition(xpos2d[0], xpos2d[1]);
+      }
+    }
 
     ls->UpdateGenerateDataTime();
   }
@@ -218,6 +486,7 @@ void mitk::TextOverlay2D::calculateTextPosWithOffset(float& x, float& y)
   if (m_Orientation == mitk::TextOrientation::TextLeft)
   {
     x -= 25.0;
+    y += 10.0;
   }
   else if (m_Orientation == mitk::TextOrientation::TextCenterTop)
   {
