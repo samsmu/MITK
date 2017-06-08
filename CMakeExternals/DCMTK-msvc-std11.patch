@@ -1,0 +1,26 @@
+--- a/ofstd/include/dcmtk/ofstd/oflimits.h	2017-06-01 18:56:16.173807600 +0400
++++ b/ofstd/include/dcmtk/ofstd/oflimits.h	2017-06-01 19:09:37.467594100 +0400
+@@ -33,9 +33,9 @@
+  *  @brief Provides an interface to query properties of all fundamental numeric types.
+  */
+ 
+-// use native classes if C++11 is supported
++// use native classes if C++11 is supported or partially supported in MSC (starts from vs2013)
+ 
+-#if __cplusplus >= 201103L
++#if __cplusplus >= 201103L || defined(_MSC_VER) && _MSC_VER >= 1800
+ 
+ #include <limits>
+ using OFfloat_round_style = std::float_round_style;
+
+--- a/config/include/dcmtk/config/osconfig.h.in	2016-02-16 20:32:13.000000000 +0400
++++ b/config/include/dcmtk/config/osconfig.h.in	2017-06-01 21:53:22.859010600 +0400
+@@ -1088,7 +1088,7 @@
+ /* Define to int if undefined. */
+ #undef socklen_t
+ 
+-#if defined(DCMTK_USE_CXX11_STL) && defined(__cplusplus) && __cplusplus < 201103L
++#if defined(DCMTK_USE_CXX11_STL) && defined(__cplusplus) && !(__cplusplus >= 201103L || defined(_MSC_VER) && _MSC_VER >= 1800)
+ #error\
+  DCMTK was configured to use the C++11 STL, but your compiler is not configured\
+  for building with C++11 features.
