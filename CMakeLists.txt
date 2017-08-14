@@ -306,7 +306,7 @@ endif()
 # MITK superbuild
 
 env_option(MITK_USE_BLUEBERRY "Build the BlueBerry platform" ON)
-env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" OFF)
+env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" ON)
 
 #-----------------------------------------------------------------------------
 # Build configurations
