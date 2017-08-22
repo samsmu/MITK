@@ -97,7 +97,7 @@ if(NOT DEFINED VTK_DIR)
         -DModule_vtkTestingRendering:BOOL=ON
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
         -DVTK_USE_CXX11_FEATURES:BOOL=ON
-        -DVTK_RENDERING_BACKEND:STRING=OpenGL2
+        -DVTK_RENDERING_BACKEND:STRING=OpenGL
         ${additional_cmake_args}
     CMAKE_CACHE_ARGS
       ${ep_common_cache_args}
