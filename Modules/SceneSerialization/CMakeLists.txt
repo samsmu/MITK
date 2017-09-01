@@ -1,6 +1,6 @@
 MITK_CREATE_MODULE(
-  DEPENDS MitkSceneSerializationBase MitkLogging
-  PACKAGE_DEPENDS PUBLIC Boost Poco|Zip Qt5|Core
+  DEPENDS MitkSceneSerializationBase MitkLogging MitkUtilities
+  PACKAGE_DEPENDS PUBLIC Boost Poco|Zip
   WARNINGS_AS_ERRORS
 )
 
