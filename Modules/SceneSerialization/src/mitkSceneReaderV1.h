@@ -16,7 +16,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkSceneReader.h"
 
-#include <shared_mutex>
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace mitk
 {
@@ -70,7 +70,7 @@ class SceneReaderV1 : public SceneReader
     typedef std::map<std::string, DataNode*> IDToNodeMappingType;
     typedef std::map<DataNode*, std::string> NodeToIDMappingType;
 
-    std::recursive_mutex    m_Mutex;
+    boost::recursive_mutex  m_Mutex;
     OrderedNodesList        m_OrderedNodePairs;
     IDToNodeMappingType     m_NodeForID;
     NodeToIDMappingType     m_IDForNode;

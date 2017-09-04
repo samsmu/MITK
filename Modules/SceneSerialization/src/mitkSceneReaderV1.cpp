@@ -106,7 +106,7 @@ bool mitk::SceneReaderV1::LoadScene(TiXmlDocument& document, const std::string& 
     }
 
 
-        const std::unique_lock<std::recursive_mutex> lock(m_Mutex);
+        const boost::recursive_mutex::scoped_lock lock(m_Mutex);
         DataNodes.push_back(result);
         ProgressBar::GetInstance()->Progress();
       });
@@ -199,7 +199,7 @@ bool mitk::SceneReaderV1::LoadScene(TiXmlDocument& document, const std::string& 
           error = true;
         }
 
-        const std::unique_lock<std::recursive_mutex> lock(m_Mutex);
+        const boost::recursive_mutex::scoped_lock lock(m_Mutex);
 
     if (interrupt && *interrupt) {
       ProgressBar::GetInstance()->Reset();
