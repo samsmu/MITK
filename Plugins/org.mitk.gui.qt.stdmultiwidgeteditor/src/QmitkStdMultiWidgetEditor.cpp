@@ -191,11 +191,6 @@ void QmitkStdMultiWidgetEditor::EnableDecorations(bool enable, const QStringList
     enable ? d->m_StdMultiWidget->EnableColoredRectangles()
            : d->m_StdMultiWidget->DisableColoredRectangles();
   }
-  if (decorations.isEmpty() || decorations.contains(DECORATION_LOGO))
-  {
-    enable ? d->m_StdMultiWidget->EnableDepartmentLogo()
-           : d->m_StdMultiWidget->DisableDepartmentLogo();
-  }
   if (decorations.isEmpty() || decorations.contains(DECORATION_MENU))
   {
     d->m_StdMultiWidget->ActivateMenuWidget(enable);
@@ -218,10 +213,6 @@ bool QmitkStdMultiWidgetEditor::IsDecorationEnabled(const QString &decoration) c
   {
     return d->m_StdMultiWidget->IsColoredRectanglesEnabled();
   }
-  else if (decoration == DECORATION_LOGO)
-  {
-    return d->m_StdMultiWidget->IsColoredRectanglesEnabled();
-  }
   else if (decoration == DECORATION_MENU)
   {
     return d->m_StdMultiWidget->IsMenuWidgetEnabled();
@@ -241,7 +232,7 @@ bool QmitkStdMultiWidgetEditor::IsDecorationEnabled(const QString &decoration) c
 QStringList QmitkStdMultiWidgetEditor::GetDecorations() const
 {
   QStringList decorations;
-  decorations << DECORATION_BORDER << DECORATION_LOGO << DECORATION_MENU << DECORATION_BACKGROUND << DECORATION_CORNER_ANNOTATION;
+  decorations << DECORATION_BORDER << DECORATION_MENU << DECORATION_BACKGROUND << DECORATION_CORNER_ANNOTATION;
   return decorations;
 }
 
@@ -330,49 +321,6 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 
 void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
-  // Enable change of logo. If no DepartmentLogo was set explicitly, MBILogo is used.
-  // Set new department logo by prefs->Set("DepartmentLogo", "PathToImage");
-
-  // If no logo was set for this plug-in specifically, walk the parent preference nodes
-  // and lookup a logo value there.
-
-  //We need to disable the logo first, otherwise setting a new logo will have no effect due to how mitkManufacturerLogo works
-  d->m_StdMultiWidget->DisableDepartmentLogo();
-  d->m_StdMultiWidget->SetDepartmentLogo(qPrintable(":/org.mitk.gui.qt.stdmultiwidgeteditor/defaultWatermark.png"));
-  d->m_StdMultiWidget->EnableDepartmentLogo();
-
-  const berry::IPreferences* currentNode = prefs;
-
-  while(currentNode)
-  {
-    bool logoFound = false;
-    foreach (const QString& key, currentNode->Keys())
-    {
-      if( key == "DepartmentLogo")
-      {
-        QString departmentLogoLocation = currentNode->Get("DepartmentLogo", "");
-
-        if (departmentLogoLocation.isEmpty())
-        {
-          d->m_StdMultiWidget->DisableDepartmentLogo();
-        }
-        else
-        {
-          // we need to disable the logo first, otherwise setting a new logo will have
-          // no effect due to how mitkManufacturerLogo works...
-          d->m_StdMultiWidget->DisableDepartmentLogo();
-          d->m_StdMultiWidget->SetDepartmentLogo(qPrintable(departmentLogoLocation));
-          d->m_StdMultiWidget->EnableDepartmentLogo();
-        }
-        logoFound = true;
-        break;
-      }
-    }
-
-    if (logoFound) break;
-    currentNode = currentNode->Parent().GetPointer();
-  }
-
   //Update internal members
   this->FillMembersWithCurrentDecorations();
   this->GetPreferenceDecorations(prefs);
