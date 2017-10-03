@@ -76,9 +76,9 @@ QmitkStdMultiWidget::QmitkStdMultiWidget(QWidget *parent,
     mitkWidget2Container(nullptr),
     mitkWidget3Container(nullptr),
     mitkWidget4Container(nullptr),
+    m_displayMetaInfo(true),
     m_PendingCrosshairPositionEvent(false),
-    m_CrosshairNavigationEnabled(false),
-    m_displayMetaInfo(true)
+    m_CrosshairNavigationEnabled(false)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified

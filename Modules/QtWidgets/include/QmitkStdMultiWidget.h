@@ -144,8 +144,6 @@ protected:
 
   void HideAllWidgetToolbars();
 
-  bool m_displayMetaInfo;
-
   mitk::PropertyList::Pointer imageProperties;
   unsigned long imageMTime;
 
@@ -426,6 +424,8 @@ protected:
 
   vtkSmartPointer<vtkCornerAnnotation> m_CornerAnnotations[4];
   vtkSmartPointer<vtkMitkRectangleProp> m_RectangleProps[4];
+
+  bool m_displayMetaInfo;
 
   bool m_PendingCrosshairPositionEvent;
   bool m_CrosshairNavigationEnabled;
