@@ -1604,6 +1604,10 @@ mitk::DataNode::Pointer QmitkStdMultiWidget::GetTopLayerNode(mitk::DataStorage::
         int layer = 0;
         if (!(nodes->at(x)->GetIntProperty("layer", layer)))
           continue;
+        bool isBinary = false;
+        nodes->at(x)->GetBoolProperty("binary", isBinary);
+        if (isBinary)
+          continue;
         if (layer > maxlayer)
         {
           if (static_cast<mitk::DataNode::Pointer>(nodes->at(x))->IsVisible(baseRenderer))
