@@ -338,6 +338,14 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *rendere
         // generate contours/outlines
         localStorage->m_OutlinePolyData = CreateOutlinePolyData<unsigned char>(renderer);
         break;
+      case itk::ImageIOBase::CHAR:
+        // generate contours/outlines
+        localStorage->m_OutlinePolyData = CreateOutlinePolyData<char>(renderer);
+        break;
+      case itk::ImageIOBase::SHORT:
+        // generate contours/outlines
+        localStorage->m_OutlinePolyData = CreateOutlinePolyData<short>(renderer);
+        break;
       case itk::ImageIOBase::USHORT:
         // generate contours/outlines
         localStorage->m_OutlinePolyData = CreateOutlinePolyData<unsigned short>(renderer);
