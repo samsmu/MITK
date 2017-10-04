@@ -794,20 +794,39 @@ bool QmitkDataStorageTreeModel::setHeaderData(int /*section*/,
 
 void QmitkDataStorageTreeModel::AdjustLayerProperty()
 {
+  auto isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
+  auto isSegmentation = mitk::NodePredicateProperty::New("segmentation", mitk::BoolProperty::New(true));
+  auto isBinaryOrSegmentation = mitk::NodePredicateOr::New(isBinary, isSegmentation);
+
   /// transform the tree into an array and set the layer property descending
   std::vector<TreeItem *> vec;
   this->TreeToVector(m_Root, vec);
 
   int i = vec.size() - 1;
+  auto adjustLayer = [&i](mitk::DataNode::Pointer dataNode)
+  {
+    bool fixedLayer = false;
+    if (!(dataNode->GetBoolProperty("fixedLayer", fixedLayer) && fixedLayer))
+      dataNode->SetIntProperty("layer", i);
+    --i;
+  };
+
   for (std::vector<TreeItem *>::const_iterator it = vec.begin(); it != vec.end(); ++it)
   {
     mitk::DataNode::Pointer dataNode = (*it)->GetDataNode();
-    bool fixedLayer = false;
+    if (isBinaryOrSegmentation->CheckNode(dataNode))
+    {
+      adjustLayer(dataNode);
+    }
+  }
 
-    if (!(dataNode->GetBoolProperty("fixedLayer", fixedLayer) && fixedLayer))
-      dataNode->SetIntProperty("layer", i);
-
-    --i;
+  for (std::vector<TreeItem *>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+  {
+    mitk::DataNode::Pointer dataNode = (*it)->GetDataNode();
+    if (!isBinaryOrSegmentation->CheckNode(dataNode))
+    {
+      adjustLayer(dataNode);
+    }
   }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
