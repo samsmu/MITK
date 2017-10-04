@@ -338,6 +338,11 @@ bool mitk::SceneIO::SaveScene(DataStorage::SetOfObjects::ConstPointer sceneNodes
               m_FailedNodes->push_back(node);
             }
 
+            if (dataElement == nullptr)
+            {
+              continue;
+            }
+
             // store basedata properties
             PropertyList *propertyList = data->GetPropertyList();
             if (propertyList && !propertyList->IsEmpty())
@@ -478,6 +483,10 @@ TiXmlElement *mitk::SceneIO::SaveBaseData(BaseData *data, const std::string &fil
       try
       {
         std::string writtenfilename = serializer->Serialize();
+        if (writtenfilename.empty())
+        {
+          return nullptr;
+        }
         element->SetAttribute("file", writtenfilename);
         error = false;
       }
@@ -509,6 +518,10 @@ TiXmlElement *mitk::SceneIO::SavePropertyList(PropertyList *propertyList, const 
   try
   {
     std::string writtenfilename = serializer->Serialize();
+    if (writtenfilename.empty())
+    {
+      return nullptr;
+    }
     element->SetAttribute("file", writtenfilename);
     PropertyList::Pointer failedProperties = serializer->GetFailedProperties();
     if (failedProperties.IsNotNull())
