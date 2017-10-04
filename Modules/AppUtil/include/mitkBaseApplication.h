@@ -234,6 +234,10 @@ namespace mitk
 
     void sendMessage(const QByteArray);
 
+    void setQProperty(const char* property, const QVariant& value) const;
+
+    QVariant getQProperty(const char* property) const;
+
   protected:
     void initialize(Poco::Util::Application &self) override;
 
