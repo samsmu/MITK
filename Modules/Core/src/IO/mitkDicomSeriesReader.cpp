@@ -796,6 +796,15 @@ namespace mitk
       if (std::string(fileIter->first) == std::string("DICOMDIR"))
         continue;
 
+      gdcm::Scanner::TagToValue& tagMap = const_cast<gdcm::Scanner::TagToValue&>(fileIter->second);
+      const char* seriesInstanceUid = tagMap[tagSeriesInstanceUID];
+      const char* imagePosition = tagMap[tagImagePositionPatient];
+      const char* imageOrientation = tagMap[tagImageOrientation];
+
+      if (!seriesInstanceUid || !imagePosition || !imageOrientation) {
+        continue;
+      }
+
       /* sort out multi-frame
       if ( scanner.GetValue( fileIter->first , tagNumberOfFrames ) )
       {
