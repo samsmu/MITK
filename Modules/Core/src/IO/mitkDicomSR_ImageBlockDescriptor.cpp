@@ -194,4 +194,7 @@ namespace mitk
 
   void DicomSeriesReader::ImageBlockDescriptor::SetHasGantryTiltCorrected(bool on) { m_HasGantryTiltCorrected = on; }
   void DicomSeriesReader::ImageBlockDescriptor::SetHasMultipleTimePoints(bool on) { m_HasMultipleTimePoints = on; }
+
+  std::string DicomSeriesReader::ImageBlockDescriptor::GetOrientation() const { return m_Orientation; }
+  void DicomSeriesReader::ImageBlockDescriptor::SetOrientation(std::string orientation) { m_Orientation = orientation; }
 } // end namespace mitk
