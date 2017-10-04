@@ -328,6 +328,11 @@ struct WorkbenchRegistryConstants {
    */
   static const QString ATT_NAME; // "name";
 
+   /**
+    * Name attribute. Value <code>case</code>.
+    */
+  static const QString ATT_CASE; // "case";
+
   /**
    * Name filter attribute. Value <code>nameFilter</code>.
    */

@@ -191,6 +191,15 @@ QString EditorDescriptor::GetLabel() const
   //return program.getName();
 }
 
+QString EditorDescriptor::GetCase() const
+{
+  if (configurationElement.IsNull())
+  {
+    return 0;
+  }
+  return configurationElement->GetAttribute(WorkbenchRegistryConstants::ATT_CASE);
+}
+
 QString EditorDescriptor::GetLauncher() const
 {
   if (configurationElement.IsNull())

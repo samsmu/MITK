@@ -105,6 +105,11 @@ QString ViewDescriptor::GetLabel() const
   return configElement->GetAttribute(WorkbenchRegistryConstants::ATT_NAME);
 }
 
+QString ViewDescriptor::GetCase() const
+{
+  return configElement->GetAttribute(WorkbenchRegistryConstants::ATT_CASE);
+}
+
 QString ViewDescriptor::GetAccelerator() const
 {
   return configElement->GetAttribute(WorkbenchRegistryConstants::ATT_ACCELERATOR);

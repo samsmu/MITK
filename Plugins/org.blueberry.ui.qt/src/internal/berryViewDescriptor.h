@@ -100,6 +100,11 @@ public:
    */
   QString GetLabel() const override;
 
+   /* (non-Javadoc)
+    * @see org.blueberry.ui.IWorkbenchPartDescriptor#getCase()
+    */
+  QString GetCase() const override;
+
   /**
    * Return the accelerator attribute.
    *

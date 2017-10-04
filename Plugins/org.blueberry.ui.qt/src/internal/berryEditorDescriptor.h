@@ -229,6 +229,13 @@ public: QString GetImageFilename() const;
    */
 public: QString GetLabel() const override;
 
+    /**
+    * Return the case perspective for this editor.
+    *
+    * @return the label
+    */
+public: QString GetCase() const override;
+
   /**
    * Returns the class name of the launcher.
    *
