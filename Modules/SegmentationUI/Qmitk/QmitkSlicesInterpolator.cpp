@@ -582,7 +582,10 @@ void QmitkSlicesInterpolator::Interpolate(mitk::PlaneGeometry *plane,
 
         mitk::Image::Pointer interpolation =
           m_Interpolator->Interpolate(clickedSliceDimension, clickedSliceIndex, plane, timeStep);
-        m_FeedbackNode->SetData(interpolation);
+        if (interpolation)
+        {
+          m_FeedbackNode->SetData(interpolation);
+        }
 
         m_LastSNC = slicer;
         m_LastSliceIndex = clickedSliceIndex;
