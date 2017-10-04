@@ -281,6 +281,7 @@ void QmitkBasicImageProcessing::OnSelectionChanged(berry::IWorkbenchPart::Pointe
   *m_SelectedImageNode = _DataNode;
   //try to cast to image
   mitk::Image::Pointer tempImage = dynamic_cast<mitk::Image*>(m_SelectedImageNode->GetNode()->GetData());
+  this->InternalGetTimeNavigationController();
 
     //no image
     if( tempImage.IsNull() || (tempImage->IsInitialized() == false) )
@@ -303,8 +304,6 @@ void QmitkBasicImageProcessing::OnSelectionChanged(berry::IWorkbenchPart::Pointe
     if ( tempImage->GetDimension() > 3 )
     {
       // try to retrieve the TNC (for 4-D Processing )
-      this->InternalGetTimeNavigationController();
-
       m_Controls->sliceNavigatorTime->setEnabled(true);
       m_Controls->tlTime->setEnabled(true);
     }
