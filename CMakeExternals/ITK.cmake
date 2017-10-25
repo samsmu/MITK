@@ -10,6 +10,10 @@ endif()
 set(proj ITK)
 set(proj_DEPENDENCIES GDCM)
 
+if(MITK_USE_VTK)
+  list(APPEND proj_DEPENDENCIES VTK)
+endif()
+
 if(MITK_USE_OpenCV)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
@@ -69,6 +73,8 @@ if(NOT DEFINED ITK_DIR)
        -DGDCM_DIR:PATH=${GDCM_DIR}
        -DITK_USE_SYSTEM_HDF5:BOOL=ON
        -DHDF5_DIR:PATH=${HDF5_DIR}
+       -DModule_ITKVtkGlue:BOOL=ON
+       -DVTK_DIR:PATH=${VTK_DIR}
      CMAKE_CACHE_ARGS
        ${ep_common_cache_args}
      CMAKE_CACHE_DEFAULT_ARGS
