@@ -22,14 +22,6 @@ if(MITK_USE_HDF5)
   list(APPEND proj_DEPENDENCIES HDF5)
 endif()
 
-if(MITK_USE_OpenCL)
-  list(APPEND additional_cmake_args
-    -DITK_USE_GPU:BOOL=ON
-    -DOpenCL_INCLUDE_DIR:PATH=${OpenCL_INCLUDE_DIR}
-    -DOpenCL_LIBRARY:FILEPATH=${OpenCL_LIBRARY}
-  )
-endif()
-
 set(ITK_DEPENDS ${proj})
 
 if(NOT DEFINED ITK_DIR)
@@ -63,6 +55,14 @@ if(NOT DEFINED ITK_DIR)
   if(CTEST_USE_LAUNCHERS)
     list(APPEND additional_cmake_args
       "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+    )
+  endif()
+
+  if(MITK_USE_OpenCL)
+    list(APPEND additional_cmake_args
+      -DITK_USE_GPU:BOOL=ON
+      -DOpenCL_INCLUDE_DIR:PATH=${OpenCL_INCLUDE_DIR}
+      -DOpenCL_LIBRARY:FILEPATH=${OpenCL_LIBRARY}
     )
   endif()
 
