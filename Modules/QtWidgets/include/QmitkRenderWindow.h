@@ -17,10 +17,13 @@
 #ifndef QMITKRENDERWINDOW_H_HEADER_INCLUDED_C1C40D66
 #define QMITKRENDERWINDOW_H_HEADER_INCLUDED_C1C40D66
 
+#undef GL_GLEXT_LEGACY
+
 #include "mitkRenderWindowBase.h"
 
 #include <MitkQtWidgetsExports.h>
-#include "QVTKWidget.h"
+//#include "QVTKWidget.h"
+#include "QVTKWidget2.h"
 #include <vtkGenericOpenGLRenderWindow.h>
 #include "QmitkRenderWindowMenu.h"
 
@@ -31,6 +34,8 @@ class QmitkStdMultiWidget;
 class QDragEnterEvent;
 class QDropEvent;
 class QInputEvent;
+
+#define QVTKWidget QVTKWidget2
 
 /**
  * \ingroup QmitkModule

@@ -26,6 +26,7 @@
 #include <QDropEvent>
 #include <QSurfaceFormat>
 #include <QWindow>
+
 #include "mitkMousePressEvent.h"
 #include "mitkMouseMoveEvent.h"
 #include "mitkMouseDoubleClickEvent.h"
@@ -44,14 +45,16 @@ QmitkRenderWindow::QmitkRenderWindow(QWidget *parent,
   QVTKWidget(parent), m_ResendQtEvents(true), m_MenuWidget(NULL), m_MenuWidgetActivated(false), m_LayoutIndex(0), 
   m_FullScreenMode(false)
 {
-  // Needed if QVTKWidget2 is used instead of QVTKWidget
-  //this will be fixed in VTK source if change 18864 is accepted
-  /*QGLFormat newform = this->format();
+  QGLFormat newform = this->format();
   newform.setSamples(8);
-  this->setFormat(newform);*/
+  newform.setSampleBuffers(true);
+  newform.setDirectRendering(true);
+  this->setFormat(newform);
 
   QSurfaceFormat surfaceFormat = windowHandle()->format();
   surfaceFormat.setStencilBufferSize(8);
+  surfaceFormat.setSamples(8);
+  surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
   windowHandle()->setFormat(surfaceFormat);
 
   if (renderingMode == mitk::BaseRenderer::RenderingMode::DepthPeeling)
@@ -61,6 +64,8 @@ QmitkRenderWindow::QmitkRenderWindow(QWidget *parent,
   }
   else if (renderingMode == mitk::BaseRenderer::RenderingMode::MultiSampling)
   {
+    GetRenderWindow()->LineSmoothingOn();
+    GetRenderWindow()->PointSmoothingOn();
     GetRenderWindow()->SetMultiSamples(8);
   }
   else if (renderingMode == mitk::BaseRenderer::RenderingMode::Standard)
