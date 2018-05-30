@@ -55,6 +55,14 @@ public:
     m_WorkThread = boost::thread(boost::bind(&SplashCloserCallback::update, this));
   }
 
+  ~SplashCloserCallback()
+  {
+    if (m_WorkThread.joinable())
+    {
+      m_WorkThread.join();
+    }
+  }
+
   void update()
   {
     while(m_Working)
