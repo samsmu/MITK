@@ -22,10 +22,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkIOUtil.h"
 #include "Poco/Path.h"
 #include <mitkRenderingModeProperty.h>
-
-#include <future>
-
-#include <QCoreApplication>
+#include "ThreadPoolUtilities.h"
 
 MITK_REGISTER_SERIALIZER(SceneReaderV1)
 
@@ -88,11 +85,11 @@ bool mitk::SceneReaderV1::LoadScene(TiXmlDocument& document, const std::string& 
 
   ProgressBar::GetInstance()->AddStepsToDo(listSize * 2);
 
-  std::vector<std::future<mitk::DataNode::Pointer>> loadedThreads;
+  Utilities::TaskGroup loadedThreads;
   for (TiXmlElement* element = document.FirstChildElement("node"); element != NULL; element = element->NextSiblingElement("node"))
   {
     auto dataElement = element->FirstChildElement("data");
-    loadedThreads.push_back(std::async(std::launch::async, [this, dataElement, &workingDirectory, &error, interrupt]{
+    loadedThreads.Enqueue([this, dataElement, &workingDirectory, &error, &DataNodes]{
         if (interrupt && *interrupt) {
           ProgressBar::GetInstance()->Reset();
           return DataNode::Pointer();
@@ -103,24 +100,18 @@ bool mitk::SceneReaderV1::LoadScene(TiXmlDocument& document, const std::string& 
         if (localError) {
           error = true;
         }
-        return result;
-      }));
-  }
-  for (auto& task: loadedThreads)
-  {
-    while (task.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready) {
-      qApp->processEvents();
-    }
-
     if (interrupt && *interrupt) {
       ProgressBar::GetInstance()->Reset();
       continue;
     }
 
-    DataNodes.push_back(task.get());
 
-    ProgressBar::GetInstance()->Progress();
+        const boost::recursive_mutex::scoped_lock lock(m_Mutex);
+        DataNodes.push_back(result);
+        ProgressBar::GetInstance()->Progress();
+      });
   }
+  loadedThreads.WaitAll();
 
   if (interrupt && *interrupt) {
     ProgressBar::GetInstance()->Reset();
@@ -133,13 +124,13 @@ bool mitk::SceneReaderV1::LoadScene(TiXmlDocument& document, const std::string& 
     NodeToIDMappingType::mapped_type m_IDForNode;
     NodesAndParentsPair m_OrderedNodePairs;
   };
-  std::vector<std::future<DecorateResult>> decorateThreads;
+  Utilities::TaskGroup decorateThreads;
   // iterate all nodes
   // first level nodes should be <node> elements
   DataNodeVector::iterator nit = DataNodes.begin();
   for( TiXmlElement* element = document.FirstChildElement("node"); element != NULL || nit != DataNodes.end(); element = element->NextSiblingElement("node"), ++nit )
   {
-    decorateThreads.push_back(std::async(std::launch::async, [this, element, nit, &workingDirectory, &error, interrupt]() -> DecorateResult {
+    decorateThreads.Enqueue([this, element, nit, &workingDirectory, &error]{
         if (interrupt && *interrupt) {
           ProgressBar::GetInstance()->Reset();
           return DecorateResult();
@@ -207,28 +198,23 @@ bool mitk::SceneReaderV1::LoadScene(TiXmlDocument& document, const std::string& 
         if (localError) {
           error = true;
         }
-        return std::move(result);
-      }));
-  }
 
-  for (auto& task : decorateThreads)
-  {
-    while (task.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready) {
-      qApp->processEvents();
-    }
+        const boost::recursive_mutex::scoped_lock lock(m_Mutex);
 
     if (interrupt && *interrupt) {
       ProgressBar::GetInstance()->Reset();
       continue;
     }
 
-    auto result = task.get();
-    m_NodeForID[result.m_IDForNode] = result.m_NodeForID;
-    m_IDForNode[result.m_NodeForID] = result.m_IDForNode;
-    m_OrderedNodePairs.push_back(result.m_OrderedNodePairs);
+        m_NodeForID[result.m_IDForNode] = result.m_NodeForID;
+        m_IDForNode[result.m_NodeForID] = result.m_IDForNode;
+        m_OrderedNodePairs.push_back(result.m_OrderedNodePairs);
 
-    ProgressBar::GetInstance()->Progress();
-  } // end for all <node>
+        ProgressBar::GetInstance()->Progress();
+      });
+  }
+  decorateThreads.WaitAll();
+  // end for all <node>
 
   if (interrupt && *interrupt) {
     ProgressBar::GetInstance()->Reset();
