@@ -14,8 +14,12 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/locale/encoding.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/locale.hpp>
+
+#include <boost/iostreams/concepts.hpp>
+#include <boost/iostreams/stream.hpp>
 
 #include <boost/algorithm/string.hpp>
 
@@ -145,7 +149,89 @@ namespace Logger
 {
   typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_file_backend > file_sink;
   typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > ostream_sink;
+/*
+  class SyncSSLClient {
+  public:
+    SyncSSLClient(const std::string& raw_ip_address, unsigned short port_num) :
+                  m_ep(boost::asio::ip::address::from_string(raw_ip_address), port_num),
+                  m_ssl_context(boost::asio::ssl::context::sslv23_client),
+                  m_ssl_stream(m_ios, m_ssl_context) {
 
+      m_ssl_context.set_default_verify_paths();
+
+      //std::string keyPath = Options::get().logsPath + "key.pem";
+      //m_ssl_context.load_verify_file(keyPath);
+      //m_ssl_context.set_default_verify_paths();
+
+      // Set verification mode and designate that
+      // we want to perform verification.
+      m_ssl_stream.set_verify_mode(boost::asio::ssl::verify_peer); //verify_none);
+
+      // Set verification callback.
+      m_ssl_stream.set_verify_callback([this](bool preverified,
+                                              boost::asio::ssl::verify_context& context) -> bool {
+          return on_peer_verify(preverified, context);
+        });
+    }
+    void connect() {
+      // Connect the TCP socket.
+      m_ssl_stream.lowest_layer().connect(m_ep);
+      // Perform the SSL handshake.
+      //m_ssl_stream.handshake(boost::asio::ssl::stream_base::client);
+      boost::asio::ip::tcp::resolver resolver(m_ios);
+      boost::asio::ip::tcp::resolver::query query(Options::get().iphost, Options::get().ipport);
+
+      boost::asio::connect(m_ssl_stream.lowest_layer(), resolver.resolve(query));
+      // +
+      m_ios.run();
+    }
+    void close() {
+      // We ignore any errors that might occur
+      // during shutdown as we anyway can't
+      // do anything about them.
+      boost::system::error_code ec;
+      m_ssl_stream.shutdown(ec); // Shutdown SSL.
+
+      // Shut down the socket.
+      m_ssl_stream.lowest_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+      m_ssl_stream.lowest_layer().close(ec);
+    }
+    std::string emulateLongComputationOp(
+      unsigned int duration_sec) {
+      std::string request = "{EMULATE_LONG_COMP_OP "
+                            + std::to_string(duration_sec)
+                            + "}";
+      sendRequest(request);
+      return "OK"; //receiveResponse();
+    }
+  private:
+    bool on_peer_verify(bool preverified, boost::asio::ssl::verify_context& context)
+    {
+      // Here the certificate should be verified and the
+      // verification result should be returned.
+      return true;
+    }
+    void sendRequest(const std::string& request) {
+      boost::system::error_code ec;
+      boost::asio::write(m_ssl_stream, boost::asio::buffer(request), ec);
+      std::cout << ec.message() << "!!!" << std::endl;
+    }
+    std::string receiveResponse() {
+      boost::asio::streambuf buf;
+      boost::asio::read_until(m_ssl_stream, buf, '\n');
+      std::istream input(&buf);
+      std::string response;
+      std::getline(input, response);
+      return response;
+    }
+  private:
+    boost::asio::io_service m_ios;
+    boost::asio::ip::tcp::endpoint m_ep;
+
+    boost::asio::ssl::context m_ssl_context;
+    boost::asio::ssl::stream<boost::asio::ip::tcp::socket>m_ssl_stream;
+  };
+*/
   Options::Options()
   {
     // defaults
@@ -269,11 +355,44 @@ namespace Logger
     }
 
     if (Options::get().tcplog) {
+      //TODO: if ssl
+      /*
+      boost::asio::io_service io_service;
+
+      boost::asio::ip::tcp::resolver resolver(io_service);
+      boost::asio::ip::tcp::resolver::query query(Options::get().iphost, Options::get().ipport);
+      boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+
+      std::string certPath = Options::get().logsPath + "self_signed.crt";
+      std::string keyPath = Options::get().logsPath + "key.pem";
+
+      boost::asio::ssl::context context(/*io_service,*//* boost::asio::ssl::context::sslv23);
+      //context.set_options(
+      //    boost::asio::ssl::context::default_workarounds
+      //      | boost::asio::ssl::context::no_sslv2
+      //      | boost::asio::ssl::context::no_sslv3);
+      context.load_verify_file(keyPath);
+      //context.use_certificate_chain_file(certPath);
+      //context.use_private_key_file(keyPath, boost::asio::ssl::context::pem);
+
+      context.set_default_verify_paths();
+      context.set_verify_mode(boost::asio::ssl::verify_none);
+
+*/
       boost::shared_ptr< boost::log::sinks::text_ostream_backend > backend =
         boost::make_shared< boost::log::sinks::text_ostream_backend >();
 
       boost::shared_ptr< boost::asio::ip::tcp::iostream > stream =
         boost::make_shared< boost::asio::ip::tcp::iostream >();
+
+      //auto portnum = Options::get().ipport.empty() ? 5065 : std::stoi(Options::get().ipport);
+      //SyncSSLClient client(Options::get().iphost, portnum);
+
+      std::cout << "Sending request to the server... " << std::endl;
+      std::string response = client.emulateLongComputationOp(10);
+      std::cout << "Response received: " << response << std::endl;
+
+      client.close();
 
       m_TaskGroup.Enqueue([stream] {
         stream->connect(Options::get().iphost, Options::get().ipport);
