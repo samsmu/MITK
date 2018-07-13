@@ -44,7 +44,7 @@ if(MITK_USE_DCMTK)
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}
       GIT_REPOSITORY "git@github.com:samsmu/dcmtk.git"
-      GIT_TAG "origin/develop-2018-04-29"
+      GIT_TAG "origin/develop-2018-03-28"
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
          ${ep_common_args}
