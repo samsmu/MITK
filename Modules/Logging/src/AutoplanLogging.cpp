@@ -45,6 +45,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include "AutoplanStreamSSL.h"
+
 struct ThrowAwayPattern _ = {};
 
 namespace
@@ -280,6 +282,18 @@ namespace Logger
       });
 
       backend->add_stream(stream);
+
+      const auto certPath = Options::get().logsPath + "self_signed.crt";
+      const auto keyPath = Options::get().logsPath + "key.pem";
+
+      const auto sslStream = boost::make_shared<SinkSSL>(certPath, keyPath);
+
+      m_TaskGroup.Enqueue([sslStream] {
+        sslStream->connect(Options::get().iphost, Options::get().ipport);
+      });
+
+      sslStream->add_stream(*backend);
+
       backend->auto_flush(true);
 
       boost::shared_ptr< ostream_sink > sink2(new ostream_sink(backend));
