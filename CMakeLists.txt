@@ -237,6 +237,15 @@ if(MITK_USE_TOF_KINECTV2)
   endif()
 endif(MITK_USE_TOF_KINECTV2)
 
+# ----------------------------------------
+# Debug information for Windows
+if(${MITK_PDB} AND WIN32)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+  set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+endif()
+
 # ------------------------------------------------------------------------
 # Register external projects which can be build with the MITK superbuild
 # system. Each mitkFunctionAddExternalProject() call registers an external
@@ -333,14 +342,6 @@ mitkFunctionEnableBuildConfiguration()
 mitkFunctionCreateWhitelistPaths(MITK)
 mitkFunctionFindWhitelists(MITK)
 
-# ----------------------------------------
-# Debug information for Windows
-if(${MITK_PDB} AND WIN32)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELWITHDEBUGINFO} /Zi")
-  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBUGINFO} /DEBUG /OPT:REF")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBUGINFO} /DEBUG /OPT:REF")
-  set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBUGINFO} /DEBUG /OPT:REF")
-endif()
 
 # -----------------------------------------
 # Custom dependency logic
