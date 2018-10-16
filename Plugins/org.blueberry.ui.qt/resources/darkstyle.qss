@@ -19,9 +19,10 @@ See LICENSE.txt or http://www.mitk.org for details.
   iconAccentColor = #d4821e <- This line is parsed by MITK
 */
 
+// border: none;
+
 QWidget {
   background-color: #2d2d30;
-  border: none;
   color: #f1f1f1;
 }
 
