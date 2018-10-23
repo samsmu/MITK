@@ -83,8 +83,8 @@ const QMap<QString, QString> QtShowViewAction::plugingTranslateNames = {
   { "View Navigator", QAction::tr("View Navigator") },
   { "Volume Visualization", QAction::tr("Volume Visualization") },
   { "Curved Planar Reconstruction", QAction::tr("Curved Planar Reconstruction") },
+  { "TumorSegmentationCNN", QAction::tr("TumorSegmentationCNN") }
 };
-
 
 QtShowViewAction::QtShowViewAction(IWorkbenchWindow::Pointer window,
     IViewDescriptor::Pointer desc) :
