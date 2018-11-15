@@ -11,5 +11,5 @@ MITK_CREATE_MODULE(
 )
 
 if (UNIX)
-  set_target_properties(${MODULE_TARGET} PROPERTIES LINK_FLAGS "-lpthread -lcrypto -lssl")
+  set_target_properties(${MODULE_TARGET} PROPERTIES LINK_FLAGS "-lpthread -lcrypto -lssl -lboost_log")
 endif (UNIX)
