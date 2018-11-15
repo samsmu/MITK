@@ -1,3 +1,6 @@
+#include <exception>
+#include <iostream>
+
 #include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/asio.hpp>
@@ -113,8 +116,10 @@ namespace Logger
   }
 
   void SinkSSL::connect(const std::string& iphost, const std::string& ipport) const
-  {
+  try {
     const boost::asio::ip::tcp::endpoint ep(boost::asio::ip::address::from_string(iphost), boost::lexical_cast<int>(ipport));
     m_implContext->ssl_stream.next_layer().connect(ep);
+  } catch (const std::exception& e) {
+    std::cout << "SinkSSL::connect fail: " << e.what() << std::endl;
   }
 }
