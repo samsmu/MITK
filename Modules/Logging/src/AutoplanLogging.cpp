@@ -286,7 +286,7 @@ namespace Logger
       const auto certPath = Options::get().logsPath + "self_signed.crt";
       const auto keyPath = Options::get().logsPath + "key.pem";
 
-      const auto sslStream = boost::make_shared<SinkSSL>(certPath, keyPath);
+      const auto sslStream = boost::make_shared<Logger::SinkSSL>(certPath, keyPath);
 
       m_TaskGroup.Enqueue([sslStream] {
         sslStream->connect(Options::get().iphost, Options::get().ipport);
