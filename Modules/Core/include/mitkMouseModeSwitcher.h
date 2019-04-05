@@ -144,7 +144,6 @@ namespace mitk {
      * it is needed to unregister the observer on unload.
      */
     std::vector<us::ServiceRegistration<InteractionEventObserver>> m_ServiceRegistrations;
-    std::unordered_set<std::string> m_RegisteredRendererNames;
 
     MouseModeMap m_ActiveMouseModes;
   };
