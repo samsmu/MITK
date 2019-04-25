@@ -58,7 +58,7 @@ protected:
 
 
 template <typename TImageType> const float SmartBrushStrokeFilter<TImageType>::BETA_MIN = .01f;
-template <typename TImageType> const float SmartBrushStrokeFilter<TImageType>::BETA_MAX = .1f;
+template <typename TImageType> const float SmartBrushStrokeFilter<TImageType>::BETA_MAX = .5f;
 
 template <typename TImageType>
 double SmartBrushStrokeFilter<TImageType>::Distance(itk::Image<float, 3>::IndexType a, itk::Image<float, 3>::IndexType b)
@@ -80,7 +80,7 @@ template <typename TImageType>
 float SmartBrushStrokeFilter<TImageType>::CalcChange(itk::Image<float, 3>::IndexType x, float xValue)
 {
   return BETA_MAX * pow(1 - fabs(m_TargetIntensity - xValue), K_MIN + (K_MAX - K_MIN) * m_Sensitivity)
-    * std::max((m_Radius - Distance(x, m_Center)) / m_Radius, 0.);
+    * std::max((m_Radius * 2. - Distance(x, m_Center)) / (m_Radius * 2.), 0.);
 }
 
 template <typename TImageType>
