@@ -173,9 +173,16 @@ void mitk::OtsuTool3D::RunSegmentation(int regions, bool useValley, int numberOf
 
 void mitk::OtsuTool3D::ConfirmSegmentation()
 {
-  mitk::LabelSetImage::Pointer resultImage = mitk::LabelSetImage::New();
-  resultImage->InitializeByLabeledImage(dynamic_cast<mitk::Image*>(m_BinaryPreviewNode->GetData()));
-  GetTargetSegmentationNode()->SetData(resultImage);
+  if (dynamic_cast<mitk::LabelSetImage*>(GetTargetSegmentationNode()->GetData()) != nullptr)
+  {
+    mitk::LabelSetImage::Pointer resultImage = mitk::LabelSetImage::New();
+    resultImage->InitializeByLabeledImage(dynamic_cast<mitk::Image*>(m_BinaryPreviewNode->GetData()));
+    GetTargetSegmentationNode()->SetData(resultImage);
+  }
+  else
+  {
+    GetTargetSegmentationNode()->SetData(m_BinaryPreviewNode->GetData());
+  }
 
   m_ToolManager->ActivateTool(-1);
 }
