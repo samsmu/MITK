@@ -17,7 +17,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "QmitkHistogramJSWidget.h"
 #include "mitkPixelTypeMultiplex.h"
-#include <mitkImagePixelReadAccessor.h>
 #include <mitkIntensityProfile.h>
 #include "mitkRenderingManager.h"
 #include "mitkBaseRenderer.h"

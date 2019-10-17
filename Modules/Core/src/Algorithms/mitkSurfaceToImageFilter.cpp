@@ -15,8 +15,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 #include "mitkSurfaceToImageFilter.h"
-#include <mitkImageReadAccessor.h>
-#include "mitkImageWriteAccessor.h"
+#include "mitkImageAccessLock.h"
+#include "mitkImageVtkAccessor.h"
 #include "mitkTimeHelper.h"
 
 #include <vtkImageData.h>
@@ -139,8 +139,11 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
     size *= binaryImage->GetDimension(i);
   }
 
-  mitk::ImageWriteAccessor accessor( binaryImage );
-  memset( accessor.GetData(), 1, size );
+  mitk::ImageRegionAccessor accessor(binaryImage);
+  {
+    mitk::ImageAccessLock accessLock(&accessor, true);
+    memset(accessLock.getAccessor()->getPixel(0), 1, size);
+  }
 
   const mitk::TimeGeometry *surfaceTimeGeometry = GetInput()->GetTimeGeometry();
   const mitk::TimeGeometry *imageTimeGeometry = GetImage()->GetTimeGeometry();
@@ -184,9 +187,10 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
 
     surfaceConverter->SetInputConnection( normalsFilter->GetOutputPort() );
 
-    vtkImageData *image = m_MakeOutputBinary
-        ? binaryImage->GetVtkImageData()
-        : const_cast<mitk::Image *>(this->GetImage())->GetVtkImageData(time);
+    Image::Pointer targetImage = m_MakeOutputBinary ? binaryImage : const_cast<mitk::Image *>(this->GetImage());
+    ImageVtkAccessor accessor(targetImage);
+    ImageAccessLock lock(&accessor, true);
+    vtkImageData *image = m_MakeOutputBinary ? accessor.getVtkImageData() : accessor.getVtkImageData(time);
 
     // fill the image with foreground voxels:
     unsigned char inval = 1;
@@ -211,8 +215,9 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
   }
   else
   {
-    memset( accessor.GetData(), 0, size );
-    output->SetVolume(accessor.GetData(),time);
+    mitk::ImageAccessLock accessLock(&accessor, true);
+    memset(accessLock.getAccessor()->getPixel(0), 0, size);
+    output->SetVolume(accessLock.getAccessor()->getPixel(0),time);
   }
 
 }
