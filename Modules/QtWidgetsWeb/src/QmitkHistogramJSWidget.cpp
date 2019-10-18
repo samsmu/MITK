@@ -155,32 +155,6 @@ void QmitkHistogramJSWidget::SetPlanarFigure(const mitk::PlanarFigure* planarFig
   m_PlanarFigure = planarFigure;
 }
 
-template <class PixelType>
-void ReadPixel(mitk::PixelType, mitk::Image::Pointer image, itk::Index<3> indexPoint, double& value)
-{
-  if (image->GetDimension() == 2)
-  {
-    mitk::ImagePixelReadAccessor<PixelType,2> readAccess(image, image->GetSliceData(0));
-    itk::Index<2> idx;
-    idx[0] = indexPoint[0];
-    idx[1] = indexPoint[1];
-    value = readAccess.GetPixelByIndex(idx);
-  }
-  else if (image->GetDimension() == 3)
-  {
-    mitk::ImagePixelReadAccessor<PixelType,3> readAccess(image, image->GetVolumeData(0));
-    itk::Index<3> idx;
-    idx[0] = indexPoint[0];
-    idx[1] = indexPoint[1];
-    idx[2] = indexPoint[2];
-    value = readAccess.GetPixelByIndex(idx);
-  }
-  else
-  {
-    //unhandled
-  }
-}
-
 void QmitkHistogramJSWidget::ComputeIntensityProfile(unsigned int timeStep, bool computeStatistics)
 {
   this->ClearData();

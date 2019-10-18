@@ -187,7 +187,8 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
 
     surfaceConverter->SetInputConnection( normalsFilter->GetOutputPort() );
 
-    Image::Pointer targetImage = m_MakeOutputBinary ? binaryImage : const_cast<mitk::Image *>(this->GetImage());
+    // error: operands to ?: have different types ‘mitk::Image::Pointer {aka itk::SmartPointer<mitk::Image>}’ and ‘mitk::Image*’
+    Image::Pointer targetImage = m_MakeOutputBinary ? binaryImage : Image::Pointer(const_cast<mitk::Image *>(this->GetImage()));
     ImageVtkAccessor accessor(targetImage);
     ImageAccessLock lock(&accessor, true);
     vtkImageData *image = m_MakeOutputBinary ? accessor.getVtkImageData() : accessor.getVtkImageData(time);
