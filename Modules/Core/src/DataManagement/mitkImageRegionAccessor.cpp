@@ -57,7 +57,7 @@ void* ImageRegionAccessor::getPixel(int index, int timestep) {
   return (char*)getData(timestep) + globalOffset;
 }
 
-void* ImageRegionAccessor::getPixel(itk::Index<3> index, int timestep) {
+void* ImageRegionAccessor::getPixel(const itk::Index<3> index, int timestep) {
   unsigned int* dims = m_Image->GetDimensions();
   int globalOffset = 0;
   globalOffset += index[2] * dims[0] * dims[1];

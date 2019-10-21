@@ -22,7 +22,7 @@ public:
   bool overlap(ImageRegionAccessor& other);
 
   virtual void* getPixel(int index, int timestep = 0);
-  virtual void* getPixel(itk::Index<3> index, int timestep = 0);
+  virtual void* getPixel(const itk::Index<3> index, int timestep = 0);
 
   virtual void* getData(int timestep = 0);
 

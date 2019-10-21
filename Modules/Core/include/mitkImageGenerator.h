@@ -108,7 +108,7 @@ public:
       try
       {
         for (int t = 0; t < output->GetTimeSteps(); t++) {
-          output->GetVolumeData(t)->getVtkImageData()->GetPointData()->GetScalars()->Fill(fill_value);
+          output->GetVolumeData(t)->getVtkImageData(output)->GetPointData()->GetScalars()->Fill(fill_value);
         }
       }
       catch(...)
@@ -182,7 +182,7 @@ public:
         TPixelType* imageBuffer = nullptr;
         try
         {
-          imageBuffer = output->GetVolumeData()->GetData();
+          imageBuffer = (TPixelType*)output->GetVolumeData()->GetData();
         }
         catch(...)
         {
