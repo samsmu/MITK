@@ -183,6 +183,8 @@ namespace mitk
      */
     virtual void UpdateStatusbar(StateMachineAction*, InteractionEvent* event);
 
+    virtual void SelectSegmentation(StateMachineAction*, InteractionEvent* event);
+
     /**
     * \brief Method to retrieve bool-value for given property from string-property
     * in given propertylist.
@@ -193,6 +195,42 @@ namespace mitk
     typedef std::vector<SliceNavigationController*> SNCVector;
 
   private:
+
+    template<typename TPixel, unsigned int VImageDimension>
+    void selectNode(
+      mitk::DataNode::Pointer node,
+      mitk::Image::Pointer segmentation,
+      itk::Index<VImageDimension> index,
+      mitk::BaseRenderer::Pointer sender
+    )
+    {
+      typename itk::Image<TPixel, VImageDimension>::Pointer itkInput;
+      mitk::CastToItkImage(segmentation, itkInput);
+
+      if (itkInput.IsNotNull() && itkInput->GetPixel(index) != 0.0) {
+        auto nodes = sender->GetDataStorage()->GetSubset(
+          mitk::NodePredicateProperty::New("sel_segmentation", mitk::BoolProperty::New(true))
+        );
+
+        mitk::DataNode::Pointer selectedNode = !nodes->empty() ? nodes->GetElement(0) : nullptr;
+        if (selectedNode) {
+          mitk::ColorProperty::Pointer selectedColor = dynamic_cast<mitk::ColorProperty*>(selectedNode->GetProperty("binaryimage.selectedcolor"));
+          selectedNode->SetProperty("color", selectedColor);
+          selectedNode->SetProperty("sel_segmentation", mitk::BoolProperty::New(false));
+        }
+
+        if (node != selectedNode) {
+          mitk::ColorProperty::Pointer color = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
+          node->SetProperty("binaryimage.selectedcolor", color);
+
+          float green[] = { 0, 1.0, 0 };
+          node->SetProperty("color", mitk::ColorProperty::New(green));
+          node->SetProperty("sel_segmentation", mitk::BoolProperty::New(true));
+
+          sender->GetRenderingManager()->RequestUpdateAll();
+        }
+      }
+    };
 
     mitk::DataNode::Pointer GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes,mitk::Point3D worldposition, BaseRenderer* ren);
 

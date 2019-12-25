@@ -17,6 +17,9 @@ TODO Std move to abort interaction of scroll/pan/zoom
 -->
 <statemachine>
     <state name="start" startstate="true" >
+        <transition event_class="InteractionPositionEvent" event_variant="selectSegmentation" target="start">
+          <action name="selectSegmentation"/>
+        </transition>
         <transition event_class="InteractionPositionEvent" event_variant="StartMove" target="move">
           <condition name="check_position_event"/>
           <action name="init"/>
