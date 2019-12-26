@@ -386,10 +386,10 @@ void QmitkStdMultiWidget::InitializeWidget(bool showPlanesIn3d)
   mitkWidget4->GetSliceNavigationController()
     ->ConnectGeometryTimeEvent(m_TimeNavigationController, false);
 
-  m_MouseModeSwitcher = mitk::MouseModeSwitcher::New(mitkWidget1->GetRenderer());
-  m_MouseModeSwitcher->AddRenderer(mitkWidget2->GetRenderer());
-  m_MouseModeSwitcher->AddRenderer(mitkWidget3->GetRenderer());
-  m_MouseModeSwitcher->AddRenderer(mitkWidget4->GetRenderer());
+  mitk::MouseModeSwitcher::GetInstance().AddRenderer(mitkWidget1->GetRenderer()); //New(mitkWidget1->GetRenderer());
+  mitk::MouseModeSwitcher::GetInstance().AddRenderer(mitkWidget2->GetRenderer());//m_MouseModeSwitcher->AddRenderer(mitkWidget2->GetRenderer());
+  mitk::MouseModeSwitcher::GetInstance().AddRenderer(mitkWidget3->GetRenderer());//m_MouseModeSwitcher->AddRenderer(mitkWidget3->GetRenderer());
+  mitk::MouseModeSwitcher::GetInstance().AddRenderer(mitkWidget4->GetRenderer());//m_MouseModeSwitcher->AddRenderer(mitkWidget4->GetRenderer());
 
   mitkWidget1->GetSliceNavigationController()->crosshairPositionEvent.AddListener(mitk::MessageDelegate<QmitkStdMultiWidget>(this, &QmitkStdMultiWidget::HandleCrosshairPositionEvent));
   mitkWidget2->GetSliceNavigationController()->crosshairPositionEvent.AddListener(mitk::MessageDelegate<QmitkStdMultiWidget>(this, &QmitkStdMultiWidget::HandleCrosshairPositionEvent));
@@ -1821,7 +1821,7 @@ void QmitkStdMultiWidget::setDirectionOnly(bool directiononly)
 
 void QmitkStdMultiWidget::setSelectionMode(bool selection)
 {
-  m_MouseModeSwitcher->SetSelectionMode(selection);
+  mitk::MouseModeSwitcher::GetInstance().SetSelectionMode(selection); //m_MouseModeSwitcher->SetSelectionMode(selection);
   mitk::DataNodePickingEventObserver::SetEnabled(selection);
 }
 
@@ -2193,20 +2193,20 @@ void QmitkStdMultiWidget::SetWidgetPlaneMode( int userMode )
     switch(userMode)
     {
       case 0:
-        m_MouseModeSwitcher->SetInteractionScheme(mitk::MouseModeSwitcher::InteractionScheme::MITK);
+        mitk::MouseModeSwitcher::GetInstance()./*m_MouseModeSwitcher->*/SetInteractionScheme(mitk::MouseModeSwitcher::InteractionScheme::MITK);
         break;
       case 1:
         crosshairManager->setCrosshairMode(CrosshairMode::PLANE);
-        m_MouseModeSwitcher->SetInteractionScheme( mitk::MouseModeSwitcher::InteractionScheme::ROTATION);
+        mitk::MouseModeSwitcher::GetInstance()./*m_MouseModeSwitcher->*/SetInteractionScheme( mitk::MouseModeSwitcher::InteractionScheme::ROTATION);
         break;
 
       case 2:
         crosshairManager->setCrosshairMode(CrosshairMode::PLANE);
-        m_MouseModeSwitcher->SetInteractionScheme( mitk::MouseModeSwitcher::InteractionScheme::ROTATIONLINKED);
+        mitk::MouseModeSwitcher::GetInstance()./*m_MouseModeSwitcher->*/SetInteractionScheme( mitk::MouseModeSwitcher::InteractionScheme::ROTATIONLINKED);
         break;
 
       case 3:
-        m_MouseModeSwitcher->SetInteractionScheme( mitk::MouseModeSwitcher::InteractionScheme::SWIVEL);
+        mitk::MouseModeSwitcher::GetInstance()./*m_MouseModeSwitcher->*/SetInteractionScheme( mitk::MouseModeSwitcher::InteractionScheme::SWIVEL);
         break;
     }
   }
@@ -2483,7 +2483,7 @@ bool QmitkStdMultiWidget::IsColoredRectanglesEnabled() const
 
 mitk::MouseModeSwitcher* QmitkStdMultiWidget::GetMouseModeSwitcher()
 {
-  return m_MouseModeSwitcher;
+  return nullptr;// m_MouseModeSwitcher;
 }
 
 void QmitkStdMultiWidget::setViewDirectionAnnontation(mitk::Image* image, int slice, int i)
@@ -2602,7 +2602,7 @@ void QmitkStdMultiWidget::setAnnotationVisibility(std::vector<bool>& visibility)
 
 void QmitkStdMultiWidget::setMouseMode(mitk::MouseModeSwitcher::MouseMode mode, const Qt::MouseButton& button)
 {
-  m_MouseModeSwitcher->SelectMouseMode(mode, button);
+  mitk::MouseModeSwitcher::GetInstance().SelectMouseMode(mode, button);//m_MouseModeSwitcher->SelectMouseMode(mode, button);
 }
 
 void QmitkStdMultiWidget::ResetTransformation(mitk::VtkPropRenderer* renderer)

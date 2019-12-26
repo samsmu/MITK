@@ -393,7 +393,7 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   // deleted mouse mode "PACS"
   //bool newMode = prefs->GetBool("PACS like mouse interaction", false);
   d->m_MouseModeToolbar->setVisible(false);
-  d->m_StdMultiWidget->GetMouseModeSwitcher()->SetInteractionScheme( /*newMode ? mitk::MouseModeSwitcher::PACS :*/ mitk::MouseModeSwitcher::MITK);
+  /*d->m_StdMultiWidget->GetMouseModeSwitcher()*/mitk::MouseModeSwitcher::GetInstance().SetInteractionScheme( /*newMode ? mitk::MouseModeSwitcher::PACS :*/ mitk::MouseModeSwitcher::MITK);
 
   mitk::DisplayInteractor::SetClockRotationSpeed(prefs->GetInt("Rotation Step", 90));
   d->m_StdMultiWidget->crosshairManager->updateAllWindows();

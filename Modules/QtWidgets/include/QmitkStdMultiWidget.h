@@ -407,7 +407,7 @@ protected:
 
   bool m_GradientBackgroundFlag;
 
-  mitk::MouseModeSwitcher::Pointer m_MouseModeSwitcher;
+  //mitk::MouseModeSwitcher::Pointer m_MouseModeSwitcher;
   mitk::SliceNavigationController* m_TimeNavigationController;
 
   mitk::DataStorage::Pointer m_DataStorage;
