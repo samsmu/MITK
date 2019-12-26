@@ -215,8 +215,8 @@ namespace mitk
         mitk::DataNode::Pointer selectedNode = !nodes->empty() ? nodes->GetElement(0) : nullptr;
         if (selectedNode) {
           mitk::ColorProperty::Pointer selectedColor = dynamic_cast<mitk::ColorProperty*>(selectedNode->GetProperty("binaryimage.selectedcolor"));
-          selectedNode->SetProperty("color", selectedColor);
           selectedNode->SetProperty("sel_segmentation", mitk::BoolProperty::New(false));
+          selectedNode->SetProperty("color", selectedColor);
         }
 
         if (node != selectedNode) {
@@ -227,7 +227,7 @@ namespace mitk
           node->SetProperty("color", mitk::ColorProperty::New(green));
           node->SetProperty("sel_segmentation", mitk::BoolProperty::New(true));
 
-          sender->GetRenderingManager()->RequestUpdateAll();
+          sender->GetRenderingManager()->ForceImmediateUpdate(sender->GetRenderWindow());
         }
       }
     };
