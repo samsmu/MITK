@@ -197,13 +197,15 @@ namespace mitk
   private:
 
     template<typename TPixel, unsigned int VImageDimension>
-    void selectNode(
+    bool selectNode(
       mitk::DataNode::Pointer node,
       mitk::Image::Pointer segmentation,
       itk::Index<VImageDimension> index,
       mitk::BaseRenderer::Pointer sender
     )
     {
+      bool isSelected(false);
+
       typename itk::Image<TPixel, VImageDimension>::Pointer itkInput;
       mitk::CastToItkImage(segmentation, itkInput);
 
@@ -227,9 +229,11 @@ namespace mitk
           node->SetProperty("color", mitk::ColorProperty::New(green));
           node->SetProperty("sel_segmentation", mitk::BoolProperty::New(true));
 
-          sender->GetRenderingManager()->ForceImmediateUpdate(sender->GetRenderWindow());
+          sender->GetRenderingManager()->RequestUpdate(sender->GetRenderWindow());
+          isSelected = true;
         }
       }
+      return isSelected;
     };
 
     mitk::DataNode::Pointer GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes,mitk::Point3D worldposition, BaseRenderer* ren);

@@ -1260,12 +1260,15 @@ void mitk::DisplayInteractor::SelectSegmentation(mitk::StateMachineAction*, mitk
       continue;
     }
 
+    bool isInterrupt(false);
     auto pixelType = segmentation->GetPixelType().GetComponentType();
     if (pixelType == itk::ImageIOBase::UCHAR) {
-      selectNode<unsigned char, 3>(node, segmentation, index, sender);
-      break;
+      isInterrupt = selectNode<unsigned char, 3>(node, segmentation, index, sender);
     } else if (pixelType == itk::ImageIOBase::USHORT) {
-      selectNode<unsigned short, 3>(node, segmentation, index, sender);
+      isInterrupt = selectNode<unsigned short, 3>(node, segmentation, index, sender);
+    }
+
+    if (isInterrupt) {
       break;
     }
   }
