@@ -229,9 +229,9 @@ namespace mitk
           node->SetProperty("color", mitk::ColorProperty::New(green));
           node->SetProperty("sel_segmentation", mitk::BoolProperty::New(true));
 
-          sender->GetRenderingManager()->RequestUpdate(sender->GetRenderWindow());
           isSelected = true;
         }
+        sender->GetRenderingManager()->RequestUpdate(sender->GetRenderWindow());
       }
       return isSelected;
     };
