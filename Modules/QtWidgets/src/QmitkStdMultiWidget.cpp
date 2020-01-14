@@ -491,6 +491,8 @@ QmitkStdMultiWidget::~QmitkStdMultiWidget()
     textProp[i]->Delete();
     ren[i]->Delete();
   }
+
+  mitk::MouseModeSwitcher::DestroyInstance();
 }
 
 void QmitkStdMultiWidget::RemovePlanesFromDataStorage()
