@@ -40,6 +40,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkNodePredicateBase.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkStatusBar.h>
 #include <mitkImage.h>
@@ -56,6 +57,20 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkPixelTypeMultiplex.h"
 
 #include <PathUtilities.h>
+
+namespace
+{
+  mitk::DataStorage::SetOfObjects::ConstPointer getAllImageNodesFromDataStorage(mitk::DataStorage::Pointer ds)
+  {
+    mitk::NodePredicateNot::Pointer isNotHelperObject = mitk::NodePredicateNot::New(mitk::NodePredicateProperty::New("helper object", mitk::BoolProperty::New(true)));
+    mitk::NodePredicateNot::Pointer isNotBinaryObject = mitk::NodePredicateNot::New(mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true)));
+    mitk::NodePredicateNot::Pointer isNotMultiLabel = mitk::NodePredicateNot::New(mitk::NodePredicateDataType::New("LabelSetImage"));
+    mitk::NodePredicateAnd::Pointer isPlainImage = mitk::NodePredicateAnd::New(mitk::NodePredicateDataType::New("Image"), isNotMultiLabel);
+    mitk::NodePredicateAnd::Pointer isImage = mitk::NodePredicateAnd::New(isNotHelperObject, isNotBinaryObject, isPlainImage);
+    mitk::DataStorage::SetOfObjects::ConstPointer existingNodes = ds->GetSubset(isImage);
+    return existingNodes;
+  }
+}
 
 void QmitkStdMultiWidget::UpdateAnnotationFonts()
 {
@@ -2707,4 +2722,27 @@ void QmitkStdMultiWidget::resetThickSlice()
     renderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.num", mitk::IntProperty::New(0));
     renderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.showarea", mitk::BoolProperty::New(false));
   }
+}
+
+void QmitkStdMultiWidget::showVolumeRendering(bool state)
+{
+  auto allImages = getAllImageNodesFromDataStorage(m_DataStorage);
+  for (auto& image : *allImages) {
+    image->SetBoolProperty("volumerendering", state);
+  }
+}
+
+bool QmitkStdMultiWidget::getVolumeRenderingState()
+{
+  if (!m_DataStorage) {
+    return false;
+  }
+
+  bool state(false);
+  auto allImages = getAllImageNodesFromDataStorage(m_DataStorage);
+  if (allImages && allImages->size() != 0) {
+    allImages->at(0)->GetBoolProperty("volumerendering", state);
+  }
+
+  return state;
 }

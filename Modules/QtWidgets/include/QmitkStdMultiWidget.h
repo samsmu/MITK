@@ -160,6 +160,9 @@ public:
 
   void UpdateFullSreenMode();
 
+  void showVolumeRendering(bool state);
+  bool getVolumeRenderingState();
+
 protected:
 
   bool m_displayMetaInfo;

@@ -847,6 +847,16 @@ void QmitkRenderWindowMenu::OnCrossHairMenuAboutToShow()
     });
   }
 
+  // Show/hide volume rendering
+  if (m_Renderer.IsNotNull() && m_Renderer->GetMapperID() == mitk::BaseRenderer::Standard3D) {
+    QAction* showHideVolumeRenderingAction = crosshairModesMenu->addAction(tr("Show volume rendering"));
+    showHideVolumeRenderingAction->setCheckable(true);
+    showHideVolumeRenderingAction->setChecked(m_MultiWidget->getVolumeRenderingState());
+    connect(showHideVolumeRenderingAction, &QAction::triggered, this, [this](bool state) {
+      m_MultiWidget->showVolumeRendering(state);
+    });
+  }
+
   // Rotation mode
   if (m_Renderer.IsNotNull() && m_Renderer->GetMapperID() == mitk::BaseRenderer::Standard2D) {
     QAction* rotationGroupSeparator = new QAction(crosshairModesMenu);
