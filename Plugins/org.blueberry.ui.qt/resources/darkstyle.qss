@@ -648,6 +648,10 @@ QTreeView::indicator:checked:selected, QTreeView::indicator:indeterminate:select
   image: url(:/org.blueberry.ui.qt/dark/checkbox-checked-hover.svg);
 }
 
+QTreeView::item:selected {
+  background-color: #0078a0;
+}
+
 QProgressBar {
   text-align: center;
 }
