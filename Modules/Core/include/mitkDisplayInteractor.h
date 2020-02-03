@@ -18,6 +18,17 @@
 #define mitkDisplayInteractor_h
 
 #include <MitkCoreExports.h>
+
+#include <mitkImage.h>
+#include <mitkImageCast.h>
+
+#include <mitkNodePredicateBase.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateDimension.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateAnd.h>
+
 #include "mitkInteractionEventObserver.h"
 
 namespace mitk
