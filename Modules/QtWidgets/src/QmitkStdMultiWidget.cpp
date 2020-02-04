@@ -70,6 +70,52 @@ namespace
     mitk::DataStorage::SetOfObjects::ConstPointer existingNodes = ds->GetSubset(isImage);
     return existingNodes;
   }
+
+  mitk::DataNode::Pointer getValidSelectedNode(mitk::DataStorage::Pointer ds)
+  {
+    mitk::BoolProperty::Pointer selProperty(mitk::BoolProperty::New(true));
+    mitk::NodePredicateProperty::Pointer selPredicate = mitk::NodePredicateProperty::New("series_selected", selProperty);
+    mitk::DataStorage::SetOfObjects::ConstPointer selNodes = ds->GetSubset(selPredicate);
+    mitk::DataNode* selNode = nullptr;
+    if (selNodes->size() > 0) {
+      selNode  = selNodes->at(0);
+    }
+    return selNode;
+  }
+
+  bool isFlatOrNull(mitk::DataNode::Pointer node)
+  {
+    if (!node) {
+      return false;
+    }
+
+    auto image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (!image) {
+      return false;
+    }
+
+    if (image->GetLargestPossibleRegion().GetSize()[2] < 10) {
+      return true;
+    }
+
+    bool isMultiFrame(false);
+    mitk::BaseProperty::Pointer prop = image->GetProperty("multiFrameImage");
+    mitk::BoolProperty* boolProp = dynamic_cast<mitk::BoolProperty*>(prop.GetPointer());
+    if (boolProp) {
+      isMultiFrame = boolProp->GetValue();
+    }
+
+    mitk::BaseProperty* modalityProp = image->GetProperty("dicom.series.Modality");
+    const std::string modality = (modalityProp) ? modalityProp->GetValueAsString() : "";
+    bool isFlatModality =
+      (modality == "CR") || // Computed radiography
+      (modality == "XA") || // X-Ray Angiography
+      (modality == "US") || // Ultrasound
+      (modality == "OT") || // Other
+      (modality == "RF");   // Radio Fluoroscopy
+
+    return isFlatModality || isMultiFrame;
+  }
 }
 
 void QmitkStdMultiWidget::UpdateAnnotationFonts()
@@ -2728,7 +2774,9 @@ void QmitkStdMultiWidget::showVolumeRendering(bool state)
 {
   auto allImages = getAllImageNodesFromDataStorage(m_DataStorage);
   for (auto& image : *allImages) {
-    image->SetBoolProperty("volumerendering", state);
+    if (!isFlatOrNull(image)) {
+      image->SetBoolProperty("volumerendering", state);
+    }
   }
 }
 
@@ -2739,10 +2787,19 @@ bool QmitkStdMultiWidget::getVolumeRenderingState()
   }
 
   bool state(false);
-  auto allImages = getAllImageNodesFromDataStorage(m_DataStorage);
-  if (allImages && allImages->size() != 0) {
-    allImages->at(0)->GetBoolProperty("volumerendering", state);
+  if (auto selNode = getValidSelectedNode(m_DataStorage)) {
+    selNode->GetBoolProperty("volumerendering", state);
   }
 
   return state;
+}
+
+bool QmitkStdMultiWidget::getVolumeRenderingAvailability()
+{
+  if (!m_DataStorage) {
+    return false;
+  }
+
+  auto selNode = getValidSelectedNode(m_DataStorage);
+  return !isFlatOrNull(selNode);
 }

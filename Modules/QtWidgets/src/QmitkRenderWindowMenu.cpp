@@ -852,6 +852,7 @@ void QmitkRenderWindowMenu::OnCrossHairMenuAboutToShow()
     QAction* showHideVolumeRenderingAction = crosshairModesMenu->addAction(tr("Show volume rendering"));
     showHideVolumeRenderingAction->setCheckable(true);
     showHideVolumeRenderingAction->setChecked(m_MultiWidget->getVolumeRenderingState());
+    showHideVolumeRenderingAction->setEnabled(m_MultiWidget->getVolumeRenderingAvailability());
     connect(showHideVolumeRenderingAction, &QAction::triggered, this, [this](bool state) {
       m_MultiWidget->showVolumeRendering(state);
     });

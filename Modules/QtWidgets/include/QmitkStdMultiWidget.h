@@ -162,6 +162,7 @@ public:
 
   void showVolumeRendering(bool state);
   bool getVolumeRenderingState();
+  bool getVolumeRenderingAvailability();
 
 protected:
 
