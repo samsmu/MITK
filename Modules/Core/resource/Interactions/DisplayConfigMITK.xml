@@ -118,9 +118,4 @@
     <attribute name="Modifiers" value="ctrl"/>
     <attribute name="Key" value="ArrowLeft"/>
   </event_variant>
-  <!-- Select Segmentation -->
-  <event_variant class="MousePressEvent" name="selectSegmentation">
-    <attribute name="EventButton" value="LeftMouseButton"/>
-    <attribute name="Modifiers" value="shift"/>
-  </event_variant>
 </config>

@@ -30,9 +30,6 @@
 #include "vtkRenderWindowInteractor.h"
 // location of rotation handles
 #include "mitkPlaneGeometryDataMapper2D.h"
-#include "mitkNodePredicateProperty.h"
-#include "mitkNodePredicateAnd.h"
-#include <mitkImageCast.h>
 
 #include <vtkInteractorObserver.h>
 #include <vtkCamera.h>
@@ -97,8 +94,6 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("deSelectObject", DeSelectObject);
 
   CONNECT_FUNCTION("mouseRotateCamera", MouseRotateCamera);
-
-  CONNECT_FUNCTION("selectSegmentation", SelectSegmentation);
 }
 
 double mitk::DisplayInteractor::m_ClockRotationSpeed = 90.;
@@ -1230,46 +1225,4 @@ mitk::DataNode::Pointer mitk::DisplayInteractor::GetTopLayerNode(mitk::DataStora
     }
   }
   return node;
-}
-
-void mitk::DisplayInteractor::SelectSegmentation(mitk::StateMachineAction*, mitk::InteractionEvent* event)
-{
-  auto positionEvent = dynamic_cast<const mitk::InteractionPositionEvent*>(event);
-  auto point = positionEvent->GetPlanePositionInWorld();
-
-  mitk::BaseRenderer::Pointer sender = event->GetSender();
-
-  auto binary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
-  auto visible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true));
-
-  mitk::NodePredicateAnd::Pointer predicate = mitk::NodePredicateAnd::New();
-  predicate->AddPredicate(binary);
-  predicate->AddPredicate(visible);
-
-  auto nodes = sender->GetDataStorage()->GetSubset(predicate);
-  for (auto node : *nodes) {
-    mitk::Image::Pointer segmentation = dynamic_cast<mitk::Image*>(node->GetData());
-    if (!segmentation) {
-      continue;
-    }
-
-    itk::Index<3> index;
-    auto geometry = segmentation->GetGeometry();
-    geometry->WorldToIndex(point, index);
-    if (!geometry->IsIndexInside(index)) {
-      continue;
-    }
-
-    bool isInterrupt(false);
-    auto pixelType = segmentation->GetPixelType().GetComponentType();
-    if (pixelType == itk::ImageIOBase::UCHAR) {
-      isInterrupt = selectNode<unsigned char, 3>(node, segmentation, index, sender);
-    } else if (pixelType == itk::ImageIOBase::USHORT) {
-      isInterrupt = selectNode<unsigned short, 3>(node, segmentation, index, sender);
-    }
-
-    if (isInterrupt) {
-      break;
-    }
-  }
 }
