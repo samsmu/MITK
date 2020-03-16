@@ -2730,6 +2730,8 @@ void QmitkStdMultiWidget::showVolumeRendering(bool state)
   for (auto& image : *allImages) {
     image->SetBoolProperty("volumerendering", state);
   }
+
+  emit vrStateChanged(state);
 }
 
 bool QmitkStdMultiWidget::getVolumeRenderingState()
