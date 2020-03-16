@@ -163,6 +163,9 @@ public:
   void showVolumeRendering(bool state);
   bool getVolumeRenderingState();
 
+signals:
+  void vrStateChanged(bool state);
+
 protected:
 
   bool m_displayMetaInfo;
