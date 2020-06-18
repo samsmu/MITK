@@ -78,6 +78,7 @@ void QtStyleManager::AddDefaultStyle()
 {
   AddStyle(":/org.blueberry.ui.qt/lightstyle.qss", "Light");
   AddStyle(":/org.blueberry.ui.qt/darkstyle.qss", "Dark");
+  AddStyle(":/org.blueberry.ui.qt/bluestyle.qss", "Blue");
   defaultStyle = styles[":/org.blueberry.ui.qt/darkstyle.qss"];
 }
 
@@ -115,6 +116,11 @@ QString QtStyleManager::GetTabStylesheet() const
   return currentStyle->tabStylesheet;
 }
 
+QString QtStyleManager::GetSmoothStyleWidget() const
+{
+  return currentStyle->smoothWidgetStylesheet;
+}
+
 void QtStyleManager::AddStyle(const QString& styleFileName,
     const QString& styleName)
 {
@@ -145,7 +151,8 @@ void QtStyleManager::AddStyles(const QString& path)
     if (info.isFile() && info.isReadable())
     {
       QString fileName = info.fileName();
-      if (fileName.endsWith("-tab.qss") || fileName.endsWith("-activetab.qss"))
+      if (fileName.endsWith("-tab.qss") || fileName.endsWith("-activetab.qss")
+          || fileName.endsWith("-smoothwidget.qss"))
         continue;
 
       if (fileName.endsWith(".qss"))
@@ -158,10 +165,12 @@ void QtStyleManager::ReadStyleData(ExtStyle* style)
 {
   QString tabStyleFileName(style->fileName);
   QString activeTabStyleFileName(style->fileName);
+  QString smoothWidgetStyleFileName(style->fileName);
 
   int index = style->fileName.lastIndexOf(".qss");
   tabStyleFileName.replace(index, 4, "-tab.qss");
   activeTabStyleFileName.replace(index, 4, "-activetab.qss");
+  smoothWidgetStyleFileName.replace(index, 4, "-smoothwidget.qss");
 
   QFile styleFile(style->fileName);
   if (styleFile.open(QIODevice::ReadOnly))
@@ -194,6 +203,17 @@ void QtStyleManager::ReadStyleData(ExtStyle* style)
   else
   {
     BERRY_WARN << "Could not read " << activeTabStyleFileName.toStdString();
+  }
+
+  QFile smoothWidgetStyleFile(smoothWidgetStyleFileName);
+  if (smoothWidgetStyleFile.open(QIODevice::ReadOnly))
+  {
+      QTextStream in(&smoothWidgetStyleFile);
+      style->smoothWidgetStylesheet = in.readAll();
+  }
+  else
+  {
+      BERRY_WARN << "Could not read " << smoothWidgetStyleFileName.toStdString();
   }
 }
 
@@ -302,6 +322,7 @@ void QtStyleManager::SetStyle(const QString& fileName, bool update)
   {
     qApp->setStyleSheet(currentStyle->stylesheet);
     PlatformUI::GetWorkbench()->UpdateTheme();
+    emit UpdateTheme();
   }
 }
 

@@ -85,6 +85,17 @@
     <file>darkstyle.qss</file>
     <file>darkstyle-tab.qss</file>
     <file>darkstyle-activetab.qss</file>
+    <file>darkstyle-smoothwidget.qss</file>
+
+    <file>blue/checkbox-unchecked.svg</file>
+    <file>blue/checkbox-unchecked-hover.svg</file>
+    <file>blue/checkbox-unchecked-disabled.svg</file>
+    <file>blue/checkbox-checked.svg</file>
+    <file>blue/checkbox-checked-hover.svg</file>
+    <file>blue/checkbox-checked-disabled.svg</file>
+
+    <file>bluestyle.qss</file>
+    <file>bluestyle-smoothwidget.qss</file>
 
     <file>fonts/FiraSans/FiraSans.ttf</file>
     <file>fonts/LightFiraSans/LightFiraSans.ttf</file>

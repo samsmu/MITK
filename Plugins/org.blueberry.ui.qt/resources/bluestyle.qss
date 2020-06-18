@@ -20,24 +20,24 @@ See LICENSE.txt or http://www.mitk.org for details.
 */
 
 * {
-  gridline-color: #2d2d30;
-  selection-background-color: rgba(16,180,248,96);
+  gridline-color: rgb(191, 219, 255);
+  selection-background-color: rgba(16, 180, 248, 96);
   selection-color: #f1f1f1;
 }
 
 *:active {
-  selection-background-color: rgba(16,180,248,148);
+  selection-background-color: rgba(16, 180, 248, 148);
   selection-color: #f8f8f8;
 }
 
 QWidget {
-  background-color: #2d2d30;
+  background-color: rgb(191, 219, 255);
   border: none;
-  color: #f1f1f1;
+  color: rgb(21, 66, 139);
 }
 
 QWidget:disabled {
-  background-color: #2d2d30;
+  background-color: rgb(191, 219, 255);
   border-color: #434346;
   color: #656565;
 }
@@ -53,11 +53,11 @@ QStackedWidget {
 }
 
 QAbstractButton:hover, QComboBox:hover, QLineEdit:hover, QAbstractSpinBox:hover {
-  background-color: #3f3f46;
+  background-color: rgb(204, 227, 250);
 }
 
 QAbstractButton:pressed, QAbstractButton:checked {
-  background-color: #434346;
+  background-color: rgb(191, 219, 255);
 }
 
 QPushButton {
@@ -104,16 +104,16 @@ QToolBox::tab {
 }
 
 QToolBox::tab:hover {
-  background-color: #434346;
+  background-color: #ff0000;
 }
 
 QToolBox::tab:selected {
-  background-color: #1e7296;
+  background-color: #ff0000;
   border: 1px solid #1e7296;
 }
 
 QTableView QTableCornerButton::section {
-  background-color: #2d2d30;
+  background-color: rgb(191, 219, 255);
 }
 
 QTableView {
@@ -125,16 +125,16 @@ QTableView:active {
 }
 
 QAbstractItemView {
-  alternate-background-color: #1b1b1c;
-  background-color: #252526;
+  alternate-background-color: #ff0000;
+  background-color: rgb(232, 240, 251);
 }
 
 QAbstractItemView::item {
-  color: #f1f1f1;
+  color: rgb(21, 0, 139);
 }
 
 QHeaderView::section {
-  background-color: #2d2d30;
+  background-color: rgb(191, 219, 255);
   border: 1px solid transparent;
   padding-top: 4px;
 }
@@ -148,7 +148,7 @@ QHeaderView::section:vertical {
 }
 
 QHeaderView::section:vertical:checked {
-  background-color: #1c97ea;
+  background-color: #ff0000;
 }
 
 QHeaderView::section:vertical:pressed {
@@ -196,7 +196,7 @@ QGroupBox {
 }
 
 QGroupBox, QGroupBox:disabled {
-  background-color: #252526;
+  background-color: rgb(191, 219, 255);
 }
 
 QGroupBox::title {
@@ -206,7 +206,7 @@ QGroupBox::title {
 }
 
 QComboBox, QLineEdit, QAbstractSpinBox {
-  background-color: #333337;
+  background-color: rgb(191, 219, 255);
   border: 1px solid #434346;
 }
 
@@ -280,27 +280,27 @@ QCheckBox::indicator, QRadioButton::indicator, QGroupBox::indicator, QListWidget
 }
 
 QCheckBox::indicator:unchecked, QGroupBox::indicator:unchecked, QListWidget::indicator:unchecked, QAbstractItemView::indicator:unchecked {
-  image: url(:/org.blueberry.ui.qt/dark/checkbox-unchecked.svg);
+  image: url(:/org.blueberry.ui.qt/blue/checkbox-unchecked.svg);
 }
 
 QCheckBox::indicator:unchecked:hover, QGroupBox::indicator:hover, QListWidget::indicator:hover, QAbstractItemView::indicator:hover {
-  image: url(:/org.blueberry.ui.qt/dark/checkbox-unchecked-hover.svg);
+  image: url(:/org.blueberry.ui.qt/blue/checkbox-unchecked-hover.svg);
 }
 
 QCheckBox::indicator:unchecked:disabled, QGroupBox::indicator:disabled, QListWidget::indicator:disabled, QAbstractItemView::indicator:disabled {
-  image: url(:/org.blueberry.ui.qt/dark/checkbox-unchecked-disabled.svg);
+  image: url(:/org.blueberry.ui.qt/blue/checkbox-unchecked-disabled.svg);
 }
 
 QCheckBox::indicator:checked, QGroupBox::indicator:checked, QListWidget::indicator:checked, QAbstractItemView::indicator:checked {
-  image: url(:/org.blueberry.ui.qt/dark/checkbox-checked.svg);
+  image: url(:/org.blueberry.ui.qt/blue/checkbox-checked.svg);
 }
 
 QCheckBox::indicator:checked:hover, QGroupBox::indicator:checked:hover, QListWidget::indicator:checked:hover, QAbstractItemView::indicator:checked:hover {
-  image: url(:/org.blueberry.ui.qt/dark/checkbox-checked-hover.svg);
+  image: url(:/org.blueberry.ui.qt/blue/checkbox-checked-hover.svg);
 }
 
 QCheckBox::indicator:checked:disabled, QGroupBox::indicator:checked:disabled, QListWidget::indicator:checked:disabled, QAbstractItemView::indicator:checked:disabled {
-  image: url(:/org.blueberry.ui.qt/dark/checkbox-checked-disabled.svg);
+  image: url(:/org.blueberry.ui.qt/blue/checkbox-checked-disabled.svg);
 }
 
 QRadioButton::indicator:unchecked {
@@ -378,15 +378,16 @@ QMenu {
 }
 
 QMenu QWidget {
-  background-color: #1b1b1c;
+  background-color: rgb(199, 216, 237);
 }
 
 QMenu::item {
-  background-color: #1b1b1c;
+  background-color: rgb(199, 216, 237);
 }
 
 QMenu::item:selected {
-  background-color: #333334;
+  background-color: rgb(204, 227, 250);
+  color: black;
 }
 
 QMenu::separator {
@@ -395,11 +396,11 @@ QMenu::separator {
 }
 
 QMenuBar::item:selected {
-  background-color: #3e3e40;
+  background-color: #ff0000;
 }
 
 QScrollBar {
-  background-color: #3e3e42;
+  background-color: rgb(199, 216, 237);
 }
 
 QScrollBar:horizontal {
@@ -413,15 +414,15 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle {
-  background-color: #686868;
+  background-color: rgb(122, 157, 203);
 }
 
 QScrollBar::handle:hover {
-  background-color: #dc10b4f8;
+  background-color: rgb(99, 192, 254);
 }
 
 QScrollBar::handle:pressed {
-  background-color: #0078a0;
+  background-color: rgb(99, 192, 254);
 }
 
 QScrollBar::handle:horizontal {
@@ -439,7 +440,7 @@ QScrollBar::add-page, QScrollBar::sub-page {
 }
 
 QScrollBar::add-line, QScrollBar::sub-line {
-  background-color: #3e3e42;
+  background-color: rgb(199, 216, 237);
   subcontrol-origin: margin;
 }
 
@@ -541,7 +542,8 @@ QTabBar {
 }
 
 QTabBar::tab {
-  background-color: #434346;
+  background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+        stop: 0 rgba(255, 255, 255, 255), stop: 1.0 rgba(199, 216, 237, 255));
   border: 1px solid #434346;
   border-bottom: none;
   padding: 4px;
@@ -569,11 +571,13 @@ QTabBar::tab:selected {
 }
 
 QTabBar::tab:!selected {
-  background-color: #2d2d30;
+  background-color: rgb(191, 219, 255);
 }
 
 QTabBar::tab:!selected:hover {
-  background-color: #434346;
+  background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+        stop: 0 rgba(255, 255, 255, 120), stop: 0.4 rgba(255, 255, 255, 120),
+        stop: 0.5 rgba(255, 255, 255, 80), stop: 1.0 rgba(255, 255, 255, 10));
 }
 
 #TabCloseButton {
@@ -649,7 +653,7 @@ QTreeView::indicator:checked:selected, QTreeView::indicator:indeterminate:select
 }
 
 QTreeView::item:selected {
-  background-color: #0078a0;
+  background-color: rgb(204, 227, 250);
 }
 
 QProgressBar {
@@ -668,8 +672,16 @@ QWidget#widgetForModalities QToolButton:checked {
 
 /*------------------------------------------------------------------------*/
 
+QLabel#m_Headline {
+background-color: rgb(191, 219, 255);
+border-style: solid;
+border-width: 1px;
+border-color: #3f3f46;
+color: rgb(21, 66, 139);
+}
+
 QWidget#application_widget {
-  background-color: rgb(83,83,83);
+  background-color: rgb(191, 219, 255);
   padding: 0px;
   margin: 0px;
   border-style: outset;
@@ -681,11 +693,11 @@ QWidget#top_line {
   border-top-width: 4px;
   border-bottom-width: 2px;
 
-  border-top-color: rgb(60,64,74);
-  border-bottom-color: rgb(60,64,74);
+  border-top-color: rgb(255, 255, 255);
+  border-bottom-color: rgb(191, 219, 255);
 
   background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-    stop: 0 rgb(40,40,40), stop: 1 rgb(70,70,70));
+    stop: 0 rgb(255, 255, 255), stop: 1 rgb(255, 255, 255));
 
   padding-top: 0px; padding-left: 0px;
   margin: 0px;
@@ -697,10 +709,10 @@ QWidget#main_widget {
   margin: 0px;
   padding: 0px;
   padding-top: 0px; padding-left: 0px;
-  background-color: rgb(83,83,83);
+  background-color: rgb(191, 219, 255);
   border-top-width: 2px;
   border-bottom-width: 0px;
-  border-color: rgb(64,64,74);
+  border-color: rgb(191, 219, 255);
   border-style: groove;
   border-width: 0px;
 }
@@ -711,20 +723,20 @@ QWidget#top_tab {
   border-bottom-width: 0px;
   border-left-width: 0px;
   border-right-width: 0px;
-  border-top-color: rgb(206,210,217);
+  border-top-color: rgb(187, 217, 238);
   border-left-color: transparent;
-  border-right-color: rgb(206,210,217);
+  border-right-color: rgb(187, 217, 238);
   border-radius: 0px;
   margin: 0px;
   padding: 0px;
   background-color: 
   qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-    stop: 0 rgba(206,210,217,255), stop: 0.14 rgba(206,210,217,255), 
-    stop: 0.16 rgba(180,187,197,255), stop: 1 rgba(245, 245, 255,255));
+    stop: 0 rgba(187, 217, 238 ,255), stop: 0.14 rgba(187, 217, 238 ,255), 
+    stop: 0.16 rgba(187, 217, 238 ,255), stop: 1 rgba(245, 245, 255, 255));
 }
 
 QMainWindow#central_widget {
-  background-color: rgb(83,83,83);
+  background-color: rgb(191, 219, 255);
   padding: 0px;
   margin: 0px;
   border-style: outset;
@@ -781,11 +793,11 @@ QTabBar#k_tab_bar::tab:!selected {
   border-radius: 4px;
   border-width: 0px;
   background: transparent;
-  color: white;
+  color: rgb(21, 66, 139);
 }
 
 QTabBar#k_tab_bar::tab {
-  color: white;
+  color: rgb(21, 66, 139);
   padding-top: 2px;
   padding-left: 5px;
   padding-right: 5px;
@@ -798,7 +810,7 @@ QTabBar#k_tab_bar::tab {
 }
 
 QTabBar#k_tab_bar::tab:hover {
-  color: white;
+  color: rgb(21, 66, 139);
   padding-top: 2px;
   padding-left: 5px;
   padding-right: 5px;
@@ -823,5 +835,5 @@ QTabBar#k_tab_bar::tab:selected{
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-    stop: 0 rgba(255,255,255, 255), stop: 1.0 rgba(206,210,217, 255));
+    stop: 0 rgba(255, 255, 255, 255), stop: 1.0 rgba(199, 216, 237, 255));
 }

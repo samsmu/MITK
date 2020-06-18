@@ -82,6 +82,7 @@ struct BERRY_UI_QT IQtStyleManager
   virtual QString GetStylesheet() const = 0;
   virtual QString GetActiveTabStylesheet() const = 0;
   virtual QString GetTabStylesheet() const = 0;
+  virtual QString GetSmoothStyleWidget() const = 0;
 
   virtual void AddStyle(const QString& styleFileName, const QString& styleName = QString()) = 0;
   virtual void AddStyles(const QString& path) = 0;

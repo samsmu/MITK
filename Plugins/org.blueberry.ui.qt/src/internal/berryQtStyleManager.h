@@ -38,6 +38,7 @@ public:
   QString GetStylesheet() const override;
   QString GetActiveTabStylesheet() const override;
   QString GetTabStylesheet() const override;
+  QString GetSmoothStyleWidget() const override;
 
   void AddStyle(const QString& styleFileName, const QString& styleName = QString()) override;
   void AddStyles(const QString& path) override;
@@ -59,6 +60,9 @@ public:
   bool IsA( const std::type_info& type ) const;
   const std::type_info& GetType() const;
 
+signals:
+  void UpdateTheme();
+
 private:
 
   void AddDefaultStyle();
@@ -75,6 +79,7 @@ private:
     QString stylesheet;
     QString tabStylesheet;
     QString activeTabStylesheet;
+    QString smoothWidgetStylesheet;
   };
 
   void ReadStyleData(ExtStyle* style);
