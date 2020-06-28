@@ -124,6 +124,10 @@ QTableView:active {
   selection-background-color: rgba(16,180,248,74);
 }
 
+QTableWidget QAbstractItemView {
+  background-color: rgb(191, 219, 255);
+}
+
 QAbstractItemView {
   alternate-background-color: #ff0000;
   background-color: rgb(232, 240, 251);
@@ -702,7 +706,7 @@ QWidget#top_line {
   padding-top: 0px; padding-left: 0px;
   margin: 0px;
   padding: 0px;
-  border-style: groove;
+  border-style: solid;
 }
 
 QWidget#main_widget {
