@@ -66,8 +66,8 @@ if(MITK_USE_OpenCV)
       )
     endif()
 
-    set(opencv_url https://github.com/opencv/opencv/archive/2.4.13.5.zip)
-    set(opencv_url_md5 04ea6ac9255df8aa4b419ed57d20b743)
+    set(opencv_url https://github.com/opencv/opencv/archive/2.4.13.7.zip)
+    set(opencv_url_md5 3874d345e849609e96cb16bb7e0ebf89)
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}

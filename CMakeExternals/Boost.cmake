@@ -17,7 +17,7 @@ set(Boost_DEPENDS ${proj})
 
 if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
 
-  set(_boost_version 1_60)
+  set(_boost_version 1_65)
   set(_boost_install_include_dir include/boost)
   if(WIN32)
     set(_boost_install_include_dir include/boost-${_boost_version}/boost)
@@ -48,8 +48,12 @@ if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
     set(_boost_layout)
     if(MSVC)
       mitkFunctionGetMSVCVersion()
-      set(_boost_with_toolset "vc${VISUAL_STUDIO_VERSION_MAJOR}")
-      set(_boost_toolset "msvc-${VISUAL_STUDIO_VERSION_MAJOR}.0")
+      if("${VISUAL_STUDIO_VERSION_MINOR}" STREQUAL "0")
+        set(_boost_with_toolset "vc${VISUAL_STUDIO_VERSION_MAJOR}")
+      else()
+        set(_boost_with_toolset "vc${VISUAL_STUDIO_VERSION_MAJOR}${VISUAL_STUDIO_VERSION_MINOR}")
+      endif()
+      set(_boost_toolset "msvc-${VISUAL_STUDIO_VERSION_MAJOR}.${VISUAL_STUDIO_VERSION_MINOR}")
     endif()
     set(_install_lib_dir "--libdir=<INSTALL_DIR>/bin")
     set(WIN32_CMAKE_SCRIPT ${ep_prefix}/src/${proj}-cmake/MoveBoostLibsToLibDirForWindows.cmake)
@@ -138,8 +142,8 @@ if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
 
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ${sep}
-    URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/boost_${_boost_version}_0.7z
-    URL_MD5 7ce7f5a4e396484da8da6b60d4ed7661
+    URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/boost_${_boost_version}_1.7z
+    URL_MD5 72ab92cb936f93d33b8b313aee2dd47a
     BINARY_DIR "${ep_prefix}/src/${proj}"
     CONFIGURE_COMMAND "<SOURCE_DIR>/bootstrap${_shell_extension}"
       --with-toolset=${_boost_with_toolset}
