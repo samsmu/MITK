@@ -31,6 +31,10 @@ http://dicom.offis.de/dcmtk.php.en
 
 http://gdcm.sourceforge.net/
 
+\par GLEW
+
+http://glew.sourceforge.net/
+
 \par GLUT
 
 https://www.opengl.org/resources/libraries/glut/
@@ -78,6 +82,10 @@ http://librdf.org/
 \par SimpleITK
 
 http://www.simpleitk.org/
+
+\par SOFA
+
+http://www.sofa-framework.org/
 
 \par SWIG
 

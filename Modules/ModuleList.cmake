@@ -56,6 +56,7 @@ set(mitk_modules
   US
   USUI
   DicomUI
+  Simulation
   Remeshing
   Python
   QtPython
