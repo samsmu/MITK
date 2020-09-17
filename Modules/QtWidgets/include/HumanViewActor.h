@@ -3,7 +3,8 @@
 
 #include <MitkQtWidgetsExports.h>
 
-#include <vtk_glew.h> // ? vtkOpenGL.h sends to sysyem opengl, why vtk uses two opengl api?
+//#include <vtk_glew.h> // ? vtkOpenGL.h sends to sysyem opengl, why vtk uses two opengl api?
+#include <GL/glew.h>
 
 #include <vtkActor2D.h>
 

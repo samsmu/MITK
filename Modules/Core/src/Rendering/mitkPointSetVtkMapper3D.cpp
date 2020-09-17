@@ -32,7 +32,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkConeSource.h>
 #include <vtkCylinderSource.h>
 #include <vtkProperty.h>
-#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkCellArray.h>
 #include <vtkVectorText.h>
 #include <vtkTransform.h>
@@ -43,7 +43,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkMatrix4x4.h>
 
 #include <mitkPropertyObserver.h>
-#include <vtk_glew.h>
+//#include <vtk_glew.h>
+#include <vtkgl.h>
 
 const mitk::PointSet* mitk::PointSetVtkMapper3D::GetInput()
 {
@@ -436,7 +437,7 @@ void mitk::PointSetVtkMapper3D::CreateVTKRenderObjects()
   //now according to number of elements added to selected or unselected, build up the rendering pipeline
   if (m_NumberOfSelectedAdded > 0)
   {
-    m_VtkSelectedPolyDataMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+    m_VtkSelectedPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     m_VtkSelectedPolyDataMapper->SetInputConnection(m_vtkSelectedPointList->GetOutputPort());
 
     //create a new instance of the actor
@@ -447,7 +448,7 @@ void mitk::PointSetVtkMapper3D::CreateVTKRenderObjects()
   }
 
   if (m_NumberOfSelectedAreaAdded > 0) {
-    m_VtkSelectedAreaPolyDataMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+    m_VtkSelectedAreaPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     m_VtkSelectedAreaPolyDataMapper->SetInputConnection(m_vtkSelectedAreaPointList->GetOutputPort());
 
     m_SelectedAreaActor = vtkSmartPointer<vtkActor>::New();
@@ -457,7 +458,7 @@ void mitk::PointSetVtkMapper3D::CreateVTKRenderObjects()
 
   if (m_NumberOfUnselectedAdded > 0)
   {
-    m_VtkUnselectedPolyDataMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+    m_VtkUnselectedPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     m_VtkUnselectedPolyDataMapper->SetInputConnection(m_vtkUnselectedPointList->GetOutputPort());
 
     //create a new instance of the actor
@@ -738,7 +739,7 @@ void mitk::PointSetVtkMapper3D::ApplyAllProperties(mitk::BaseRenderer* renderer,
 void mitk::PointSetVtkMapper3D::CreateContour(vtkPoints* points, vtkCellArray* m_PointConnections)
 {
   vtkSmartPointer<vtkAppendPolyData> vtkContourPolyData = vtkSmartPointer<vtkAppendPolyData>::New();
-  vtkSmartPointer<vtkOpenGLPolyDataMapper> vtkContourPolyDataMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+  vtkSmartPointer<vtkPolyDataMapper> vtkContourPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 
   vtkSmartPointer<vtkPolyData> contour = vtkSmartPointer<vtkPolyData>::New();
   contour->SetPoints(points);

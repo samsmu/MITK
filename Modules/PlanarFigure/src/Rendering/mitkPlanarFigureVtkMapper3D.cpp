@@ -23,7 +23,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkIdList.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkPolyLine.h>
 #include <vtkPolygon.h>
 
@@ -198,7 +198,7 @@ void mitk::PlanarFigureVtkMapper3D::GenerateDataForRenderer(BaseRenderer* render
     if (m_FillPf)
       polyData->SetPolys(polygons);
 
-    vtkSmartPointer<vtkOpenGLPolyDataMapper> mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
 
     localStorage->m_Actor->SetMapper(mapper);

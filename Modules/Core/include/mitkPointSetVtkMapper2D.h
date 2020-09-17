@@ -30,7 +30,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 class vtkActor;
 class vtkPropAssembly;
 class vtkPolyData;
-class vtkOpenGLPolyDataMapper;
+class vtkPolyDataMapper;
 class vtkGlyphSource2D;
 class vtkGlyph3D;
 class vtkFloatArray;
@@ -173,9 +173,9 @@ namespace mitk {
       std::vector < vtkSmartPointer<vtkTextActor> > m_VtkTextAngleActors;
 
       // mappers
-      vtkSmartPointer<vtkOpenGLPolyDataMapper> m_VtkUnselectedPolyDataMapper;
-      vtkSmartPointer<vtkOpenGLPolyDataMapper> m_VtkSelectedPolyDataMapper;
-      vtkSmartPointer<vtkOpenGLPolyDataMapper> m_VtkContourPolyDataMapper;
+      vtkSmartPointer<vtkPolyDataMapper> m_VtkUnselectedPolyDataMapper;
+      vtkSmartPointer<vtkPolyDataMapper> m_VtkSelectedPolyDataMapper;
+      vtkSmartPointer<vtkPolyDataMapper> m_VtkContourPolyDataMapper;
 
       // propassembly
       vtkSmartPointer<vtkPropAssembly> m_PropAssembly;

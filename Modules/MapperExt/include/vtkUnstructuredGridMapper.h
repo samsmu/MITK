@@ -24,7 +24,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "vtkMapper.h"
 
-class vtkOpenGLPolyDataMapper;
+class vtkPolyDataMapper;
 class vtkGeometryFilter;
 class vtkUnstructuredGrid;
 
@@ -38,7 +38,7 @@ public:
 
   // Description:
   // Get the internal poly data mapper used to map data set to graphics system.
-  vtkGetObjectMacro(PolyDataMapper, vtkOpenGLPolyDataMapper);
+  vtkGetObjectMacro(PolyDataMapper, vtkPolyDataMapper);
 
   // Description:
   // Release any graphics resources that are being consumed by this mapper.
@@ -71,7 +71,7 @@ protected:
   ~vtkUnstructuredGridMapper();
 
   vtkGeometryFilter *GeometryExtractor;
-  vtkOpenGLPolyDataMapper *PolyDataMapper;
+  vtkPolyDataMapper *PolyDataMapper;
 
   mitk::BoundingObject::Pointer m_BoundingObject;
 

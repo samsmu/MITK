@@ -41,7 +41,7 @@
 #include <vtkCamera.h>
 
 #include <vtkProperty.h>
-#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
 
 mitk::BaseRenderer::BaseRendererMapType mitk::BaseRenderer::baseRendererMap;

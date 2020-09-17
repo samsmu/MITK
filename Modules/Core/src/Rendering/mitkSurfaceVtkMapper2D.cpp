@@ -323,7 +323,7 @@ struct PlaneCutFunctor {
 // constructor LocalStorage
 mitk::SurfaceVtkMapper2D::LocalStorage::LocalStorage()
 {
-  m_Mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+  m_Mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   m_Mapper->ScalarVisibilityOff();
   m_Actor = vtkSmartPointer<vtkActor>::New();
   m_PropAssembly = vtkSmartPointer <vtkAssembly>::New();

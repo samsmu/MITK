@@ -27,7 +27,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkCleanPolyData.h>
 
 class vtkActor;
-class vtkOpenGLPolyDataMapper;
+class vtkPolyDataMapper;
 class vtkAssembly;
 class vtkFeatureEdges;
 class vtkTubeFilter;
@@ -151,13 +151,13 @@ namespace mitk {
     vtkTubeFilter *m_EdgeTuber;
 
     /** \brief Mapper for the tube-shaped frame  */
-    vtkOpenGLPolyDataMapper *m_EdgeMapper;
+    vtkPolyDataMapper *m_EdgeMapper;
 
     /** \brief Actor for the tube-shaped frame */
     vtkActor *m_EdgeActor;
 
     /** \brief Mapper for black plane background */
-    vtkOpenGLPolyDataMapper *m_BackgroundMapper;
+    vtkPolyDataMapper *m_BackgroundMapper;
 
     /** \brief Actor for black plane background */
     vtkActor *m_BackgroundActor;
@@ -166,8 +166,8 @@ namespace mitk {
     vtkTransformPolyDataFilter* m_NormalsTransformer;
 
     /** \brief Mapper for normals representation (thin lines) */
-    vtkOpenGLPolyDataMapper* m_FrontNormalsMapper;
-    vtkOpenGLPolyDataMapper* m_BackNormalsMapper;
+    vtkPolyDataMapper* m_FrontNormalsMapper;
+    vtkPolyDataMapper* m_BackNormalsMapper;
 
     /** \brief  Generates lines for surface normals */
     vtkHedgeHog* m_FrontHedgeHog;

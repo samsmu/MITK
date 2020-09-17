@@ -19,7 +19,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkRenderingManager.h>
 #include "mitkConfig.h"
 
-#include "vtk_glew.h"
+//#include "vtk_glew.h"
+#include <GL/gl.h>
 
 #if WIN32
 #ifndef __GNUC__

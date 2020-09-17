@@ -54,7 +54,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkMatrix4x4.h>
 #include <vtkPlaneSource.h>
 #include <vtkPoints.h>
-#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkTransform.h>
 #include <vtkUnsignedCharArray.h>
@@ -1117,7 +1117,7 @@ mitk::DoseImageVtkMapper2D::LocalStorage::LocalStorage()
   m_DefaultLookupTable = vtkSmartPointer<vtkLookupTable>::New();
   m_BinaryLookupTable = vtkSmartPointer<vtkLookupTable>::New();
   m_ColorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
-  m_Mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+  m_Mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   m_Actor = vtkSmartPointer<vtkActor>::New();
   m_Actors = vtkSmartPointer<vtkPropAssembly>::New();
   m_Reslicer = mitk::ExtractSliceFilter::New();

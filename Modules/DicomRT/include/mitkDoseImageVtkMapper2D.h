@@ -32,7 +32,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkCellArray.h>
 
 class vtkActor;
-class vtkOpenGLPolyDataMapper;
+class vtkPolyDataMapper;
 class vtkPlaneSource;
 class vtkImageData;
 class vtkLookupTable;
@@ -154,7 +154,7 @@ namespace mitk {
 
       vtkSmartPointer<vtkPropAssembly> m_Actors;
       /** \brief Mapper of a 2D render window. */
-      vtkSmartPointer<vtkOpenGLPolyDataMapper> m_Mapper;
+      vtkSmartPointer<vtkPolyDataMapper> m_Mapper;
       vtkSmartPointer<vtkImageExtractComponents> m_VectorComponentExtractor;
       /** \brief Current slice of a 2D render window.*/
       vtkSmartPointer<vtkImageData> m_ReslicedImage;

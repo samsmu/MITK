@@ -97,7 +97,7 @@ public:
     /**
        * @brief m_Mapper VTK mapper for all types of 2D polydata e.g. werewolves.
        */
-    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_Mapper;
+    vtkSmartPointer<vtkPolyDataMapper> m_Mapper;
 
     vtkSmartPointer<vtkSphereTree> m_SphereTree;
     /**

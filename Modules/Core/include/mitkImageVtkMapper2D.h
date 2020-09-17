@@ -30,7 +30,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkPropAssembly.h>
 
 class vtkActor;
-class vtkOpenGLPolyDataMapper;
+class vtkPolyDataMapper;
 class vtkPlaneSource;
 class vtkImageData;
 class vtkLookupTable;
@@ -155,7 +155,7 @@ public:
 
     vtkSmartPointer<vtkPropAssembly> m_Actors;
     /** \brief Mapper of a 2D render window. */
-    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_Mapper;
+    vtkSmartPointer<vtkPolyDataMapper> m_Mapper;
     vtkSmartPointer<vtkImageExtractComponents> m_VectorComponentExtractor;
     /** \brief Current slice of a 2D render window.*/
     vtkSmartPointer<vtkImageData> m_ReslicedImage;
@@ -188,13 +188,13 @@ public:
     /** \brief An actor for the outline shadow*/
     vtkSmartPointer<vtkActor> m_OutlineShadowActor;
     /** \brief A mapper for the outline */
-    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_OutlineMapper;
+    vtkSmartPointer<vtkPolyDataMapper> m_OutlineMapper;
     /** \brief PolyData object containg separartion curtain */
     vtkSmartPointer<vtkPolyData> m_CurtainPolyData;
     /** \brief An actor for the separartion curtain */
     vtkSmartPointer<vtkActor> m_CurtainActor;
     /** \brief A mapper for the separartion curtain */
-    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_CurtainMapper;
+    vtkSmartPointer<vtkPolyDataMapper> m_CurtainMapper;
 
     mitk::Point2D m_CurtainPlaneStart;
     mitk::Point2D m_CurtainPlaneEnd;

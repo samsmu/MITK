@@ -22,7 +22,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkProperties.h"
 #include "mitkContour.h"
 #include <vtkLinearTransform.h>
-#include "vtk_glew.h"
+//#include "vtk_glew.h"
+#include "mitkGL.h"
 
 mitk::ContourMapper2D::ContourMapper2D()
 {

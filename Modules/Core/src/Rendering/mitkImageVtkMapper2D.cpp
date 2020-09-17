@@ -48,7 +48,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkImageReslice.h>
 #include <vtkImageChangeInformation.h>
 #include <vtkPlaneSource.h>
-#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkCellArray.h>
 #include <vtkCamera.h>
 #include <vtkColorTransferFunction.h>
@@ -1012,7 +1012,7 @@ mitk::ImageVtkMapper2D::LocalStorage::LocalStorage()
   m_DefaultLookupTable = vtkSmartPointer<vtkLookupTable>::New();
   m_BinaryLookupTable = vtkSmartPointer<vtkLookupTable>::New();
   m_ColorLookupTable = vtkSmartPointer<vtkLookupTable>::New();
-  m_Mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+  m_Mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   m_Actor = vtkSmartPointer<vtkActor>::New();
   m_Actors = vtkSmartPointer<vtkPropAssembly>::New();
   m_Reslicer = mitk::ExtractSliceFilter::New();
@@ -1021,11 +1021,11 @@ mitk::ImageVtkMapper2D::LocalStorage::LocalStorage()
   m_ReslicedImage = vtkSmartPointer<vtkImageData>::New();
   m_EmptyPolyData = vtkSmartPointer<vtkPolyData>::New();
   m_OutlineActor = vtkSmartPointer<vtkActor>::New();
-  m_OutlineMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+  m_OutlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   m_OutlineShadowActor = vtkSmartPointer<vtkActor>::New();
   m_CurtainPolyData = vtkSmartPointer<vtkPolyData>::New();
   m_CurtainActor = vtkSmartPointer<vtkActor>::New();
-  m_CurtainMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
+  m_CurtainMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   m_RenderedBefore = false;
 
   m_OutlineActor->SetMapper(m_OutlineMapper);

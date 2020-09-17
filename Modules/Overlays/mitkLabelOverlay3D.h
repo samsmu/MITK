@@ -23,7 +23,7 @@
 #include <vtkSmartPointer.h>
 
 class vtkStringArray;
-class vtkOpenGLPolyDataMapper;
+class vtkPolyDataMapper;
 class vtkPolyData;
 class vtkActor2D;
 class vtkProperty2D;
