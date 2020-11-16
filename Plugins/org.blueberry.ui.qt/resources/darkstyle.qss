@@ -825,3 +825,71 @@ QTabBar#k_tab_bar::tab:selected{
   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
     stop: 0 rgba(255,255,255, 255), stop: 1.0 rgba(206,210,217, 255));
 }
+
+QLabel#study_tree_header{
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+  color: black;
+  qproperty-alignment: AlignCenter;
+}
+
+QTreeWidget#study_tree{
+  background: rgb(53,53,53);
+  padding: 0px;
+  margin: 0px;
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+}
+
+QTreeWidget#study_tree::item:hover {
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+  color: black;
+  background:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(255,255,247), stop: 0.42 rgb(255,231,154),
+    stop: 0.43 rgb(255,215,97), stop: 1 rgb(255,232,156))
+}
+
+QTreeWidget#study_tree::item:selected {
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+  background:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgba(155,155,155, 255), stop: 0.42 rgba(155,155,100, 150),
+    stop: 0.43 rgba(155,155,100, 100), stop: 1 rgba(155,155,130, 100));
+}
+
+QTreeWidget#study_tree::branch:closed:has-children:has-siblings,
+QTreeWidget#study_tree::branch:closed:has-children:!has-siblings {
+  image: url(:/org.blueberry.ui.qt/dark/right-arrow.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
+QTreeWidget#study_tree::branch:closed:has-children:has-siblings:hover,
+QTreeWidget#study_tree::branch:closed:has-children:!has-siblings:hover {
+  image: url(:/org.blueberry.ui.qt/dark/right-arrow-hover.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
+QTreeWidget#study_tree::branch:open:has-children:has-siblings,
+QTreeWidget#study_tree::branch:open:has-children:!has-siblings {
+  image: url(:/org.blueberry.ui.qt/dark/down-arrow.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
+QTreeWidget#study_tree::branch:open:has-children:has-siblings:hover,
+QTreeWidget#study_tree::branch:open:has-children:!has-siblings:hover {
+  image: url(:/org.blueberry.ui.qt/dark/down-arrow-hover.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}

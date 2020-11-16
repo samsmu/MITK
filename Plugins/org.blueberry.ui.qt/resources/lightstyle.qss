@@ -79,3 +79,232 @@ QWidget[overImage=true]{ /* For nubmer of slices */
   color: #ffffff;
   background-color: rgba(0,0,0,100);
 }
+
+/*------------------------------------------------------------------------*/
+
+QWidget#application_widget {
+  background-color: rgb(83,83,83);
+  padding: 0px;
+  margin: 0px;
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+}
+
+QWidget#top_line {
+  border-top-width: 4px;
+  border-bottom-width: 2px;
+
+  border-top-color: rgb(60,64,74);
+  border-bottom-color: rgb(60,64,74);
+
+  background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    stop: 0 rgb(40,40,40), stop: 1 rgb(70,70,70));
+
+  padding-top: 0px; padding-left: 0px;
+  margin: 0px;
+  padding: 0px;
+  border-style: groove;
+}
+
+QWidget#main_widget {
+  margin: 0px;
+  padding: 0px;
+  padding-top: 0px; padding-left: 0px;
+  background-color: rgb(83,83,83);
+  border-top-width: 2px;
+  border-bottom-width: 0px;
+  border-color: rgb(64,64,74);
+  border-style: groove;
+  border-width: 0px;
+}
+
+QWidget#top_tab {
+  border-style: solid;
+  border-top-width: 17px;
+  border-bottom-width: 0px;
+  border-left-width: 0px;
+  border-right-width: 0px;
+  border-top-color: rgb(206,210,217);
+  border-left-color: transparent;
+  border-right-color: rgb(206,210,217);
+  border-radius: 0px;
+  margin: 0px;
+  padding: 0px;
+  background-color: 
+  qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    stop: 0 rgba(206,210,217,255), stop: 0.14 rgba(206,210,217,255), 
+    stop: 0.16 rgba(180,187,197,255), stop: 1 rgba(245, 245, 255,255));
+}
+
+QMainWindow#central_widget {
+  background-color: rgb(83,83,83);
+  padding: 0px;
+  margin: 0px;
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+}
+
+QTabWidget#k_tab {
+  background: transparent;
+  text-decoration: none;
+  padding: 0px;
+  margin: 0px;
+  border-width: 0px;
+  border-style: outset;
+  border-radius: 3px;
+}
+
+QTabWidget#k_tab::tab-bar {
+  margin: 0px;
+  background: transparent;
+  border-width: 0px;
+  padding: 0px;
+  margin: 0px;
+  left: 47;
+  color: green;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+QTabWidget#k_tab::pane{
+  background: transparent;
+  border-width: 0px;
+  padding: 0px;
+  margin: 0px;
+  left: 1;
+  color: black;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+QTabBar#k_tab_bar {
+  margin: 0px;
+  border-radius: 4px;
+  border-width: 0px;
+  background: transparent;
+}
+
+QTabBar#k_tab_bar::tab:!selected {
+  padding-top: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 4px;
+  margin: 0px;
+  border-radius: 4px;
+  border-width: 0px;
+  background: transparent;
+  color: white;
+}
+
+QTabBar#k_tab_bar::tab {
+  color: white;
+  padding-top: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 4px;
+  border-width: 0px;
+  margin: 0px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  background: transparent;
+}
+
+QTabBar#k_tab_bar::tab:hover {
+  color: white;
+  padding-top: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 4px;
+  border-width: 0px;
+  margin: 0px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgba(255, 255, 255, 120), stop: 0.4 rgba(255, 255, 255, 120),
+    stop: 0.5 rgba(255, 255, 255, 80), stop: 1.0 rgba(255, 255, 255, 10));
+}
+
+QTabBar#k_tab_bar::tab:selected{
+  color: black;
+  padding-top:  2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 4px;
+  margin: 0px;
+  border-width: 0px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgba(255,255,255, 255), stop: 1.0 rgba(206,210,217, 255));
+}
+
+QLabel#study_tree_header{
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+  color: black;
+  qproperty-alignment: AlignCenter;
+}
+
+QTreeWidget#study_tree{
+  background: rgb(53,53,53);
+  padding: 0px;
+  margin: 0px;
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+}
+
+QTreeWidget#study_tree::item:hover {
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+  color: black;
+  background:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(255,255,247), stop: 0.42 rgb(255,231,154),
+    stop: 0.43 rgb(255,215,97), stop: 1 rgb(255,232,156))
+}
+
+QTreeWidget#study_tree::item:selected {
+  border-style: outset;
+  border-width: 0px;
+  border-radius: 0px;
+  background:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgba(155,155,155, 255), stop: 0.42 rgba(155,155,100, 150),
+    stop: 0.43 rgba(155,155,100, 100), stop: 1 rgba(155,155,130, 100));
+}
+
+QTreeWidget#study_tree::branch:closed:has-children:has-siblings,
+QTreeWidget#study_tree::branch:closed:has-children:!has-siblings {
+  image: url(:/org.blueberry.ui.qt/dark/right-arrow.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
+QTreeWidget#study_tree::branch:closed:has-children:has-siblings:hover,
+QTreeWidget#study_tree::branch:closed:has-children:!has-siblings:hover {
+  image: url(:/org.blueberry.ui.qt/dark/right-arrow-hover.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
+QTreeWidget#study_tree::branch:open:has-children:has-siblings,
+QTreeWidget#study_tree::branch:open:has-children:!has-siblings {
+  image: url(:/org.blueberry.ui.qt/dark/down-arrow.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
+QTreeWidget#study_tree::branch:open:has-children:has-siblings:hover,
+QTreeWidget#study_tree::branch:open:has-children:!has-siblings:hover {
+  image: url(:/org.blueberry.ui.qt/dark/down-arrow-hover.svg);
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
+    stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
+}
+
