@@ -899,7 +899,7 @@ void BaseApplication::initializeSplashScreen(QCoreApplication * application)
       d->m_Splashscreen->show();
       application->processEvents();
       ///Init
-      m_drawProgress(.1f, false);
+      //m_drawProgress(.1f, false);
       ///Closing callback for splashscreen
       d->m_SplashscreenClosingCallback =
           new SplashCloserCallback(d->m_Splashscreen, m_drawProgress, application);
