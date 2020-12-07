@@ -436,9 +436,9 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       // Visualize
       vtkSmartPointer<vtkPolyData> helperlinesPolyData = vtkSmartPointer<vtkPolyData>::New();
       ls->m_HelperLinesmapper->SetInputData(helperlinesPolyData);
+      vtkSmartPointer<vtkCellArray> helperlines = vtkSmartPointer<vtkCellArray>::New();
       if ( showAreaOfThickSlicing )
       {
-        vtkSmartPointer<vtkCellArray> helperlines = vtkSmartPointer<vtkCellArray>::New();
         // vectorToHelperLine defines how to reach the helperLine from the mainLine
         // got the right direction, so we multiply the width
         Vector3D vecToHelperLine = orthogonalVector * thickSliceDistance;
@@ -446,21 +446,53 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
         this->DrawLine(point1 - vecToHelperLine, point2 - vecToHelperLine,helperlines,points);
         this->DrawLine(point1 + vecToHelperLine, point2 + vecToHelperLine,helperlines,points);
 
-        // Add the points to the dataset
-        helperlinesPolyData->SetPoints(points);
-
-        // Add the lines to the dataset
-        helperlinesPolyData->SetLines(helperlines);
-
         ls->m_CrosshairActor->GetProperty()->SetLineStipplePattern(0xf0f0);
         ls->m_CrosshairActor->GetProperty()->SetLineStippleRepeatFactor(1);
         ls->m_CrosshairHelperLineActor->SetVisibility(1);
       }
       else
       {
-        ls->m_CrosshairActor->GetProperty()->SetLineStipplePattern(0xffff);
-        ls->m_CrosshairHelperLineActor->SetVisibility(0);
+        this->DrawLine(point1, point2, helperlines, points);
+
+        ls->m_CrosshairActor->GetProperty()->SetLineStipplePattern(0xf0f0);
+        ls->m_CrosshairActor->GetProperty()->SetLineStippleRepeatFactor(1);
+        ls->m_CrosshairHelperLineActor->SetVisibility(1);
       }
+
+      if(handles.size() > 1)
+      {
+          auto m = renderer->GetScaleFactorMMPerDisplayUnit();
+          auto x = crossLine.GetDirection();
+          x.Normalize();
+          x *= 3 * m;
+          auto y = 3 * m * orthogonalVector;
+
+          const auto length = std::abs(handles[1] - handles[0]);
+          const auto ref = (std::min)(handles[1], handles[0]);
+
+          Vector3D vecToHelperLine = orthogonalVector * thickSliceDistance;
+
+          auto arrowPoints =
+          { 
+              crossLine.GetPoint(ref + length / 2.0 + length / 5.0) + vecToHelperLine
+            , crossLine.GetPoint(ref + length / 2.0 - length / 5.0) - vecToHelperLine
+          };
+
+          for (const auto &p : arrowPoints)
+          {
+              this->DrawLine(p - x - y, p - y * 2, helperlines, points);
+              this->DrawLine(p - y * 2, p + x - y, helperlines, points);
+              this->DrawLine(p - y * 2, p + y * 2, helperlines, points);
+              this->DrawLine(p + x + y, p + y * 2, helperlines, points);
+              this->DrawLine(p + y * 2, p - x + y, helperlines, points);
+          }
+      }
+
+      // Add the points to the dataset
+      helperlinesPolyData->SetPoints(points);
+
+      // Add the lines to the dataset
+      helperlinesPolyData->SetLines(helperlines);
   }
 }
 

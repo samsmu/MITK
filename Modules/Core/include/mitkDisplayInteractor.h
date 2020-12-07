@@ -112,6 +112,8 @@ namespace mitk
 
     virtual bool CheckSwivelPossible( const InteractionEvent* interactionEvent );
 
+    virtual bool CheckChangeThicknessPossible(const InteractionEvent* interactionEvent);
+
     bool IsInMouseRotationMode(const InteractionEvent* interactionEvent);
 
     bool IsOverObject(const InteractionEvent* interactionEvent);
@@ -185,6 +187,10 @@ namespace mitk
 
     virtual void Swivel(StateMachineAction*, InteractionEvent* event);
 
+
+    virtual void StartChangeThickness(StateMachineAction*, InteractionEvent*);
+    virtual void EndChangeThickness(StateMachineAction*, InteractionEvent*);
+    virtual void ChangeThickness(StateMachineAction*, InteractionEvent* event);
 
     virtual void ScrollTimeOneDown(StateMachineAction*, InteractionEvent*);
     virtual void ScrollTimeOneUp(StateMachineAction*, InteractionEvent*);
@@ -362,6 +368,8 @@ namespace mitk
     Vector3D m_PreviousRotationAxis;
     ScalarType m_PreviousRotationAngle;
 
+    Vector3D m_orthogonalVectorThickness;
+    double m_correctionFactorThickness;
      /**
      * Clock rotation spead for ctrl+arrow rotation
      */
