@@ -42,6 +42,7 @@
 // Rotation
 #include <mitkRotationOperation.h>
 #include "rotate_cursor.xpm"
+#include "movement_cursor.xpm"
 #include "mitkInteractionConst.h"
 
 //
@@ -70,6 +71,7 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_CONDITION("check_is_in_mouse_rotation_mode", IsInMouseRotationMode);
   CONNECT_CONDITION( "isOverObject", IsOverObject);
   CONNECT_CONDITION("check_can_change_thickness", CheckChangeThicknessPossible);
+  CONNECT_CONDITION("check_can_move_cross", CheckMoveCross);
 
   CONNECT_FUNCTION("init", Init);
   CONNECT_FUNCTION("move", Move);
@@ -588,6 +590,70 @@ bool mitk::DisplayInteractor::CheckChangeThicknessPossible(const InteractionEven
     }
 }
 
+bool mitk::DisplayInteractor::CheckMoveCross(const InteractionEvent* interactionEvent)
+{
+    const InteractionPositionEvent* posEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
+    if (posEvent == nullptr)
+    {
+        return false;
+    }
+
+    BaseRenderer* clickedRenderer = posEvent->GetSender();
+
+    mitk::DataNode* geometryDataNode = clickedRenderer->GetCurrentWorldPlaneGeometryNode();
+    const PlaneGeometryData* rendererWorldPlaneGeometryData = dynamic_cast<PlaneGeometryData *>(geometryDataNode->GetData());
+    const PlaneGeometry* ourViewportGeometry = dynamic_cast<const PlaneGeometry*>(rendererWorldPlaneGeometryData->GetPlaneGeometry());
+
+    if (!ourViewportGeometry)
+    {
+        return false;
+    }
+
+    Point3D cursorPosition = posEvent->GetPlanePositionInWorld();
+    const PlaneGeometry* geometry = NULL;  // this one is under the mouse cursor
+    const PlaneGeometry* anyOtherGeometry = NULL;    // this is also visible (for calculation of intersection ONLY)
+    Line3D intersectionLineWithGeometry;
+
+    double threshholdDistancePixels = 12.0 * clickedRenderer->GetScaleFactorMMPerDisplayUnit();
+
+    auto renWindows = interactionEvent->GetSender()->GetRenderingManager()->GetAllRegisteredRenderWindows();
+
+    for (auto renWin : renWindows)
+    {
+        SliceNavigationController* snc = BaseRenderer::GetInstance(renWin)->GetSliceNavigationController();
+
+        // If the mouse cursor is in 3D Renderwindow, do not check for intersecting planes.
+        if (BaseRenderer::GetInstance(renWin)->GetMapperID() == BaseRenderer::Standard3D)
+        {
+            continue;
+        }
+
+        // check if there is an intersection
+        const PlaneGeometry* otherRenderersRenderPlane = nullptr;
+        const BaseGeometry* referenceGeometry = nullptr;
+        Line3D intersectionLine; // between rendered/clicked geometry and the one being analyzed
+        std::vector<double> intersections;
+        std::vector<double> handles;
+
+        auto *geometryNode = BaseRenderer::GetInstance(renWin)->GetCurrentWorldPlaneGeometryNode();
+
+        if (!PlaneGeometryDataMapper2D::getIntersections(clickedRenderer, geometryNode, ourViewportGeometry,
+            otherRenderersRenderPlane, referenceGeometry, intersectionLine, intersections, handles) || handles.size() < 2)
+        {
+            continue; // we ignore this plane, it hasn't intersection with our plane
+        }
+
+        const auto dist = cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(intersections[0]));
+        
+        if (dist < threshholdDistancePixels)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void mitk::DisplayInteractor::Init(StateMachineAction*, InteractionEvent* interactionEvent)
 {
   InteractionPositionEvent* positionEvent = static_cast<InteractionPositionEvent*>(interactionEvent);
@@ -1002,7 +1068,7 @@ void mitk::DisplayInteractor::Rotate(mitk::StateMachineAction *, mitk::Interacti
 
 void mitk::DisplayInteractor::StartChangeThickness(StateMachineAction*, InteractionEvent*)
 {
-    this->SetMouseCursor(rotate_cursor_xpm, 0, 0);
+    this->SetMouseCursor(movement_cursor_xpm, 0, 0);
 }
 
 void mitk::DisplayInteractor::EndChangeThickness(StateMachineAction*, InteractionEvent*)

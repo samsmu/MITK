@@ -114,6 +114,8 @@ namespace mitk
 
     virtual bool CheckChangeThicknessPossible(const InteractionEvent* interactionEvent);
 
+    virtual bool CheckMoveCross(const InteractionEvent* interactionEvent);
+
     bool IsInMouseRotationMode(const InteractionEvent* interactionEvent);
 
     bool IsOverObject(const InteractionEvent* interactionEvent);

@@ -342,8 +342,8 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       // rendered; these positions will be stored in lineParams to form a
       // gap afterwards.
 
-      int gapSize = 32;
-      this->GetDataNode()->GetPropertyValue("Crosshair.Gap Size", gapSize, NULL);
+      int gapSize = 0;
+      //this->GetDataNode()->GetPropertyValue("Crosshair.Gap Size", gapSize, NULL);
 
       auto intervals = IntervalSet<double>( SimpleInterval<double>(0, 1));
 
@@ -452,8 +452,6 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       }
       else
       {
-        this->DrawLine(point1, point2, helperlines, points);
-
         ls->m_CrosshairActor->GetProperty()->SetLineStipplePattern(0xf0f0);
         ls->m_CrosshairActor->GetProperty()->SetLineStippleRepeatFactor(1);
         ls->m_CrosshairHelperLineActor->SetVisibility(1);
