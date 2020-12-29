@@ -10,5 +10,6 @@ set(CPP_FILES
   mitkSceneReader.cpp
   mitkSceneReaderV1.cpp
   mitkSurfaceSerializer.cpp
+  mitkStructuredReportSerializer.cpp
 )
 

@@ -31,6 +31,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkSurfaceVtkXmlIO.h>
 #include <mitkImageVtkXmlIO.h>
 #include <mitkImageVtkLegacyIO.h>
+#include <mitkStructuredReportWriterService.h>
+#include <mitkStructuredReportReaderService.h>
 
 #include <mitkFileWriter.h>
 #include "mitkLegacyFileWriterService.h"
@@ -182,6 +184,8 @@ void MitkCoreActivator::Load(us::ModuleContext* context)
   m_FileWriters.push_back(new mitk::GeometryDataWriterService());
   m_FileReaders.push_back(new mitk::DicomSeriesReaderService());
   m_FileReaders.push_back(new mitk::RawImageFileReaderService());
+  m_FileWriters.push_back(new mitk::StructuredReportWriterService());
+  m_FileReaders.push_back(new mitk::StructuredReportReaderService());
 
   /*
     There IS an option to exchange ALL vtkTexture instances against vtkNeverTranslucentTextureFactory.

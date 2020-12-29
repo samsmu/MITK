@@ -256,6 +256,8 @@ set(CPP_FILES
   IO/mitkSurfaceVtkLegacyIO.cpp
   IO/mitkSurfaceVtkXmlIO.cpp
   IO/mitkVtkLoggingAdapter.cpp
+  IO/mitkStructuredReportWriterService.cpp
+  IO/mitkStructuredReportReaderService.cpp
 
   Rendering/mitkAbstractOverlayLayouter.cpp
   Rendering/mitkBaseRenderer.cpp
