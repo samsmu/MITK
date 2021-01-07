@@ -904,3 +904,21 @@ QTreeWidget#study_tree::branch:open:has-children:!has-siblings:hover {
   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
     stop: 0 rgb(187, 217, 238), stop : 1 rgb(216, 233, 245));
 }
+
+QStatusBar {
+  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgb(195, 201, 208), stop : 0.35 rgb(178, 185, 194),
+    stop : 0.36 rgb(160, 167, 176), stop : 0.80 rgb(116, 123, 132),
+    stop : 0.81 rgb(116, 123, 132), stop : 1 rgb(46, 53, 62));
+    padding: 0px;
+    margin: 0px;
+    border-style: outset;
+    border-width: 0px;
+    border-radius: 0px;
+}
+
+QStatusBar::item {
+    border: 0px;
+    padding: 0px;
+    margin: 0px;
+}
