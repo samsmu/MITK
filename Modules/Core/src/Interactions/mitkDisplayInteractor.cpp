@@ -53,6 +53,8 @@
 
 #include "mitkResliceMethodProperty.h"
 
+#include <array>
+
 void mitk::DisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
 {
   // to use the state machine pattern,
@@ -548,10 +550,18 @@ bool mitk::DisplayInteractor::CheckChangeThicknessPossible(const InteractionEven
         const auto length = std::abs(handles[1] - handles[0]);
         const auto ref = (std::min)(handles[1], handles[0]);
 
-        const auto dist = cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + length / 2.0 + length / 5.0) + vecToHelperLine);
-        const auto dist1 = cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + length / 2.0 - length / 5.0) - vecToHelperLine);
+        const auto halfLength = length / 2.0;
+        const auto partLength = length / 3.0;
 
-        double distanceFromIntersectionLine = dist > dist1 ? dist1 : dist;
+        const std::array<double, 4> dist = 
+        {
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength + partLength) + vecToHelperLine),
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength + partLength) - vecToHelperLine),
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength - partLength) + vecToHelperLine),
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength - partLength) - vecToHelperLine)
+        };
+
+        const double distanceFromIntersectionLine = *std::min_element(std::begin(dist), std::end(dist));
 
         if (distanceFromIntersectionLine >= threshholdDistancePixels)
         {

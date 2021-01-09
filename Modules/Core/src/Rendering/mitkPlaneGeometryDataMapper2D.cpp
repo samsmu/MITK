@@ -37,6 +37,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkLine.h>
 #include <vtkPoints.h>
 #include <vtkTriangle.h>
+#include <vtkPolygon.h>
 #include <vtkPolyData.h>
 #include <vtkOpenGLPolyDataMapper2D.h>
 
@@ -299,7 +300,7 @@ bool mitk::PlaneGeometryDataMapper2D::getIntersections( mitk::BaseRenderer* rend
   }
   for (int i = -1; scale>0 && i<2 ; i += 2)
   {
-     float t = t0 + (0.5 + i*0.4) * (t1 - t0);
+     float t = t0 + (0.5 + i*0.45) * (t1 - t0);
      if ((t - intersectionParam)*scale*i < 64) {
        t = intersectionParam + i*64/scale;
      }
@@ -316,6 +317,7 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
   ls->m_CrosshairActor->SetVisibility(0);
   ls->m_ArrowActor->SetVisibility(0);
   ls->m_CrosshairHelperLineActor->SetVisibility(0);
+  ls->m_ThickSliceActor->SetVisibility(0);
 
   mitk::DataNode* geometryDataNode = renderer->GetCurrentWorldPlaneGeometryNode();
   const PlaneGeometryData* rendererWorldPlaneGeometryData = dynamic_cast< PlaneGeometryData * >(geometryDataNode->GetData());
@@ -336,6 +338,9 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
       vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
       vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
       vtkSmartPointer<vtkPolyData> linesPolyData = vtkSmartPointer<vtkPolyData>::New();
+
+      vtkSmartPointer<vtkCellArray> polygones = vtkSmartPointer<vtkCellArray>::New();
+      vtkSmartPointer<vtkPoints> polygonPoints = vtkSmartPointer<vtkPoints>::New();
 
       // Now iterate through all other lines displayed in this window and
       // calculate the positions of intersection with the line to be
@@ -375,11 +380,20 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
         for (auto t: handles)
         {
           auto p = crossLine.GetPoint(t);
-          this->DrawLine(p - x - y, p - y*2, lines, points);
-          this->DrawLine(p - y*2, p + x - y, lines, points);
-          this->DrawLine(p - y*2, p + y*2, lines, points);
-          this->DrawLine(p + x + y, p + y*2, lines, points);
-          this->DrawLine(p + y*2, p - x + y, lines, points);
+
+          auto p0 = p - y + x;
+          auto p1 = p + y + x;
+          auto p2 = p + y - x; 
+          auto p3 = p - y - x;
+
+          auto polygon = vtkSmartPointer<vtkPolygon>::New();
+          polygon->GetPointIds()->SetNumberOfIds(4);
+          polygon->GetPointIds()->SetId(0, polygonPoints->InsertNextPoint(p0[0], p0[1], p0[2]));
+          polygon->GetPointIds()->SetId(1, polygonPoints->InsertNextPoint(p1[0], p1[1], p1[2]));
+          polygon->GetPointIds()->SetId(2, polygonPoints->InsertNextPoint(p2[0], p2[1], p2[2]));
+          polygon->GetPointIds()->SetId(3, polygonPoints->InsertNextPoint(p3[0], p3[1], p3[2]));
+
+          polygones->InsertNextCell(polygon);
         }
       }
 
@@ -448,43 +462,54 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
 
         ls->m_CrosshairActor->GetProperty()->SetLineStipplePattern(0xf0f0);
         ls->m_CrosshairActor->GetProperty()->SetLineStippleRepeatFactor(1);
-        ls->m_CrosshairHelperLineActor->SetVisibility(1);
       }
       else
       {
         ls->m_CrosshairActor->GetProperty()->SetLineStipplePattern(0xf0f0);
         ls->m_CrosshairActor->GetProperty()->SetLineStippleRepeatFactor(1);
-        ls->m_CrosshairHelperLineActor->SetVisibility(1);
       }
+
+      ls->m_CrosshairHelperLineActor->SetVisibility(1);
+      ls->m_ThickSliceActor->SetVisibility(1);
+
+      vtkSmartPointer<vtkPolyData> thickSlicePolyData = vtkSmartPointer<vtkPolyData>::New();
+      ls->m_ThickSliceMapper->SetInputData(thickSlicePolyData);
 
       if(handles.size() > 1)
       {
-          auto m = renderer->GetScaleFactorMMPerDisplayUnit();
-          auto x = crossLine.GetDirection();
-          x.Normalize();
-          x *= 3 * m;
-          auto y = 3 * m * orthogonalVector;
-
           const auto length = std::abs(handles[1] - handles[0]);
           const auto ref = (std::min)(handles[1], handles[0]);
 
-          Vector3D vecToHelperLine = orthogonalVector * thickSliceDistance;
+          Vector3D vecToHelperLine = orthogonalVector * (thickSliceDistance + 0.3 * renderer->GetScaleFactorMMPerDisplayUnit());
 
-          auto arrowPoints =
+          const auto halfLength = length / 2.0;
+          const auto partLength = length / 3.0;
+
+          std::initializer_list<std::array<mitk::Point3D, 2>> arrowPoints =
           { 
-              crossLine.GetPoint(ref + length / 2.0 + length / 5.0) + vecToHelperLine
-            , crossLine.GetPoint(ref + length / 2.0 - length / 5.0) - vecToHelperLine
+              { crossLine.GetPoint(ref + halfLength + partLength) + vecToHelperLine, crossLine.GetPoint(ref) + vecToHelperLine }
+            , { crossLine.GetPoint(ref + halfLength + partLength) - vecToHelperLine, crossLine.GetPoint(ref) - vecToHelperLine }
+            , { crossLine.GetPoint(ref + halfLength - partLength) + vecToHelperLine, crossLine.GetPoint(ref) + vecToHelperLine }
+            , { crossLine.GetPoint(ref + halfLength - partLength) - vecToHelperLine, crossLine.GetPoint(ref) - vecToHelperLine }
           };
 
-          for (const auto &p : arrowPoints)
+          ScalarType triangleSizeMM = 7.0 * renderer->GetScaleFactorMMPerDisplayUnit();
+
+          mitk::Vector3D tempOrthogonalVector = orthogonalVector;
+
+          for (auto p : arrowPoints)
           {
-              this->DrawLine(p - x - y, p - y * 2, helperlines, points);
-              this->DrawLine(p - y * 2, p + x - y, helperlines, points);
-              this->DrawLine(p - y * 2, p + y * 2, helperlines, points);
-              this->DrawLine(p + x + y, p + y * 2, helperlines, points);
-              this->DrawLine(p + y * 2, p - x + y, helperlines, points);
+              mitk::Point3D mitkPoint = p[0];
+              mitk::Point3D mitkPoint2 = p[1];
+
+              DrawOrientationArrow(polygones, polygonPoints, triangleSizeMM, tempOrthogonalVector, mitkPoint, mitkPoint2);
+
+              tempOrthogonalVector *= -1.0f;
           }
       }
+
+      thickSlicePolyData->SetPoints(polygonPoints);
+      thickSlicePolyData->SetPolys(polygones);
 
       // Add the points to the dataset
       helperlinesPolyData->SetPoints(points);
@@ -673,10 +698,14 @@ void mitk::PlaneGeometryDataMapper2D::ApplyAllProperties( BaseRenderer *renderer
   ApplyColorAndOpacityProperties2D(renderer, ls->m_CrosshairHelperLineActor);
   ApplyColorAndOpacityProperties2D(renderer, ls->m_ArrowActor);
 
+  ls->m_ThickSliceActor->GetProperty()->SetColor(1.0, 0.0, 0.0);
+  ls->m_ThickSliceActor->GetProperty()->SetOpacity(1.0);
+
   float thickness;
   this->GetDataNode()->GetFloatProperty("Line width",thickness,renderer);
   ls->m_CrosshairActor->GetProperty()->SetLineWidth(thickness);
   ls->m_CrosshairHelperLineActor->GetProperty()->SetLineWidth(thickness);
+  ls->m_ThickSliceActor->GetProperty()->SetLineWidth(thickness);
 
   PlaneOrientationProperty* decorationProperty;
   this->GetDataNode()->GetProperty( decorationProperty, "decoration", renderer );
@@ -740,22 +769,27 @@ mitk::PlaneGeometryDataMapper2D::LocalStorage::LocalStorage()
   m_CrosshairActor = vtkSmartPointer <vtkActor2D>::New();
   m_ArrowActor = vtkSmartPointer <vtkActor2D>::New();
   m_CrosshairHelperLineActor = vtkSmartPointer <vtkActor2D>::New();
+  m_ThickSliceActor = vtkSmartPointer <vtkActor2D>::New();
 
   m_HelperLinesmapper = vtkSmartPointer<vtkOpenGLPolyDataMapper2D>::New();
   m_Mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper2D>::New();
   m_Arrowmapper = vtkSmartPointer<vtkOpenGLPolyDataMapper2D>::New();
+  m_ThickSliceMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper2D>::New();
 
   m_CrosshairActor->SetMapper(m_Mapper);
   m_ArrowActor->SetMapper(m_Arrowmapper);
   m_CrosshairHelperLineActor->SetMapper(m_HelperLinesmapper);
+  m_ThickSliceActor->SetMapper(m_ThickSliceMapper);
 
   m_CrosshairActor->SetVisibility(0);
   m_ArrowActor->SetVisibility(0);
   m_CrosshairHelperLineActor->SetVisibility(0);
+  m_ThickSliceActor->SetVisibility(0);
 
   m_CrosshairAssembly->AddPart(m_CrosshairActor);
   m_CrosshairAssembly->AddPart(m_ArrowActor);
   m_CrosshairAssembly->AddPart(m_CrosshairHelperLineActor);
+  m_CrosshairAssembly->AddPart(m_ThickSliceActor);
 
   vtkCoordinate *tcoord = vtkCoordinate::New();
   tcoord->SetCoordinateSystemToWorld();
@@ -763,6 +797,8 @@ mitk::PlaneGeometryDataMapper2D::LocalStorage::LocalStorage()
   m_Mapper->SetTransformCoordinate(tcoord);
 //  tcoord->SetCoordinateSystemToNormalizedDisplay();
   m_Arrowmapper->SetTransformCoordinate(tcoord);
+  m_ThickSliceMapper->SetTransformCoordinate(tcoord);
+
   tcoord->Delete();
 }
 
