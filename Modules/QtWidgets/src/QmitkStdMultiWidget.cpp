@@ -1476,6 +1476,11 @@ void QmitkStdMultiWidget::changeLayoutToAxialLeft2DRight(int state)
       m_SubSplit2->addWidget( mitkWidget1Container );
       m_SubSplit2->addWidget( mitkWidget2Container );
       break;
+    case 3:
+      m_SubSplit1->addWidget(mitkWidget1Container);
+      m_SubSplit2->addWidget(mitkWidget3Container);
+      m_SubSplit2->addWidget(mitkWidget2Container);
+      break;
     default:
       m_SubSplit1->addWidget( mitkWidget1Container );
       m_SubSplit2->addWidget( mitkWidget2Container );
