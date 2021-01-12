@@ -1116,22 +1116,24 @@ void mitk::DisplayInteractor::ChangeThickness(StateMachineAction*, InteractionEv
             thickSlicesMode = resliceMethodEnumProperty->GetValueAsId();
         }
 
-        if (thickSlicesMode == 0 && num > 0) //default mode only for single slices
+        if (thickSlicesMode == 0)
         {
-            thickSlicesMode = 1; //mip default
+            clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices",
+                mitk::ResliceMethodProperty::New(3));
+        }
+
+        if (num > 0)
+        {
             clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.showarea",
                 mitk::BoolProperty::New(true));
         }
 
         if (num < 1)
         {
-            thickSlicesMode = 0;
             clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.showarea",
                 mitk::BoolProperty::New(false));
         }
 
-        clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices",
-            mitk::ResliceMethodProperty::New(thickSlicesMode));
         clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.num",
             mitk::IntProperty::New(num));
 
