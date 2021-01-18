@@ -18,6 +18,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 //MITK
 #include <mitkAbstractTransformGeometry.h>
+#include <mitkCurtainUtils.h>
 #include <mitkDataNode.h>
 #include <mitkImageSliceSelector.h>
 #include <mitkLevelWindowProperty.h>
@@ -128,6 +129,7 @@ void mitk::LabelSetImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer
 
     localStorage->m_Actors->AddPart( localStorage->m_OutlineShadowActor );
     localStorage->m_Actors->AddPart( localStorage->m_OutlineActor );
+    localStorage->m_Actors->AddPart( localStorage->m_CurtainActor);
   }
 
   // early out if there is no intersection of the current rendering geometry
@@ -214,6 +216,9 @@ void mitk::LabelSetImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer
       textureClippingBound = 0.0;
     }
 
+    localStorage->m_CurtainActive = 
+      mitk::CurtainUtils::checkAndCalculateBounds(localStorage, node, renderer, CalculateLayerDepth(renderer), textureClippingBounds);
+
     // Calculate the actual bounds of the transformed plane clipped by the
     // dataset bounding box; this is required for drawing the texture at the
     // correct position during 3D mapping.
@@ -226,6 +231,13 @@ void mitk::LabelSetImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer
 
     //clipping bounds for cutting the imageLayer
     localStorage->m_LevelWindowFilterVector[lidx]->SetClippingBounds(textureClippingBounds);
+
+    if (localStorage->m_CurtainActive) {
+      localStorage->m_CurtainActor->SetVisibility(true);
+      localStorage->m_CurtainActor->GetProperty()->SetColor(1.0, 0.0, 0.0);
+      localStorage->m_CurtainMapper->SetInputData(localStorage->m_CurtainPolyData);
+      localStorage->m_CurtainActor->GetProperty()->SetLineWidth(2.0);
+    }
 
     float contourWidth(2.0);
     node->GetFloatProperty( "labelset.contour.width", contourWidth, renderer );
@@ -353,8 +365,16 @@ mitk::LabelSetImageVtkMapper2D::CreateOutlinePolyData(mitk::BaseRenderer* render
 
   while (y <= yMax)
   {
+    bool ignorePixel = false;
+    if (localStorage->m_CurtainActive) {
+      if (x < localStorage->m_CurtainPlaneStart[0]) ignorePixel = true;
+      if (x > localStorage->m_CurtainPlaneEnd[0])   ignorePixel = true;
+      if (y < localStorage->m_CurtainPlaneStart[1]) ignorePixel = true;
+      if (y > localStorage->m_CurtainPlaneEnd[1])   ignorePixel = true;
+    }
+
     //if the current pixel value is set to something
-    if ((currentPixel) && (*currentPixel == pixelValue))
+    if ((!ignorePixel) &&(currentPixel) && (*currentPixel == pixelValue))
     {
       //check in which direction a line is necessary
       //a line is added if the neighbor of the current pixel has the value 0
@@ -657,6 +677,9 @@ void mitk::LabelSetImageVtkMapper2D::TransformActor(mitk::BaseRenderer* renderer
   //same for outline shadow actor
   localStorage->m_OutlineShadowActor->SetUserTransform(trans);
   localStorage->m_OutlineShadowActor->SetPosition( -0.5*localStorage->m_mmPerPixel[0], -0.5*localStorage->m_mmPerPixel[1], 0.0);
+
+  localStorage->m_CurtainActor->SetUserTransform(trans);
+  localStorage->m_CurtainActor->SetPosition(-0.5*localStorage->m_mmPerPixel[0], -0.5*localStorage->m_mmPerPixel[1], 0.0);
 }
 
 void mitk::LabelSetImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite)
@@ -696,13 +719,18 @@ mitk::LabelSetImageVtkMapper2D::LocalStorage::LocalStorage()
   m_OutlineActor = vtkSmartPointer<vtkActor>::New();
   m_OutlineMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
   m_OutlineShadowActor = vtkSmartPointer<vtkActor>::New();
+  m_CurtainPolyData = vtkSmartPointer<vtkPolyData>::New();
+  m_CurtainActor = vtkSmartPointer<vtkActor>::New();
+  m_CurtainMapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
 
   m_NumberOfLayers = 0;
 
   m_OutlineActor->SetMapper( m_OutlineMapper );
   m_OutlineShadowActor->SetMapper( m_OutlineMapper );
+  m_CurtainActor->SetMapper(m_CurtainMapper);
 
   m_OutlineActor->SetVisibility( false );
   m_OutlineShadowActor->SetVisibility( false );
+  m_CurtainActor->SetVisibility(false);
 
 }

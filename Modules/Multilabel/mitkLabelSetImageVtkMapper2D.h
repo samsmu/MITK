@@ -123,6 +123,16 @@ public:
 
     int m_NumberOfLayers;
 
+    vtkSmartPointer<vtkPolyData> m_CurtainPolyData;
+    /** \brief An actor for the separartion curtain */
+    vtkSmartPointer<vtkActor> m_CurtainActor;
+    /** \brief A mapper for the separartion curtain */
+    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_CurtainMapper;
+
+    mitk::Point2D m_CurtainPlaneStart;
+    mitk::Point2D m_CurtainPlaneEnd;
+    bool m_CurtainActive;
+
     /** \brief This filter is used to apply the level window to Grayvalue and RBG(A) images. */
     //vtkSmartPointer<vtkMitkLevelWindowFilter> m_LevelWindowFilter;
     std::vector< vtkSmartPointer<vtkMitkLevelWindowFilter> > m_LevelWindowFilterVector;
