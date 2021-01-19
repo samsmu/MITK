@@ -7,8 +7,6 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-#include <mitkCoreExports.h>
-
 namespace mitk {
 namespace CurtainUtils {
 
