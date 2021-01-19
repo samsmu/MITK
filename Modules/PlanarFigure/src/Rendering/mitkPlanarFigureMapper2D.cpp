@@ -92,13 +92,10 @@ void mitk::PlanarFigureMapper2D::MitkRender( mitk::BaseRenderer* renderer, mitk:
     this->Initialize(renderer);
   }
 
-  vtkOpenGLContextDevice2D::SafeDownCast(this->m_Context->GetDevice())->Begin(renderer->GetVtkRenderer());
-
   bool visible = true;
 
   GetDataNode()->GetVisibility(visible, renderer, "visible");
   if ( !visible ) return;
-
 
   // Get PlanarFigure from input
   mitk::PlanarFigure *planarFigure = const_cast< mitk::PlanarFigure * >(
@@ -143,6 +140,7 @@ void mitk::PlanarFigureMapper2D::MitkRender( mitk::BaseRenderer* renderer, mitk:
     return;
   }
 
+  vtkOpenGLContextDevice2D::SafeDownCast(this->m_Context->GetDevice())->Begin(renderer->GetVtkRenderer());
 
   // Apply visual appearance properties from the PropertyList
   ApplyColorAndOpacityProperties( renderer );
@@ -434,7 +432,7 @@ void mitk::PlanarFigureMapper2D::DrawMarker(
       }
       // Paint outline
       this->m_Context->GetPen()->SetColorF((double)lineColor[0], (double)lineColor[1], (double)lineColor[2], (double)lineOpacity);
-      
+
       std::array<float, 8> outline = { {
           static_cast<float>(displayPoint[0] - 4),
           static_cast<float>(displayPoint[1] - 4),
