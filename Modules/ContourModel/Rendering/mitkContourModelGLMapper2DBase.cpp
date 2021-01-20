@@ -89,7 +89,7 @@ void mitk::ContourModelGLMapper2DBase::InternalDrawContour(mitk::ContourModel* r
   if (!this->m_Initialized) {
     this->Initialize(renderer);
   }
-  vtkOpenGLContextDevice2D::SafeDownCast(this->m_Context->GetDevice())->Begin(renderer->GetVtkRenderer());
+  
   mitk::DataNode* dataNode = this->GetDataNode();
 
   bool render2D = true;
@@ -105,6 +105,8 @@ void mitk::ContourModelGLMapper2DBase::InternalDrawContour(mitk::ContourModel* r
   if (!render3D && renderer->GetMapperID() == mitk::BaseRenderer::Standard3D) {
     return;
   }
+
+  vtkOpenGLContextDevice2D::SafeDownCast(this->m_Context->GetDevice())->Begin(renderer->GetVtkRenderer());
 
   renderingContour->UpdateOutputInformation();
 

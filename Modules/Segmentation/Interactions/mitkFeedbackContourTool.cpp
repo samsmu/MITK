@@ -45,6 +45,8 @@ mitk::FeedbackContourTool::FeedbackContourTool(const char* type)
   m_FeedbackContourNode->SetProperty("contour.width", FloatProperty::New(1.0));
   m_FeedbackContourNode->SetProperty("draw-in-3d", BoolProperty::New(false));
   m_FeedbackContourNode->SetProperty("contour.check-distance", BoolProperty::New(false));
+  m_FeedbackContourNode->SetProperty("contour.render2D", BoolProperty::New(true));
+  m_FeedbackContourNode->SetProperty("contour.render3D", BoolProperty::New(false));
 
   m_FeedbackContourNode->SetMapper(mitk::BaseRenderer::Standard3D, mitk::ContourModelGLMapper2D::New().GetPointer());
 
