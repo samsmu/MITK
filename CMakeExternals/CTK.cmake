@@ -54,6 +54,15 @@ if(MITK_USE_CTK)
       ENDIF()
     ENDFOREACH()
 
+  if(MITK_PDB)
+    list(APPEND additional_cmake_args
+      "-DCMAKE_CXX_FLAGS_RELEASE:STRING=/MD /Zi /O2 /Ob1 /DNDEBUG"
+      "-DCMAKE_SHARED_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+      "-DCMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+      "-DCMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+    )
+  endif()
+
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}
       URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/CTK_${revision_tag}.tar.gz
@@ -96,6 +105,20 @@ if(MITK_USE_CTK)
 
     ExternalProject_Get_Property(${proj} binary_dir)
     set(CTK_DIR ${binary_dir})
+
+  # Install pdb files
+  if (WIN32 AND MITK_PDB)
+    message("Install CTK pdb files")
+    ExternalProject_Get_Property(${proj} binary_dir)
+    message("${binary_dir}/bin/${CMAKE_BUILD_TYPE}")
+    message("${ep_prefix}/bin")
+    INSTALL(DIRECTORY ${binary_dir}/bin/${CMAKE_BUILD_TYPE}
+      DESTINATION ${ep_prefix}/bin
+      CONFIGURATIONS Release
+      FILES_MATCHING
+      PATTERN *.pdb
+    )
+  endif()
 
   else()
 
