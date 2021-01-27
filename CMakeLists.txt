@@ -187,6 +187,7 @@ endmacro()
 # General build options
 env_option(MITK_USE_TOF_KINECTV2 "Enable support for Kinect V2 camera" OFF)
 env_option(MITK_PDB "Enable debug information for windows" OFF)
+option(MITK_RECOVERABLE_ASSERTS "Enables asserts that crash app in unexpected but recoverable situation" OFF)
 
 option(BUILD_SHARED_LIBS "Build MITK with shared libraries" ON)
 option(WITH_COVERAGE "Enable/Disable coverage" OFF)
@@ -744,13 +745,23 @@ if(WITH_COVERAGE)
 endif()
 
 #-----------------------------------------------------------------------------
+# Set recoverable asserts flags
+#-----------------------------------------------------------------------------
+
+if(${MITK_RECOVERABLE_ASSERTS})
+  set(recoverable_asserts_flags "-DMITK_RECOVERABLE_ASSERTS")
+  set(RECOVERABLE_ASSERTS_CXX_FLAGS ${recoverable_asserts_flags})
+  set(RECOVERABLE_ASSERTS_C_FLAGS ${recoverable_asserts_flags})
+endif()
+
+#-----------------------------------------------------------------------------
 # MITK C/CXX Flags
 #-----------------------------------------------------------------------------
 
-set(MITK_C_FLAGS "${COVERAGE_C_FLAGS}")
+set(MITK_C_FLAGS "${COVERAGE_C_FLAGS} ${RECOVERABLE_C_FLAGS}")
 set(MITK_C_FLAGS_DEBUG )
 set(MITK_C_FLAGS_RELEASE )
-set(MITK_CXX_FLAGS "${COVERAGE_CXX_FLAGS} ${MITK_CXX11_FLAG}")
+set(MITK_CXX_FLAGS "${COVERAGE_CXX_FLAGS} ${RECOVERABLE_ASSERTS_CXX_FLAGS} ${MITK_CXX11_FLAG}")
 set(MITK_CXX_FLAGS_DEBUG )
 set(MITK_CXX_FLAGS_RELEASE )
 
