@@ -90,9 +90,11 @@ public:
     vtkSmartPointer<vtkActor2D> m_CrosshairActor;
     vtkSmartPointer<vtkActor2D> m_CrosshairHelperLineActor;
     vtkSmartPointer<vtkActor2D> m_ArrowActor;
+    vtkSmartPointer<vtkActor2D> m_ThickSliceActor;
     vtkSmartPointer<vtkOpenGLPolyDataMapper2D> m_HelperLinesmapper;
     vtkSmartPointer<vtkOpenGLPolyDataMapper2D> m_Arrowmapper;
     vtkSmartPointer<vtkOpenGLPolyDataMapper2D> m_Mapper;
+    vtkSmartPointer<vtkOpenGLPolyDataMapper2D> m_ThickSliceMapper;
     vtkSmartPointer<vtkPropAssembly> m_CrosshairAssembly;
   };
 

@@ -42,6 +42,7 @@
 // Rotation
 #include <mitkRotationOperation.h>
 #include "rotate_cursor.xpm"
+#include "movement_cursor.xpm"
 #include "mitkInteractionConst.h"
 
 //
@@ -49,6 +50,10 @@
 #include "mitkImage.h"
 #include "mitkPixelTypeMultiplex.h"
 #include <mitkCompositePixelValueToString.h>
+
+#include "mitkResliceMethodProperty.h"
+
+#include <array>
 
 void mitk::DisplayInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
 {
@@ -67,6 +72,8 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_CONDITION( "check_can_swivel", CheckSwivelPossible );
   CONNECT_CONDITION("check_is_in_mouse_rotation_mode", IsInMouseRotationMode);
   CONNECT_CONDITION( "isOverObject", IsOverObject);
+  CONNECT_CONDITION("check_can_change_thickness", CheckChangeThicknessPossible);
+  CONNECT_CONDITION("check_can_move_cross", CheckMoveCross);
 
   CONNECT_FUNCTION("init", Init);
   CONNECT_FUNCTION("move", Move);
@@ -99,6 +106,10 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("mouseRotateCamera", MouseRotateCamera);
 
   CONNECT_FUNCTION("selectSegmentation", SelectSegmentation);
+
+  CONNECT_FUNCTION("startChangeThickness", StartChangeThickness);
+  CONNECT_FUNCTION("endChangeThickness", EndChangeThickness);
+  CONNECT_FUNCTION("changeThickness", ChangeThickness);
 }
 
 double mitk::DisplayInteractor::m_ClockRotationSpeed = 90.;
@@ -449,6 +460,208 @@ bool mitk::DisplayInteractor::CheckSwivelPossible(const mitk::InteractionEvent *
     return false;
   }
   return false;
+}
+
+bool mitk::DisplayInteractor::CheckChangeThicknessPossible(const InteractionEvent* interactionEvent)
+{
+    // Decide between moving and rotation slices.
+  /*
+  Detailed logic:
+
+  1. Find the SliceNavigationController that has sent the event: this one defines our rendering plane and will NOT be rotated. Needs not even be counted or checked.
+  2. Inspect every other SliceNavigationController
+  - calculate the line intersection of this SliceNavigationController's plane with our rendering plane
+  - if there is NO interesection, ignore and continue
+  - IF there is an intersection
+  - check the mouse cursor's distance from handle centers.
+  */
+    const InteractionPositionEvent* posEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
+    if (posEvent == nullptr)
+    {
+        return false;
+    }
+
+    m_SNCsToBeRotated.clear();
+
+    BaseRenderer* clickedRenderer = posEvent->GetSender();
+
+    mitk::DataNode* geometryDataNode = clickedRenderer->GetCurrentWorldPlaneGeometryNode();
+    const PlaneGeometryData* rendererWorldPlaneGeometryData = dynamic_cast<PlaneGeometryData *>(geometryDataNode->GetData());
+    const PlaneGeometry* ourViewportGeometry = dynamic_cast<const PlaneGeometry*>(rendererWorldPlaneGeometryData->GetPlaneGeometry());
+
+    if (!ourViewportGeometry)
+    {
+        return false;
+    }
+
+    Point3D cursorPosition = posEvent->GetPlanePositionInWorld();
+    const PlaneGeometry* geometry = NULL;  // this one is under the mouse cursor
+    const PlaneGeometry* anyOtherGeometry = NULL;    // this is also visible (for calculation of intersection ONLY)
+    Line3D intersectionLineWithGeometry;
+
+    double threshholdDistancePixels = 12.0 * clickedRenderer->GetScaleFactorMMPerDisplayUnit();
+
+    auto renWindows = interactionEvent->GetSender()->GetRenderingManager()->GetAllRegisteredRenderWindows();
+
+    for (auto renWin : renWindows)
+    {
+        SliceNavigationController* snc = BaseRenderer::GetInstance(renWin)->GetSliceNavigationController();
+
+        // If the mouse cursor is in 3D Renderwindow, do not check for intersecting planes.
+        if (BaseRenderer::GetInstance(renWin)->GetMapperID() == BaseRenderer::Standard3D)
+        {
+            continue;
+        }
+
+        // check if there is an intersection
+        const PlaneGeometry* otherRenderersRenderPlane = nullptr;
+        const BaseGeometry* referenceGeometry = nullptr;
+        Line3D intersectionLine; // between rendered/clicked geometry and the one being analyzed
+        std::vector<double> intersections;
+        std::vector<double> handles;
+
+        auto *geometryNode = BaseRenderer::GetInstance(renWin)->GetCurrentWorldPlaneGeometryNode();
+
+        if (!PlaneGeometryDataMapper2D::getIntersections(clickedRenderer, geometryNode, ourViewportGeometry,
+            otherRenderersRenderPlane, referenceGeometry, intersectionLine, intersections, handles) || handles.size() < 2)
+        {
+            continue; // we ignore this plane, it hasn't intersection with our plane
+        }
+
+        Vector3D orthogonalVector;
+        orthogonalVector = otherRenderersRenderPlane->GetNormal();
+        ourViewportGeometry->Project(orthogonalVector, orthogonalVector);
+        orthogonalVector.Normalize();
+
+        // determine the pixelSpacing in that direction
+        double thickSliceDistance = SlicedGeometry3D::CalculateSpacing(
+            referenceGeometry ? referenceGeometry->GetSpacing() : otherRenderersRenderPlane->GetSpacing(), orthogonalVector);
+
+        const auto correctionFactor = thickSliceDistance;
+
+        IntProperty *intProperty = 0;
+        if (geometryNode->GetProperty(intProperty, "reslice.thickslices.num") && intProperty)
+        {
+            thickSliceDistance *= intProperty->GetValue() + 0.5;
+        }
+
+        Vector3D vecToHelperLine = orthogonalVector * thickSliceDistance;
+
+        const auto length = std::abs(handles[1] - handles[0]);
+        const auto ref = (std::min)(handles[1], handles[0]);
+
+        const auto halfLength = length / 2.0;
+        const auto partLength = length / 3.0;
+
+        const std::array<double, 4> dist = 
+        {
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength + partLength) + vecToHelperLine),
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength + partLength) - vecToHelperLine),
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength - partLength) + vecToHelperLine),
+          cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(ref + halfLength - partLength) - vecToHelperLine)
+        };
+
+        const double distanceFromIntersectionLine = *std::min_element(std::begin(dist), std::end(dist));
+
+        if (distanceFromIntersectionLine >= threshholdDistancePixels)
+        {
+            anyOtherGeometry = otherRenderersRenderPlane; // we just take the last one, so overwrite each iteration (we just need some crossing point)
+        }
+        else // close to cursor
+        {
+            if (!anyOtherGeometry)
+            {
+                anyOtherGeometry = geometry;
+            }
+            geometry = otherRenderersRenderPlane;
+            intersectionLineWithGeometry = intersectionLine;
+            threshholdDistancePixels = distanceFromIntersectionLine;
+            m_SNCsToBeRotated.clear();
+            m_SNCsToBeRotated.push_back(snc);
+            m_orthogonalVectorThickness = orthogonalVector;
+            m_correctionFactorThickness = correctionFactor;
+        }
+    }
+
+    if (geometry && anyOtherGeometry && ourViewportGeometry)
+    {
+        if (anyOtherGeometry->IntersectionPoint(intersectionLineWithGeometry, m_CenterOfRotation))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool mitk::DisplayInteractor::CheckMoveCross(const InteractionEvent* interactionEvent)
+{
+    const InteractionPositionEvent* posEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
+    if (posEvent == nullptr)
+    {
+        return false;
+    }
+
+    BaseRenderer* clickedRenderer = posEvent->GetSender();
+
+    mitk::DataNode* geometryDataNode = clickedRenderer->GetCurrentWorldPlaneGeometryNode();
+    const PlaneGeometryData* rendererWorldPlaneGeometryData = dynamic_cast<PlaneGeometryData *>(geometryDataNode->GetData());
+    const PlaneGeometry* ourViewportGeometry = dynamic_cast<const PlaneGeometry*>(rendererWorldPlaneGeometryData->GetPlaneGeometry());
+
+    if (!ourViewportGeometry)
+    {
+        return false;
+    }
+
+    Point3D cursorPosition = posEvent->GetPlanePositionInWorld();
+    const PlaneGeometry* geometry = NULL;  // this one is under the mouse cursor
+    const PlaneGeometry* anyOtherGeometry = NULL;    // this is also visible (for calculation of intersection ONLY)
+    Line3D intersectionLineWithGeometry;
+
+    double threshholdDistancePixels = 12.0 * clickedRenderer->GetScaleFactorMMPerDisplayUnit();
+
+    auto renWindows = interactionEvent->GetSender()->GetRenderingManager()->GetAllRegisteredRenderWindows();
+
+    for (auto renWin : renWindows)
+    {
+        SliceNavigationController* snc = BaseRenderer::GetInstance(renWin)->GetSliceNavigationController();
+
+        // If the mouse cursor is in 3D Renderwindow, do not check for intersecting planes.
+        if (BaseRenderer::GetInstance(renWin)->GetMapperID() == BaseRenderer::Standard3D)
+        {
+            continue;
+        }
+
+        // check if there is an intersection
+        const PlaneGeometry* otherRenderersRenderPlane = nullptr;
+        const BaseGeometry* referenceGeometry = nullptr;
+        Line3D intersectionLine; // between rendered/clicked geometry and the one being analyzed
+        std::vector<double> intersections;
+        std::vector<double> handles;
+
+        auto *geometryNode = BaseRenderer::GetInstance(renWin)->GetCurrentWorldPlaneGeometryNode();
+
+        if (!PlaneGeometryDataMapper2D::getIntersections(clickedRenderer, geometryNode, ourViewportGeometry,
+            otherRenderersRenderPlane, referenceGeometry, intersectionLine, intersections, handles) || handles.size() < 2)
+        {
+            continue; // we ignore this plane, it hasn't intersection with our plane
+        }
+
+        const auto dist = cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(intersections[0]));
+        
+        if (dist < threshholdDistancePixels)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void mitk::DisplayInteractor::Init(StateMachineAction*, InteractionEvent* interactionEvent)
@@ -861,6 +1074,74 @@ void mitk::DisplayInteractor::Rotate(mitk::StateMachineAction *, mitk::Interacti
   }
 
   RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+void mitk::DisplayInteractor::StartChangeThickness(StateMachineAction*, InteractionEvent*)
+{
+    this->SetMouseCursor(movement_cursor_xpm, 0, 0);
+}
+
+void mitk::DisplayInteractor::EndChangeThickness(StateMachineAction*, InteractionEvent*)
+{
+    this->ResetMouseCursor();
+}
+
+void mitk::DisplayInteractor::ChangeThickness(StateMachineAction*, InteractionEvent* event)
+{
+    const InteractionPositionEvent* posEvent = dynamic_cast<const InteractionPositionEvent*>(event);
+    if (posEvent == nullptr)
+    {
+        return;
+    }
+
+    Point3D cursor = posEvent->GetPositionInWorld();
+    int num = std::abs(((cursor - m_CenterOfRotation) * m_orthogonalVectorThickness) / m_correctionFactorThickness);
+
+    for (SNCVector::iterator iter = m_SNCsToBeRotated.begin(); iter != m_SNCsToBeRotated.end(); ++iter)
+    {
+        TimeGeometry* timeGeometry = (*iter)->GetCreatedWorldGeometry();
+        if (!timeGeometry)
+        {
+            continue;
+        }
+
+        BaseRenderer* clickedRenderer = (*iter)->GetRenderer();
+
+        unsigned int thickSlicesMode = 0;
+        mitk::ResliceMethodProperty* resliceMethodEnumProperty = nullptr;
+
+        if (clickedRenderer->GetCurrentWorldPlaneGeometryNode()->GetProperty(resliceMethodEnumProperty, "reslice.thickslices")
+            && resliceMethodEnumProperty)
+        {
+            thickSlicesMode = resliceMethodEnumProperty->GetValueAsId();
+        }
+
+        if (thickSlicesMode == 0)
+        {
+            clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices",
+                mitk::ResliceMethodProperty::New(3));
+        }
+
+        if (num > 0)
+        {
+            clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.showarea",
+                mitk::BoolProperty::New(true));
+        }
+
+        if (num < 1)
+        {
+            clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.showarea",
+                mitk::BoolProperty::New(false));
+        }
+
+        clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.num",
+            mitk::IntProperty::New(num));
+
+        clickedRenderer->SendUpdateSlice();
+        clickedRenderer->RequestUpdate();
+    }
+
+    RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 void mitk::DisplayInteractor::Swivel(mitk::StateMachineAction *, mitk::InteractionEvent *event)
