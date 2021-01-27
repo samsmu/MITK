@@ -137,7 +137,7 @@ if(NOT DEFINED ITK_DIR)
 
   # Install pdb files
   if (WIN32 AND MITK_PDB)
-    message("TESTTESTTEST")
+    message("Install ITK pdb files")
     ExternalProject_Get_Property(${proj} binary_dir)
     message("${binary_dir}/bin/${CMAKE_BUILD_TYPE}")
     message("${ep_prefix}/bin")

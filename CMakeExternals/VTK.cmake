@@ -78,6 +78,15 @@ if(NOT DEFINED VTK_DIR)
       "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
     )
   endif()
+  
+  if(MITK_PDB)
+    list(APPEND additional_cmake_args
+      "-DCMAKE_CXX_FLAGS_RELEASE:STRING=/MD /Zi /O2 /Ob1 /DNDEBUG"
+      "-DCMAKE_SHARED_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+      "-DCMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+      "-DCMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+    )
+  endif()
 
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ${sep}
@@ -118,6 +127,20 @@ if(NOT DEFINED VTK_DIR)
 
   set(VTK_DIR ${ep_prefix})
   mitkFunctionInstallExternalCMakeProject(${proj})
+  
+  # Install pdb files
+  if (WIN32 AND MITK_PDB)
+    message("Install VTK pdb files")
+    ExternalProject_Get_Property(${proj} binary_dir)
+    message("${binary_dir}/bin/${CMAKE_BUILD_TYPE}")
+    message("${ep_prefix}/bin")
+    INSTALL(DIRECTORY ${binary_dir}/bin/${CMAKE_BUILD_TYPE}
+      DESTINATION ${ep_prefix}/bin
+      CONFIGURATIONS Release
+      FILES_MATCHING
+      PATTERN *.pdb
+    )
+  endif()
 
 else()
 
