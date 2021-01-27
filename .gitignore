@@ -1,3 +1,5 @@
+build_debug
+
 CMakeLists.txt.user*
 .clang_complete
 
