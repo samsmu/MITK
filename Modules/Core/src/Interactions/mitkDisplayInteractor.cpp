@@ -1137,6 +1137,7 @@ void mitk::DisplayInteractor::ChangeThickness(StateMachineAction*, InteractionEv
         clickedRenderer->GetCurrentWorldPlaneGeometryNode()->SetProperty("reslice.thickslices.num",
             mitk::IntProperty::New(num));
 
+        posEvent->GetSender()->GetSliceNavigationController()->SendSlice();
         clickedRenderer->SendUpdateSlice();
         clickedRenderer->RequestUpdate();
     }

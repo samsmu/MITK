@@ -1898,7 +1898,20 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
       mainProp ? mainProp->GetValue() : 2
     };
 
-    for (int i = 0; i < 3; i++) {
+    std::vector<mitk::BaseRenderer *> baseRenderes
+    {
+        mitkWidget2->GetSliceNavigationController()->GetRenderer(),
+        mitkWidget3->GetSliceNavigationController()->GetRenderer(),
+        mitkWidget1->GetSliceNavigationController()->GetRenderer()
+    };
+
+    for (int i = 0; i < 3; i++) 
+    {
+        auto geometry = baseRenderes[i]->GetCurrentWorldPlaneGeometryNode();
+        int thickslices = 0;
+        geometry->GetIntProperty("reslice.thickslices.num", thickslices);
+        thickslices = thickslices == 0 ? 1 : thickslices;
+
       if (m_displayPositionInfo && !m_displayDirectionOnly) {
         _infoStringStream[axisIndices[i]] << "Im: " << (p[i] + 1) << "/" << bounds[(i * 2 + 1)];
         if (timeSteps > 1) {
@@ -1909,6 +1922,10 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
         }
         if (seriesNumber != "") {
           _infoStringStream[axisIndices[i]] << "\nSe: " << seriesNumber;
+        }
+        if (thickslices > 0)
+        {
+            _infoStringStream[axisIndices[i]] << "\nWidth: " << thickslices;
         }
       } else {
         _infoStringStream[axisIndices[i]].clear();
