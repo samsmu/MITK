@@ -16,7 +16,7 @@ if(MITK_USE_CTK)
   if(NOT DEFINED CTK_DIR)
 
     set(revision_tag 0c2a619a)
-
+    set(additional_cmake_args )
     set(ctk_optional_cache_args )
     if(MITK_USE_Python)
       list(APPEND ctk_optional_cache_args
@@ -96,6 +96,7 @@ if(MITK_USE_CTK)
         -DDCMTK_DIR:PATH=${DCMTK_DIR}
         -DqRestAPI_URL:STRING=${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/qRestAPI_c5e4c2a7_patched.tar.gz
         -DPythonQt_URL:STRING=${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/PythonQt_e39be131.tar.gz # From https://github.com/kislinsk/PythonQt.git
+        ${additional_cmake_args}
       CMAKE_CACHE_ARGS
         ${ep_common_cache_args}
       CMAKE_CACHE_DEFAULT_ARGS
