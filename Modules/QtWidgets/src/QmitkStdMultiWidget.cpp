@@ -103,13 +103,6 @@ QmitkStdMultiWidget::QmitkStdMultiWidget(QWidget* parent, Qt::WindowFlags f, mit
   m_PendingCrosshairPositionEvent(false),
   m_CrosshairNavigationEnabled(false),
   m_drawTextInStatusBar(true),
-  m_ImageMTime(0),
-  m_displayMetaInfo(false),
-  m_displayMetaInfoEx(false),
-  m_displayPatientInfo(true),
-  m_displayPatientInfoEx(true),
-  m_displayPositionInfo(true),
-  m_displayDirectionOnly(false),
   m_Name(name),
   m_ShadowWidgets{ nullptr, nullptr, nullptr, nullptr },
   m_ShadowWidgetVisible{ false, false, false, false }
@@ -367,17 +360,13 @@ void QmitkStdMultiWidget::InitializeWidget(bool showPlanesIn3d)
   }
   crosshairManager->setWindowsColors(colors);
 
-  for(int i = 0; i < 4; i++) {
-    cornerText[i] = vtkCornerAnnotation::New();
-    textProp[i] = vtkTextProperty::New();
-    ren[i] = vtkRenderer::New();
-    ren[i]->AddActor(cornerText[i]);
-    ren[i]->InteractiveOff();
-  }
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->InsertForegroundRenderer(ren[0], true);
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->InsertForegroundRenderer(ren[1], true);
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->InsertForegroundRenderer(ren[2], true);
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->InsertForegroundRenderer(ren[3], true);
+  m_annotationOverlay.initialize(
+      {
+          this->GetRenderWindow1(),
+          this->GetRenderWindow2(),
+          this->GetRenderWindow3(),
+          this->GetRenderWindow4()
+      }, { 1, 2, 0, 3 }, 12);
 
   //connect to the "time navigation controller": send time via sliceNavigationControllers
   m_TimeNavigationController->ConnectGeometryTimeEvent(
@@ -496,16 +485,7 @@ QmitkStdMultiWidget::~QmitkStdMultiWidget()
   m_TimeNavigationController->Disconnect(mitkWidget3->GetSliceNavigationController());
   m_TimeNavigationController->Disconnect(mitkWidget4->GetSliceNavigationController());
 
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow2()->GetRenderWindow())->RemoveRenderer( ren[0] );
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow3()->GetRenderWindow())->RemoveRenderer( ren[1] );
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow1()->GetRenderWindow())->RemoveRenderer( ren[2] );
-  mitk::VtkLayerController::GetInstance(this->GetRenderWindow4()->GetRenderWindow())->RemoveRenderer( ren[3] );
-
-  for(int i = 0; i < 4; i++) {
-    cornerText[i]->Delete();
-    textProp[i]->Delete();
-    ren[i]->Delete();
-  }
+  m_annotationOverlay.deinitialize();
 
   mitk::MouseModeSwitcher::DestroyInstance();
 }
@@ -1740,105 +1720,46 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEvent()
   }
 }
 
-mitk::DataNode::Pointer QmitkStdMultiWidget::GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes)
-{
-  mitk::Point3D crosshairPos = this->GetCrossPosition();
-  mitk::DataNode::Pointer node;
-  int  maxlayer = -32768;
-
-  if(nodes.IsNotNull())
-  {
-    mitk::BaseRenderer* baseRenderer = this->mitkWidget1->GetSliceNavigationController()->GetRenderer();
-    // find node with largest layer, that is the node shown on top in the render window
-    for (unsigned int x = 0; x < nodes->size(); x++)
-    {
-      if ( (nodes->at(x)->GetData()->GetGeometry() != NULL) &&
-        nodes->at(x)->GetData()->GetGeometry()->IsInside(crosshairPos) )
-      {
-        int layer = 0;
-        if(!(nodes->at(x)->GetIntProperty("layer", layer))) continue;
-
-        bool isBinary = false;
-        nodes->at(x)->GetBoolProperty("binary", isBinary);
-        if (isBinary) continue;
-
-        if(layer > maxlayer)
-        {
-          if( static_cast<mitk::DataNode::Pointer>(nodes->at(x))->IsVisible( baseRenderer ) )
-          {
-            node = nodes->at(x);
-            maxlayer = layer;
-          }
-        }
-      }
-    }
-  }
-  return node;
-}
-
-void QmitkStdMultiWidget::setCornerAnnotation(int corner, int i, const char* text)
-{
-  std::string fontPath = Utilities::preferredPath(Utilities::absPath(std::string("Fonts\\DejaVuSans.ttf")));
-
-  // empty or NULL string breaks renderer
-  // and white square appears
-  if ((text == NULL) || (text[0] == 0)) {
-    text = " ";
-  }
-
-  cornerText[i]->SetText(corner, text);
-  cornerText[i]->SetMaximumFontSize(15);
-  textProp[i]->SetFontFamily(VTK_FONT_FILE);
-  textProp[i]->SetFontFile(fontPath.c_str());
-  textProp[i]->SetColor(1.0, 1.0, 7.0);
-  cornerText[i]->SetTextProperty(textProp[i]);
-}
-
-void QmitkStdMultiWidget::setCornerAnnotationMaxText(int corner, int i, const char* text)
-{
-  cornerText[i]->SetMaximumLengthText(corner, text);
-}
-
 void QmitkStdMultiWidget::setDisplayMetaInfo(bool metainfo)
 {
-  m_displayMetaInfo = metainfo;
+  m_annotationOverlay.setDisplayMetaInfo(metainfo);
   UpdateAnnotationFonts();
-  m_ImageMTime = -1;
+  m_annotationOverlay.resetImageMTime();
 }
 
 void QmitkStdMultiWidget::setDisplayMetaInfoEx(bool metainfo)
 {
-  m_displayMetaInfoEx = metainfo;
+  m_annotationOverlay.setDisplayMetaInfoEx(metainfo);
   UpdateAnnotationFonts();
-  m_ImageMTime = -1;
+  m_annotationOverlay.resetImageMTime();
 }
 
 void QmitkStdMultiWidget::setDisplayPatientInfo(bool patientinfo)
 {
-  m_displayPatientInfo = patientinfo;
+  m_annotationOverlay.setDisplayPatientInfo(patientinfo);
   UpdateAnnotationFonts();
-  m_ImageMTime = -1;
+  m_annotationOverlay.resetImageMTime();
 }
 
 void QmitkStdMultiWidget::setDisplayPatientInfoEx(bool patientinfo)
 {
-  m_displayPatientInfoEx = patientinfo;
+  m_annotationOverlay.setDisplayPatientInfoEx(patientinfo);
   UpdateAnnotationFonts();
-  m_ImageMTime = -1;
+  m_annotationOverlay.resetImageMTime();
 }
 
 void QmitkStdMultiWidget::setDisplayPositionInfo(bool positioninfo)
 {
-  m_displayPositionInfo = positioninfo;
+  m_annotationOverlay.setDisplayPositionInfo(positioninfo);
   UpdateAnnotationFonts();
-  m_ImageMTime = -1;
+  m_annotationOverlay.resetImageMTime();
 }
 
 void QmitkStdMultiWidget::setDirectionOnly(bool directiononly)
 {
-  m_displayDirectionOnly = directiononly;
+  m_annotationOverlay.setDisplayDirectionOnly(directiononly);
   UpdateAnnotationFonts();
-  m_ImageMTime = -1;
+  m_annotationOverlay.resetImageMTime();
 }
 
 void QmitkStdMultiWidget::setSelectionMode(bool selection)
@@ -1855,282 +1776,8 @@ void QmitkStdMultiWidget::HandleCrosshairPositionEventDelayed()
     return;
   }
 
-  // find image with highest layer
-  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImageData = mitk::TNodePredicateDataType<mitk::Image>::New();
-  mitk::DataStorage::SetOfObjects::ConstPointer nodes = this->m_DataStorage->GetSubset(isImageData).GetPointer();
-
-  mitk::DataNode::Pointer node;
-  mitk::DataNode::Pointer topSourceNode;
-  mitk::Image::Pointer image;
-  node = this->GetTopLayerNode(nodes);
-  if (node.IsNotNull()) {
-    image = dynamic_cast<mitk::Image*>(node->GetData());
-  }
-
-  mitk::Point3D crosshairPos = this->GetCrossPosition();
-  std::stringstream stream;
-  itk::Index<3> p;
-  mitk::BaseRenderer* baseRenderer = this->mitkWidget1->GetSliceNavigationController()->GetRenderer();
-  unsigned int timestep = baseRenderer->GetTimeStep();
-  auto timeSteps = image.IsNotNull() ? image->GetTimeSteps() : 0;
-  unsigned int component = baseRenderer->GetComponent();
-  unsigned int componentMax = image.IsNotNull() ? image->GetPixelType().GetNumberOfComponents() : 0;
-
-  if(image.IsNotNull() && (timeSteps > timestep ))
-  {
-    image->GetGeometry()->WorldToIndex(crosshairPos, p);
-    stream.precision(2);
-    mitk::BoundingBox::BoundsArrayType bounds = image->GetGeometry()->GetBounds();
-    std::stringstream _infoStringStream[3];
-    std::string cornerimgtext[3];
-
-    imageProperties = image->GetPropertyList();
-    std::string seriesNumber;
-    imageProperties->GetStringProperty("dicom.series.SeriesNumber", seriesNumber);
-
-    auto secondaryProp = dynamic_cast<mitk::IntProperty*>(static_cast<mitk::BaseProperty*>(image->GetProperty("autoplan.secondaryAxisIndex")));
-    auto tertiaryProp = dynamic_cast<mitk::IntProperty*>(static_cast<mitk::BaseProperty*>(image->GetProperty("autoplan.tertiaryAxisIndex")));
-    auto mainProp = dynamic_cast<mitk::IntProperty*>(static_cast<mitk::BaseProperty*>(image->GetProperty("autoplan.mainAxisIndex")));
-
-    int axisIndices[3] = {
-      secondaryProp ? secondaryProp->GetValue() : 0,
-      tertiaryProp ? tertiaryProp->GetValue() : 1,
-      mainProp ? mainProp->GetValue() : 2
-    };
-
-    std::vector<mitk::BaseRenderer *> baseRenderes
-    {
-        mitkWidget2->GetSliceNavigationController()->GetRenderer(),
-        mitkWidget3->GetSliceNavigationController()->GetRenderer(),
-        mitkWidget1->GetSliceNavigationController()->GetRenderer()
-    };
-
-    for (int i = 0; i < 3; i++) 
-    {
-        auto geometry = baseRenderes[i]->GetCurrentWorldPlaneGeometryNode();
-        int thickslices = 0;
-        geometry->GetIntProperty("reslice.thickslices.num", thickslices);
-        thickslices = thickslices == 0 ? 1 : thickslices;
-
-      if (m_displayPositionInfo && !m_displayDirectionOnly) {
-        _infoStringStream[axisIndices[i]] << "Im: " << (p[i] + 1) << "/" << bounds[(i * 2 + 1)];
-        if (timeSteps > 1) {
-          _infoStringStream[axisIndices[i]] << "\nT: " << (timestep + 1) << "/" << timeSteps;
-        }
-        if (componentMax > 1) {
-          _infoStringStream[axisIndices[i]] << "\nV: " << (component + 1) << "/" << componentMax;
-        }
-        if (seriesNumber != "") {
-          _infoStringStream[axisIndices[i]] << "\nSe: " << seriesNumber;
-        }
-        if (thickslices > 0)
-        {
-            _infoStringStream[axisIndices[i]] << "\nWidth: " << thickslices;
-        }
-      } else {
-        _infoStringStream[axisIndices[i]].clear();
-      }
-      cornerimgtext[axisIndices[i]] = _infoStringStream[axisIndices[i]].str();
-      setCornerAnnotation(2, axisIndices[i], cornerimgtext[axisIndices[i]].c_str());
-
-      std::string maxPosText = "";
-      maxPosText += "Im: " + std::to_string(bounds[(i * 2 + 1)]) + "/" + std::to_string(bounds[(i * 2 + 1)]);
-      if (timeSteps > 1) {
-        maxPosText += "\nT: " + std::to_string(timeSteps) + "/" + std::to_string(timeSteps);
-      }
-      if (componentMax > 1) {
-        maxPosText += "\nV: " + std::to_string(componentMax) + "/" + std::to_string(componentMax);
-      }
-      if (seriesNumber != "") {
-        maxPosText += "\nSe: " + seriesNumber;
-      }
-
-      setCornerAnnotationMaxText(2, axisIndices[i], maxPosText.c_str());
-      // Left Right annotiation
-      setViewDirectionAnnontation(image, p[i], axisIndices[i]);
-    }
-
-    bool value = false;
-    node->GetBoolProperty("volumerendering", value);
-    if (value) {
-      std::string text = "";
-      if (m_displayPositionInfo && timeSteps > 1) {
-        text += "T: " + std::to_string(timestep + 1) + "/" + std::to_string(timeSteps);
-      }
-      setCornerAnnotation(2, 3, text.c_str());
-
-      std::string maxPosText = "";
-      maxPosText += "T: " + std::to_string(timeSteps) + "/" + std::to_string(timeSteps);
-      setCornerAnnotationMaxText(2, 3, maxPosText.c_str());
-    }
-
-    unsigned long newImageMTime = image->GetMTime();
-    std::string newNodeName = node->GetName();
-
-    // check if image is changed or node is renamed
-    if ( m_ImageMTime != newImageMTime
-      || m_ImageName != newNodeName ) {
-
-      m_ImageMTime = newImageMTime;
-      m_ImageName = newNodeName;
-
-      // seriesDescription replaced by newNodeName
-      std::string patient, patientId,
-        birthday, sex, institution, studyDate, studyTime,
-        studiId/*, seriesDescription*/, studyDescription, exInfo,
-        magneticFieldStrength, dicomTR, dicomTE, bodyPart, protocolName,
-        sliceThickness, xrayTubeCurrent, kvp, imagePosition, windowCenter, windowWidth;
-
-      imageProperties->GetStringProperty("dicom.patient.PatientsName", patient);
-      imageProperties->GetStringProperty("dicom.patient.PatientID", patientId);
-      imageProperties->GetStringProperty("dicom.patient.PatientsBirthDate", birthday);
-      imageProperties->GetStringProperty("dicom.patient.PatientsSex", sex);
-      imageProperties->GetStringProperty("dicom.study.InstitutionName", institution);
-      imageProperties->GetStringProperty("dicom.acquisition.Date", studyDate);
-      imageProperties->GetStringProperty("dicom.acquisition.Time", studyTime);
-      if (studyDate.empty() || studyTime.empty()) {
-        imageProperties->GetStringProperty("dicom.study.StudyDate", studyDate);
-        imageProperties->GetStringProperty("dicom.study.StudyTime", studyTime);
-      }
-      imageProperties->GetStringProperty("dicom.study.StudyID", studiId);
-      imageProperties->GetStringProperty("dicom.study.StudyDescription", studyDescription);
-      //imageProperties->GetStringProperty("dicom.series.SeriesDescription", seriesDescription);
-      imageProperties->GetStringProperty("dicom.ExInfo", exInfo);
-      imageProperties->GetStringProperty("dicom.MagneticFieldStrength", magneticFieldStrength);
-      imageProperties->GetStringProperty("dicom.TR", dicomTR);
-      imageProperties->GetStringProperty("dicom.TE", dicomTE);
-      imageProperties->GetStringProperty("dicom.series.BodyPartExamined", bodyPart);
-      imageProperties->GetStringProperty("dicom.series.ProtocolName", protocolName);
-      imageProperties->GetStringProperty("dicom.SliceThickness", sliceThickness);
-      imageProperties->GetStringProperty("dicom.XrayTubeCurrent", xrayTubeCurrent);
-      imageProperties->GetStringProperty("dicom.Kvp", kvp);
-      imageProperties->GetStringProperty("dicom.ImagePosition", imagePosition);
-      imageProperties->GetStringProperty("dicom.voilut.WindowCenter", windowCenter);
-      imageProperties->GetStringProperty("dicom.voilut.WindowWidth", windowWidth);
-
-      auto it = imagePosition.rfind('\\');
-      if (std::string::npos != it) {
-        imagePosition.erase(0, it + 1);
-      }
-
-      std::stringstream infoStringStream[2];
-
-      char yy[5]; yy[4] = 0;
-      char mm[3]; mm[2] = 0;
-      char dd[3]; dd[2] = 0;
-      char hh[3]; hh[2] = 0;
-      char mi[3]; mi[2] = 0;
-      char ss[3]; ss[2] = 0;
-
-      if (m_displayMetaInfo && !m_displayDirectionOnly) {
-        if (m_displayPatientInfo) {
-          infoStringStream[0]
-            << patient.c_str()
-            << "\n" << patientId.c_str();
-        } else {
-          infoStringStream[0] << "***\n***";
-        }
-        if (birthday != "") {
-          sscanf (birthday.c_str(),"%4c%2c%2c",yy,mm,dd);
-          infoStringStream[0] << "\n" << dd << "." << mm << "." << yy << " " << sex.c_str();
-        }
-        else {
-          infoStringStream[0] << '\n';
-        }
-        infoStringStream[0]
-          << "\n" << institution.c_str()
-          << "\n" << studiId;
-        if (m_displayPatientInfoEx) {
-          infoStringStream[0]
-            << "\n" << studyDescription
-            << "\n" << newNodeName
-            << "\n" << exInfo
-            << "\n" << bodyPart
-            << "\n" << protocolName;
-        }
-      } else {
-        infoStringStream[0].clear();
-      }
-
-      if (m_displayMetaInfo && !m_displayDirectionOnly) {
-        if (m_displayMetaInfoEx) {
-          if (!magneticFieldStrength.empty()) {
-            infoStringStream[1]
-              << "FS: " << magneticFieldStrength;
-          }
-          if (!xrayTubeCurrent.empty() || !kvp.empty()) {
-            infoStringStream[1] << '\n';
-          }
-          if (!xrayTubeCurrent.empty()) {
-            infoStringStream[1] << xrayTubeCurrent << "mA";
-          }
-          if (!kvp.empty()) {
-            infoStringStream[1] << ' ' << kvp << " kV";
-          }
-          if (!dicomTR.empty() || !dicomTE.empty()) {
-            infoStringStream[1] << '\n';
-            if (!dicomTR.empty()) {
-              infoStringStream[1] << "TR: " << dicomTR;
-            }
-            if (!dicomTE.empty()) {
-              infoStringStream[1] << " TE: " << dicomTE;
-            }
-          }
-          if (!windowCenter.empty() && !windowWidth.empty()) {
-            infoStringStream[1] << '\n';
-            auto pos = windowCenter.find('\\');
-            if (std::string::npos != pos) {
-              windowCenter.resize(pos);
-            }
-            pos = windowWidth.find('\\');
-            if (std::string::npos != pos) {
-              windowWidth.resize(pos);
-            }
-            if (!windowCenter.empty()) {
-              infoStringStream[1] << "WL: " << windowCenter;
-            }
-            if (!windowWidth.empty()) {
-              infoStringStream[1] << " WW: " << windowWidth;
-            }
-          }
-          if (!sliceThickness.empty() || !imagePosition.empty()) {
-            infoStringStream[1] << '\n';
-          }
-          if (!sliceThickness.empty()) {
-            infoStringStream[1] << "T: " << sliceThickness << "mm";
-          }
-          if (!imagePosition.empty()) {
-            infoStringStream[1] << " L: " << imagePosition << "mm";
-          }
-        }
-        if (!studyDate.empty() && !studyTime.empty()) {
-          sscanf (studyDate.c_str(),"%4c%2c%2c",yy,mm,dd);
-          sscanf (studyTime.c_str(),"%2c%2c%2c",hh,mi,ss);
-          infoStringStream[1]
-            << "\n" << dd << "." << mm << "." << yy
-            << " " << hh << ":" << mi << ":" << ss;
-        }
-      } else {
-        infoStringStream[1].clear();
-      }
-
-      auto render_annotation = [&] (int j, int corner) {
-        const std::string infoString = infoStringStream[j].str();
-        for(int i = 0; i < 4; i++) {
-          setCornerAnnotation(corner, i, infoString.c_str());
-          setCornerAnnotationMaxText(corner, i, infoString.c_str());
-        }
-      };
-      render_annotation(0, 3);
-      render_annotation(1, 1);
-
-      this->GetRenderWindow1()->GetRenderer()->RequestUpdate();
-      this->GetRenderWindow2()->GetRenderer()->RequestUpdate();
-      this->GetRenderWindow3()->GetRenderer()->RequestUpdate();
-      this->GetRenderWindow4()->GetRenderer()->RequestUpdate();
-    }
-  }
-
+  m_annotationOverlay.render(m_annotationOverlay.getNode(this->m_DataStorage));
+  
   crosshairManager->updateCrosshairsPositions();
 }
 
@@ -2525,73 +2172,6 @@ mitk::MouseModeSwitcher* QmitkStdMultiWidget::GetMouseModeSwitcher()
   return nullptr;// m_MouseModeSwitcher;
 }
 
-void QmitkStdMultiWidget::setViewDirectionAnnontation(mitk::Image* image, int slice, int i)
-{
-  auto mainAxis = 2;
-  auto secondAxis = 0;
-  auto tertiaryAxis = 1;
-
-  auto mainSign = true;
-  auto secondSign = true;
-  auto tertiarySign = true;
-
-  if (!m_displayMetaInfo) {
-    mainAxis = secondAxis = -1;
-  }
-  else {
-    switch (i) {
-    case 0:
-      std::swap(mainAxis, tertiaryAxis);
-      std::swap(mainSign, tertiarySign);
-      secondAxis = mainAxis;
-      secondSign = mainSign;
-      break;
-    case 1:
-      std::swap(mainAxis, tertiaryAxis);
-      std::swap(mainSign, tertiarySign);
-      break;
-    }
-  }
-
-  switch (mainAxis) {
-  case 0:
-    setCornerAnnotation(vtkCornerAnnotation::UpperEdge, i, mainSign ? "I" : "S");
-    setCornerAnnotation(vtkCornerAnnotation::LowerEdge, i, mainSign ? "S" : "I");
-    break;
-  case 1:
-    setCornerAnnotation(vtkCornerAnnotation::UpperEdge, i, mainSign ? "S" : "I");
-    setCornerAnnotation(vtkCornerAnnotation::LowerEdge, i, mainSign ? "I" : "S");
-    break;
-  case 2:
-    setCornerAnnotation(vtkCornerAnnotation::UpperEdge, i, mainSign ? "A" : "P");
-    setCornerAnnotation(vtkCornerAnnotation::LowerEdge, i, mainSign ? "P" : "A");
-    break;
-  default:
-    setCornerAnnotation(vtkCornerAnnotation::UpperEdge, i, " ");
-    setCornerAnnotation(vtkCornerAnnotation::LowerEdge, i, " ");
-    break;
-  }
-
-  switch (secondAxis) {
-  case 0:
-    setCornerAnnotation(vtkCornerAnnotation::RightEdge, i, secondSign ? "L" : "R");
-    setCornerAnnotation(vtkCornerAnnotation::LeftEdge, i, secondSign ? "R" : "L");
-    break;
-  case 1:
-    setCornerAnnotation(vtkCornerAnnotation::RightEdge, i, secondSign ? "P" : "A");
-    setCornerAnnotation(vtkCornerAnnotation::LeftEdge, i, secondSign ? "A" : "P");
-    break;
-  case 2:
-    setCornerAnnotation(vtkCornerAnnotation::RightEdge, i, secondSign ? "L" : "R");
-    setCornerAnnotation(vtkCornerAnnotation::LeftEdge, i, secondSign ? "R" : "L");
-    break;
-  default:
-    setCornerAnnotation(vtkCornerAnnotation::RightEdge, i, " ");
-    setCornerAnnotation(vtkCornerAnnotation::LeftEdge, i, " ");
-    break;
-  }
-}
-
 std::vector<QmitkStdMultiWidget::FunctionSet> QmitkStdMultiWidget::getFuncSetDisplayAnnotation()
 {
   std::vector<FunctionSet> functionsSetAnnotation;
@@ -2616,7 +2196,7 @@ void QmitkStdMultiWidget::setAnnotationVisibility(std::vector<bool>& visibility)
 
   mitk::DataNode::Pointer node;
   mitk::Image::Pointer image;
-  node = this->GetTopLayerNode(nodes);
+  node = m_annotationOverlay.getTopLayerNode(nodes);
   if (node.IsNotNull()) {
     image = dynamic_cast<mitk::Image*>(node->GetData());
   }

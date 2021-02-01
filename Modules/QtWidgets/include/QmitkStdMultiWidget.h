@@ -34,6 +34,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkBaseRenderer.h>
 
+#include "QmitkAnnotationOverlay.h"
+
 class QHBoxLayout;
 class QVBoxLayout;
 class QGridLayout;
@@ -168,28 +170,12 @@ signals:
 
 protected:
 
-  bool m_displayMetaInfo;
-  bool m_displayMetaInfoEx;
-  bool m_displayPatientInfo;
-  bool m_displayPatientInfoEx;
-  bool m_displayPositionInfo;
-  bool m_displayDirectionOnly;
-
   void UpdateAllWidgets();
   void HideAllWidgetToolbars();
 
   mitk::PropertyList::Pointer imageProperties;
-  unsigned long m_ImageMTime;
-  std::string m_ImageName;
 
-  vtkCornerAnnotation* cornerText[4];
-  vtkTextProperty* textProp[4];
-  vtkRenderer* ren[4];
-
-  void setCornerAnnotation(int corner, int i, const char* text);
-  void setCornerAnnotationMaxText(int corner, int i, const char* text);
-
-  mitk::DataNode::Pointer GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes);
+  AnnotationOverlay m_annotationOverlay;
 
 public slots:
 
@@ -400,7 +386,6 @@ public:
   mitkCrosshairManager* crosshairManager;
 
 protected:
-  void setViewDirectionAnnontation(mitk::Image* image, int slice, int index);
 
   QHBoxLayout* QmitkStdMultiWidgetLayout;
 

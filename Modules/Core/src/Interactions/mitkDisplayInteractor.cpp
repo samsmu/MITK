@@ -1007,6 +1007,7 @@ void mitk::DisplayInteractor::AdjustLevelWindow(StateMachineAction*, Interaction
   lv.SetLevelWindow(level, window);
   dynamic_cast<mitk::LevelWindowProperty*>(node->GetProperty("levelwindow"))->SetLevelWindow(lv);
 
+  sender->GetSliceNavigationController()->SendSlice();
   sender->GetRenderingManager()->RequestUpdateAll();
 }
 
