@@ -85,6 +85,7 @@ if(NOT DEFINED VTK_DIR)
       "-DCMAKE_SHARED_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
       "-DCMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
       "-DCMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+      "-DCMAKE_PDB_OUTPUT_DIRECTORY:FILEPATH=${ep_prefix}/bin"
     )
   endif()
 
@@ -127,16 +128,6 @@ if(NOT DEFINED VTK_DIR)
 
   set(VTK_DIR ${ep_prefix})
   mitkFunctionInstallExternalCMakeProject(${proj})
-# Install pdb files
-  if (WIN32 AND MITK_PDB)
-    get_target_property(pdb_output_dir ${proj} PDB_OUTPUT_DIRECTORY)
-    INSTALL(FILES ${pdb_output_dir}/Release
-    DESTINATION ${ep_prefix}/bin
-    CONFIGURATIONS Release
-    FILES_MATCHING
-    PATTERN *.pdb
-    )
-  endif()
 
 else()
 

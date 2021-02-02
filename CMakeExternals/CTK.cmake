@@ -60,6 +60,7 @@ if(MITK_USE_CTK)
       "-DCMAKE_SHARED_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
       "-DCMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
       "-DCMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=/DEBUG /INCREMENTAL /OPT:REF /OPT:ICF"
+      "-DCMAKE_PDB_OUTPUT_DIRECTORY:FILEPATH=${ep_prefix}/bin"
     )
   endif()
 
@@ -106,17 +107,6 @@ if(MITK_USE_CTK)
 
     ExternalProject_Get_Property(${proj} binary_dir)
     set(CTK_DIR ${binary_dir})
-
-  # Install pdb files
-  if (WIN32 AND MITK_PDB)
-    get_target_property(pdb_output_dir ${proj} PDB_OUTPUT_DIRECTORY)
-    INSTALL(FILES ${pdb_output_dir}/Release
-    DESTINATION ${ep_prefix}/bin
-    CONFIGURATIONS Release
-    FILES_MATCHING
-    PATTERN *.pdb
-    )
-  endif()
 
   else()
 
