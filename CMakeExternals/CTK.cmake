@@ -109,15 +109,12 @@ if(MITK_USE_CTK)
 
   # Install pdb files
   if (WIN32 AND MITK_PDB)
-    message("Install CTK pdb files")
-    ExternalProject_Get_Property(${proj} binary_dir)
-    message("${binary_dir}/bin/${CMAKE_BUILD_TYPE}")
-    message("${ep_prefix}/bin")
-    INSTALL(DIRECTORY ${binary_dir}/bin/${CMAKE_BUILD_TYPE}
-      DESTINATION ${ep_prefix}/bin
-      CONFIGURATIONS Release
-      FILES_MATCHING
-      PATTERN *.pdb
+    get_target_property(pdb_output_dir ${proj} PDB_OUTPUT_DIRECTORY)
+    INSTALL(FILES ${pdb_output_dir}/Release
+    DESTINATION ${ep_prefix}/bin
+    CONFIGURATIONS Release
+    FILES_MATCHING
+    PATTERN *.pdb
     )
   endif()
 
