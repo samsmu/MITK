@@ -71,7 +71,14 @@ function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
       list(APPEND _additional_paths ${Vigra_DIR}/bin)
     endif()
   endif()
-
+  
+  message("MITK_PDB 1")
+  if (MITK_PDB)
+    message("MITK_PDB 2")
+    message(${ep_prefix})
+    list(APPEND _dir_candidates ${ep_prefix}/bin)
+  endif()
+  
   if(_additional_paths)
     list(APPEND _dir_candidates ${_additional_paths})
   endif()

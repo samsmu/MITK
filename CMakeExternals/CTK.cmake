@@ -107,7 +107,6 @@ if(MITK_USE_CTK)
 
     ExternalProject_Get_Property(${proj} binary_dir)
     set(CTK_DIR ${binary_dir})
-
   else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
