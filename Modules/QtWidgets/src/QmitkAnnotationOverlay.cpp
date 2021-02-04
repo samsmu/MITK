@@ -1,9 +1,13 @@
 #include "QmitkAnnotationOverlay.h"
 
+#include <QInputDialog>
+
 #include <sstream>
+#include <vector>
 
 #include <vtkTextProperty.h>
 #include <vtkRenderer.h>
+#include <vtkCamera.h>
 
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
@@ -12,6 +16,8 @@
 #include <mitkLevelWindowProperty.h>
 
 #include <PathUtilities.h>
+
+#include "QmitkActiveOverlayLineHandler.h"
 
 AnnotationOverlay::~AnnotationOverlay()
 {
@@ -34,8 +40,41 @@ bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelat
         vtkRen->AddActor(cornerText);
         vtkRen->InteractiveOff();
 
+        ActiveOverlayLine activeOverlayLine;
+        activeOverlayLine.WLHandler = createWLOverlay(vtkRen, renderers[relationship],
+            vtkCornerAnnotation::LowerLeft, fontSize);
+        activeOverlayLine.ImHandler = createImOverlay(vtkRen, renderers[relationship], 
+            vtkCornerAnnotation::UpperLeft, fontSize);
+        activeOverlayLine.ScaleHandler = createZoomOverlay(vtkRen, renderers[relationship], 
+            vtkCornerAnnotation::LowerLeft, fontSize, 1);
+
+        auto oneAcive = [WLHandler = activeOverlayLine.WLHandler, ImHandler = activeOverlayLine.ImHandler,
+            ScaleHandler = activeOverlayLine.ScaleHandler]() -> bool
+        {
+            return WLHandler->isActive() || ImHandler->isActive() || ScaleHandler->isActive();
+        };
+
+        auto restore = [this, oneAcive]()
+        {
+            if (!oneAcive())
+            {
+                emit restoreActiveMode();
+            }
+        };
+
+        std::vector<ActiveOverlayLineHandler *> overlayes{ activeOverlayLine.WLHandler, 
+            activeOverlayLine.ImHandler,  activeOverlayLine.ScaleHandler };
+
+        for (auto overlay : overlayes)
+        {
+            connect(overlay, &ActiveOverlayLineHandler::restoreActiveMode, restore);
+            connect(overlay, &ActiveOverlayLineHandler::setActiveMode, this, &AnnotationOverlay::setActiveMode);
+            connect(overlay, &ActiveOverlayLineHandler::lightActiveMode, this, &AnnotationOverlay::setLightActiveMode);
+        }
+
         mitk::VtkLayerController::GetInstance(renderers[relationship]->GetRenderWindow())->InsertForegroundRenderer(vtkRen, true);
 
+        m_activeOverlayLineHandlers.emplace_back(activeOverlayLine);
         m_textProp.emplace_back(vtkTextProperty::New());
         m_cornerText.emplace_back(cornerText);
         m_ren.emplace_back(vtkRen);
@@ -53,6 +92,123 @@ bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelat
     m_fontSize = fontSize;
 
     return true;
+}
+
+ActiveOverlayLineHandler *AnnotationOverlay::createWLOverlay(
+    vtkSmartPointer<vtkRenderer> vtkRender, QmitkRenderWindow *handledWidget, 
+    vtkCornerAnnotation::TextPosition corner, uint32_t fontSize, int lineNumber)
+{
+    auto overlay = new ActiveOverlayLineHandler(vtkRender, handledWidget,
+        corner, mitk::MouseModeSwitcher::LevelWindow, fontSize, lineNumber, this);
+
+    connect(overlay, &ActiveOverlayLineHandler::needShowDialog, [this, handledWidget]
+    {
+        if (QDialog::Accepted == m_tSetWL.exec())
+        {
+            mitk::DataNode::Pointer node = nullptr;
+            mitk::DataStorage::SetOfObjects::ConstPointer allImageNodes = m_dataStorage->GetSubset(mitk::NodePredicateDataType::New("Image"));
+            for (unsigned int i = 0; i < allImageNodes->size(); i++)
+            {
+                bool isActiveImage = false;
+                bool propFound = allImageNodes->at(i)->GetBoolProperty("imageForLevelWindow", isActiveImage);
+
+                if (propFound && isActiveImage)
+                {
+                    node = allImageNodes->at(i);
+                    continue;
+                }
+            }
+            if (node.IsNull())
+            {
+                node = m_dataStorage->GetNode(mitk::NodePredicateDataType::New("Image"));
+            }
+            if (node.IsNull())
+            {
+                return;
+            }
+
+            mitk::LevelWindow lv = mitk::LevelWindow();
+            lv.SetLevelWindow(m_tSetWL.getX(), m_tSetWL.getY());
+            dynamic_cast<mitk::LevelWindowProperty*>(node->GetProperty("levelwindow"))->SetLevelWindow(lv);
+            handledWidget->GetSliceNavigationController()->SendSlice();
+        }
+    });
+
+    return overlay;
+}
+
+ActiveOverlayLineHandler *AnnotationOverlay::createImOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+    QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner, uint32_t fontSize, int lineNumber)
+{
+    auto overlay = new ActiveOverlayLineHandler(vtkRender, handledWidget,
+        corner, mitk::MouseModeSwitcher::Scroll, fontSize, lineNumber, this);
+
+    connect(overlay, &ActiveOverlayLineHandler::needShowDialog, [this, handledWidget]
+    {
+        bool ok;
+        QString text = QInputDialog::getText(nullptr, QString("Окно ввода."),
+            QString("Введите позицию:"), QLineEdit::Normal,
+            "1", &ok);
+
+        text = text.replace(",", ".");
+
+        if (ok && !text.isEmpty())
+        {
+            int intTextValue = text.toInt();
+
+            mitk::BaseRenderer *baseRenderer = handledWidget->GetRenderer();
+            baseRenderer->GetSliceNavigationController()->GetSlice()->SetPos(intTextValue);
+            baseRenderer->RequestUpdate();
+        }
+    });
+
+    return overlay;
+}
+
+ActiveOverlayLineHandler *AnnotationOverlay::createZoomOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+    QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner, uint32_t fontSize, int lineNumber)
+{
+    auto overlay = new ActiveOverlayLineHandler(vtkRender, handledWidget,
+        corner, mitk::MouseModeSwitcher::Zoom, fontSize, lineNumber, this);
+
+    connect(overlay, &ActiveOverlayLineHandler::needShowDialog, [this, handledWidget]
+    {
+        bool ok;
+        QString text = QInputDialog::getText(nullptr, QString("Окно ввода."),
+            QString("Введите масштаб:"), QLineEdit::Normal,
+            "1", &ok);
+        text = text.replace(",", ".");
+
+        if (ok && !text.isEmpty())
+        {
+            float floatTextValue = text.toFloat();
+
+            mitk::TNodePredicateDataType<mitk::Image>::Pointer isImageData = mitk::TNodePredicateDataType<mitk::Image>::New();
+            mitk::DataStorage::SetOfObjects::ConstPointer nodes = m_dataStorage->GetSubset(isImageData).GetPointer();
+
+            auto topNode = getTopLayerNode(nodes);
+            if (topNode.IsNull())
+            {
+                topNode = nodes->at(0);
+            }
+
+            auto image = static_cast<mitk::Image*>(topNode->GetData());
+            double widthImageMM = image->GetDimension(1) * image->GetGeometry()->GetSpacing()[1];
+            mitk::BaseRenderer *baseRenderer = handledWidget->GetRenderer();
+
+            float newParScale = (float)widthImageMM / 2.0f / (float)floatTextValue;
+
+            baseRenderer->GetVtkRenderer()->GetActiveCamera()->SetParallelScale(newParScale);
+            handledWidget->GetSliceNavigationController()->SendSlice();
+        }
+    });
+
+    return overlay;
+}
+
+void AnnotationOverlay::setDataStorage(mitk::DataStorage *ds)
+{
+    m_dataStorage = ds;
 }
 
 void AnnotationOverlay::deinitialize()
@@ -111,8 +267,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
         image->GetGeometry()->WorldToIndex(crosshairPos, p);
         stream.precision(2);
 
-        std::vector<std::stringstream> _infoStringStream(m_renderWindows.size());
-        std::vector<std::string> cornerimgtext(m_renderWindows.size());
+        std::vector<std::stringstream> infoStringStream(m_renderWindows.size());
 
         mitk::PropertyList::Pointer imageProperties = image->GetPropertyList();
         std::string seriesNumber;
@@ -137,60 +292,43 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
         for (int i = 0; i < m_renderWindows.size(); i++)
         {
-            auto geometry = baseRenderes[i]->GetCurrentWorldPlaneGeometryNode();
+            auto geometry = baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode();
             int thickslices = 0;
             geometry->GetIntProperty("reslice.thickslices.num", thickslices);
             thickslices = thickslices == 0 ? 1 : thickslices;
 
-            const auto pos = baseRenderes[i]->GetSliceNavigationController()->GetSlice()->GetPos() + 1;
-            const auto max = baseRenderes[i]->GetSliceNavigationController()->GetSlice()->GetSteps();
+            const auto pos = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetPos() + 1;
+            const auto max = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetSteps();
 
             if (m_displayPositionInfo && !m_displayDirectionOnly)
             {
-                _infoStringStream[axisIndices[i]] << "Im: " << pos << "/" << max;
+                infoStringStream[axisIndices[i]] << "Im: " << pos << "/" << max;
                 if (timeSteps > 1)
                 {
-                    _infoStringStream[axisIndices[i]] << "\nT: " << (timestep + 1) << "/" << timeSteps;
+                    infoStringStream[axisIndices[i]] << "\nT: " << (timestep + 1) << "/" << timeSteps;
                 }
                 if (componentMax > 1)
                 {
-                    _infoStringStream[axisIndices[i]] << "\nV: " << (component + 1) << "/" << componentMax;
+                    infoStringStream[axisIndices[i]] << "\nV: " << (component + 1) << "/" << componentMax;
                 }
                 if (seriesNumber != "")
                 {
-                    _infoStringStream[axisIndices[i]] << "\nSe: " << seriesNumber;
+                    infoStringStream[axisIndices[i]] << "\nSe: " << seriesNumber;
                 }
                 if (thickslices > 0)
                 {
-                    _infoStringStream[axisIndices[i]] << "\nWidth: " << thickslices;
+                    infoStringStream[axisIndices[i]] << "\nWidth: " << thickslices;
                 }
             }
             else
             {
-                _infoStringStream[axisIndices[i]].clear();
+                infoStringStream[axisIndices[i]].clear();
             }
 
-            cornerimgtext[axisIndices[i]] = _infoStringStream[axisIndices[i]].str();
+            auto infoString = infoStringStream[axisIndices[i]].str();
 
-            setCornerAnnotation(vtkCornerAnnotation::UpperLeft, axisIndices[i], cornerimgtext[axisIndices[i]].c_str());
+            m_activeOverlayLineHandlers[axisIndices[i]].ImHandler->addText(infoString.c_str());
 
-            std::string maxPosText = "";
-
-            maxPosText += "Im: " + std::to_string(pos) + "/" + std::to_string(max);
-            if (timeSteps > 1)
-            {
-                maxPosText += "\nT: " + std::to_string(timeSteps) + "/" + std::to_string(timeSteps);
-            }
-            if (componentMax > 1)
-            {
-                maxPosText += "\nV: " + std::to_string(componentMax) + "/" + std::to_string(componentMax);
-            }
-            if (seriesNumber != "")
-            {
-                maxPosText += "\nSe: " + seriesNumber;
-            }
-
-            setCornerAnnotationMaxText(vtkCornerAnnotation::UpperLeft, axisIndices[i], maxPosText.c_str());
             // Left Right annotiation
             setViewDirectionAnnontation(image, axisIndices[i]);
 
@@ -198,8 +336,13 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
             if (wlProperty)
             {
-                setCornerAnnotation(vtkCornerAnnotation::LowerLeft, axisIndices[i], wlProperty->GetValueAsString().c_str());
+                m_activeOverlayLineHandlers[axisIndices[i]].WLHandler->addText(wlProperty->GetValueAsString().c_str());
             }
+
+            const double widthImageMM = image->GetDimension(1) * image->GetGeometry()->GetSpacing()[1];
+            float scale = widthImageMM / 2.0f / baseRenderes[axisIndices[i]]->GetVtkRenderer()->GetActiveCamera()->GetParallelScale();
+            std::string scaleTextActive = std::to_string(scale) + "\n";
+            m_activeOverlayLineHandlers[axisIndices[i]].ScaleHandler->addText(scaleTextActive.c_str());
         }
 
         bool value = false;
@@ -625,4 +768,19 @@ void AnnotationOverlay::setCornerAnnotation(vtkCornerAnnotation::TextPosition co
 void AnnotationOverlay::setCornerAnnotationMaxText(vtkCornerAnnotation::TextPosition corner, int i, const char* text)
 {
     m_cornerText[i]->SetMaximumLengthText(corner, text);
+}
+
+bool AnnotationOverlay::isContainMousePos(QPoint globalMousePos)
+{
+    for (auto &overlay : m_activeOverlayLineHandlers)
+    {
+        if (overlay.WLHandler->isContainMousePos(globalMousePos) ||
+            overlay.ImHandler->isContainMousePos(globalMousePos) ||
+            overlay.ScaleHandler->isContainMousePos(globalMousePos))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -40,6 +40,8 @@ QmitkPropertyItemModel.cpp
 QmitkSynchronizeSelectedData.cpp
 mitkCrosshairManager.cpp
 QmitkAnnotationOverlay.cpp
+QmitkActiveOverlayLineHandler.cpp
+QmitkSetWLDialog.cpp
 )
 
 set(MOC_H_FILES
@@ -74,6 +76,8 @@ set(MOC_H_FILES
   include/QmitkPropertyItemModel.h
   include/mitkCrosshairManager.h
   include/QmitkAnnotationOverlay.h
+  include/QmitkActiveOverlayLineHandler.h
+  include/QmitkSetWLDialog.h
 )
 
 set(UI_FILES

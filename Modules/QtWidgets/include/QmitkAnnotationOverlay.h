@@ -8,10 +8,14 @@
 #include <vtkCornerAnnotation.h>
 
 #include <QmitkRenderWindow.h>
+#include <QmitkSetWLDialog.h>
 
 #include <mitkDataStorage.h>
+#include <mitkMouseModeSwitcher.h>
 
 #include "MitkQtWidgetsExports.h"
+
+class ActiveOverlayLineHandler;
 
 class MITKQTWIDGETS_EXPORT AnnotationOverlay : public QObject
 {
@@ -25,6 +29,8 @@ public:
 
     bool initialize(const TRenderWindows &, const TRelationships &, uint32_t fontSize);
     void deinitialize();
+
+    void setDataStorage(mitk::DataStorage *ds);
 
     mitk::DataNode::Pointer getNode(mitk::DataStorage::Pointer);
     bool render(mitk::DataNode::Pointer);
@@ -40,7 +46,21 @@ public:
     void setDisplayPatientInfoEx(bool);
     void setDisplayDirectionOnly(bool);
 
+    bool isContainMousePos(QPoint globalMousePos);
+
+signals:
+    void restoreActiveMode();
+    void setActiveMode(mitk::MouseModeSwitcher::MouseMode mode);
+    void setLightActiveMode(mitk::MouseModeSwitcher::MouseMode mode);
+
 private:
+
+    struct ActiveOverlayLine
+    {
+        ActiveOverlayLineHandler *WLHandler = nullptr;
+        ActiveOverlayLineHandler *ImHandler = nullptr;
+        ActiveOverlayLineHandler *ScaleHandler = nullptr;
+    };
 
     void setViewDirectionAnnontation(mitk::Image* image, int index);
 
@@ -49,9 +69,22 @@ private:
     void setCornerAnnotation(vtkCornerAnnotation::TextPosition , int i, const char *text);
     void setCornerAnnotationMaxText(vtkCornerAnnotation::TextPosition , int i, const char *text);
 
+    ActiveOverlayLineHandler *createWLOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+        QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner,
+        uint32_t fontSize, int lineNumber = 0);
+
+    ActiveOverlayLineHandler *createImOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+        QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner,
+        uint32_t fontSize, int lineNumber = 0);
+
+    ActiveOverlayLineHandler *createZoomOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+        QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner,
+        uint32_t fontSize, int lineNumber = 0);
+
     TRenderWindows m_renderWindows;
     TRelationships m_relationships;
 
+    std::vector<ActiveOverlayLine> m_activeOverlayLineHandlers;
     std::vector<vtkCornerAnnotation *> m_cornerText;
     std::vector<vtkTextProperty *> m_textProp;
     std::vector<vtkRenderer *> m_ren;
@@ -67,6 +100,10 @@ private:
     bool m_displayPatientInfo = true;
     bool m_displayPatientInfoEx = false;
     bool m_displayDirectionOnly = false;
+
+    mitk::DataStorage::Pointer m_dataStorage = nullptr;
+
+    SetWLDialog m_tSetWL;
 };
 
 #endif //AnnotationOverlay_h

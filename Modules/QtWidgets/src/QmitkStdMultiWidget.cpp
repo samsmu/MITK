@@ -360,7 +360,7 @@ void QmitkStdMultiWidget::InitializeWidget(bool showPlanesIn3d)
   }
   crosshairManager->setWindowsColors(colors);
 
-  m_annotationOverlay.initialize(
+  m_annotationOverlay.initialize( 
       {
           this->GetRenderWindow1(),
           this->GetRenderWindow2(),
@@ -1503,6 +1503,7 @@ void QmitkStdMultiWidget::SetDataStorage(mitk::DataStorage* ds)
   mitk::BaseRenderer::GetInstance(mitkWidget3->GetRenderWindow())->SetDataStorage(ds);
   mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow())->SetDataStorage(ds);
   m_DataStorage = ds;
+  m_annotationOverlay.setDataStorage(ds);
 }
 
 void QmitkStdMultiWidget::Fit()
@@ -2312,6 +2313,11 @@ QWidget* QmitkStdMultiWidget::getShadowWidget3() const
 QWidget* QmitkStdMultiWidget::getShadowWidget4() const
 {
   return m_ShadowWidgets[3];
+}
+
+AnnotationOverlay *QmitkStdMultiWidget::getAnnotationOverlay()
+{
+  return &m_annotationOverlay;
 }
 
 void QmitkStdMultiWidget::resetThickSlice()

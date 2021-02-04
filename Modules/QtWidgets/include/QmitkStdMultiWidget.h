@@ -93,6 +93,8 @@ public:
   QWidget* getShadowWidget3() const;
   QWidget* getShadowWidget4() const;
 
+  AnnotationOverlay *getAnnotationOverlay();
+
   void setDisplayPositionText(bool draw = true);
 
   /**
