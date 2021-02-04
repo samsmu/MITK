@@ -22,6 +22,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkIOUtil.h"
 #include "Poco/Path.h"
 #include <mitkRenderingModeProperty.h>
+#include <RecoverableAssert.h>
 
 #include <future>
 
@@ -327,31 +328,30 @@ mitk::DataNode::Pointer mitk::SceneReaderV1::LoadBaseDataFromDataTag(TiXmlElemen
 {
   DataNode::Pointer node;
 
-  if (dataElement)
-  {
+  if (dataElement) {
     const char* filename = dataElement->Attribute("file");
     if (strlen(filename) == 0) {
       MITK_ERROR << "Error during attempt to read .mtk file. Empty filename found.'";
       error = true;
-    } else if (filename)
-    {
-      try
-      {
+    } else if (filename) {
+      try {
         std::vector<BaseData::Pointer> baseData = IOUtil::Load(workingDirectory + Poco::Path::separator() + filename);
-        if (baseData.size() > 1)
-        {
+        if (baseData.size() > 1) {
           MITK_WARN << "Discarding multiple base data results from " << filename << " except the first one.";
         }
         node = DataNode::New();
-        node->SetData(baseData.front());
-      } catch (std::exception& e)
-      {
+        MITK_RECOVERABLE_ASSERT(!baseData.empty());
+        if (!baseData.empty()) {
+          node->SetData(baseData.front());
+        } else {
+          MITK_WARN << "Can't read data from file " << filename;
+        }
+      } catch (std::exception& e) {
         MITK_ERROR << "Error during attempt to read '" << filename << "'. Exception says: " << e.what();
         error = true;
       }
 
-      if (node.IsNull())
-      {
+      if (node.IsNull()) {
         MITK_ERROR << "Error during attempt to read '" << filename << "'. Factory returned NULL object.";
         error = true;
       }
@@ -359,8 +359,7 @@ mitk::DataNode::Pointer mitk::SceneReaderV1::LoadBaseDataFromDataTag(TiXmlElemen
   }
 
   // in case there was no <data> element we create a new empty node (for appending a propertylist later)
-  if (node.IsNull())
-  {
+  if (node.IsNull()) {
     node = DataNode::New();
   }
 
