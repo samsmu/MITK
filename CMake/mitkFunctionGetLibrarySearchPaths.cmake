@@ -73,7 +73,7 @@ function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
   endif()
   
   message("MITK_PDB 1")
-  message(${ep_prefix})
+  message(${MITK_BINARY_DIR})
   if (MITK_PDB)
     message("MITK_PDB 2")
     message(${ep_prefix})
