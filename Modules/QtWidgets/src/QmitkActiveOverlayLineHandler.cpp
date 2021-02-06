@@ -16,6 +16,11 @@ ActiveOverlayLineHandler::ActiveOverlayLineHandler(vtkSmartPointer<vtkRenderer> 
     , m_numberLine(numberLine)
     , m_mode(mode)
 {
+    if (m_numberLine > 0)
+    {
+        std::fill_n(std::back_inserter(m_endls), m_numberLine, '\n');
+    }
+
     m_cornerAnnotation = vtkCornerAnnotation::New();
     m_cornerAnnotation->SetMaximumFontSize(fontSize);
 
@@ -50,12 +55,31 @@ ActiveOverlayLineHandler::ActiveOverlayLineHandler(vtkSmartPointer<vtkRenderer> 
     m_handledWidget->installEventFilter(this);
 }
 
-void ActiveOverlayLineHandler::addText(const char *text)
+void ActiveOverlayLineHandler::addText(const std::string &text)
 {
-    m_cornerAnnotation->SetText(m_corner, text);
-    m_cornerAnnotation->SetMaximumLengthText(m_corner, text);
+    std::string textWithEndls;
+    if (!m_endls.empty())
+    {
+        if (m_corner == vtkCornerAnnotation::LowerLeft ||
+            m_corner == vtkCornerAnnotation::LowerRight ||
+            m_corner == vtkCornerAnnotation::LowerEdge)
+        {
+            textWithEndls = text + m_endls;
+        }
+        else
+        {
+            textWithEndls = m_endls + text;
+        }
+    }
+    else
+    {
+        textWithEndls = text;
+    }
 
-    m_textLength = strlen(text);
+    m_cornerAnnotation->SetText(m_corner, textWithEndls.c_str());
+    m_cornerAnnotation->SetMaximumLengthText(m_corner, text.c_str());
+
+    m_textLength = text.length();
 }
 
 bool ActiveOverlayLineHandler::eventFilter(QObject* object, QEvent* event)

@@ -14,6 +14,7 @@
 #include <mitkVtkLayerController.h>
 #include <mitkLine.h>
 #include <mitkLevelWindowProperty.h>
+#include <mitkResliceMethodProperty.h>
 
 #include <PathUtilities.h>
 
@@ -41,17 +42,31 @@ bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelat
         vtkRen->InteractiveOff();
 
         ActiveOverlayLine activeOverlayLine;
-        activeOverlayLine.WLHandler = createWLOverlay(vtkRen, renderers[relationship],
+        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::WL)] = createWLOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::LowerLeft, fontSize);
-        activeOverlayLine.ImHandler = createImOverlay(vtkRen, renderers[relationship], 
+        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Im)] = createImOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::UpperLeft, fontSize);
-        activeOverlayLine.ScaleHandler = createZoomOverlay(vtkRen, renderers[relationship], 
+        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Scale)] = createZoomOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::LowerLeft, fontSize, 1);
+        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Width)] = createWidthOverlay(vtkRen, renderers[relationship],
+            vtkCornerAnnotation::UpperLeft, fontSize, 2);
 
-        auto oneAcive = [WLHandler = activeOverlayLine.WLHandler, ImHandler = activeOverlayLine.ImHandler,
-            ScaleHandler = activeOverlayLine.ScaleHandler]() -> bool
+        std::vector<ActiveOverlayLineHandler *> handlers{
+            activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::WL)],
+            activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Im)],
+            activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Scale)] };
+
+        auto oneAcive = [handlers]() -> bool
         {
-            return WLHandler->isActive() || ImHandler->isActive() || ScaleHandler->isActive();
+            for (auto handler : handlers)
+            {
+                if (handler->isActive())
+                {
+                    return true;
+                }
+            }
+
+            return false;
         };
 
         auto restore = [this, oneAcive]()
@@ -62,14 +77,11 @@ bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelat
             }
         };
 
-        std::vector<ActiveOverlayLineHandler *> overlayes{ activeOverlayLine.WLHandler, 
-            activeOverlayLine.ImHandler,  activeOverlayLine.ScaleHandler };
-
-        for (auto overlay : overlayes)
+        for (auto handler : handlers)
         {
-            connect(overlay, &ActiveOverlayLineHandler::restoreActiveMode, restore);
-            connect(overlay, &ActiveOverlayLineHandler::setActiveMode, this, &AnnotationOverlay::setActiveMode);
-            connect(overlay, &ActiveOverlayLineHandler::lightActiveMode, this, &AnnotationOverlay::setLightActiveMode);
+            connect(handler, &ActiveOverlayLineHandler::restoreActiveMode, restore);
+            connect(handler, &ActiveOverlayLineHandler::setActiveMode, this, &AnnotationOverlay::setActiveMode);
+            connect(handler, &ActiveOverlayLineHandler::lightActiveMode, this, &AnnotationOverlay::setLightActiveMode);
         }
 
         mitk::VtkLayerController::GetInstance(renderers[relationship]->GetRenderWindow())->InsertForegroundRenderer(vtkRen, true);
@@ -206,6 +218,54 @@ ActiveOverlayLineHandler *AnnotationOverlay::createZoomOverlay(vtkSmartPointer<v
     return overlay;
 }
 
+ActiveOverlayLineHandler *AnnotationOverlay::createWidthOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+    QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner,
+    uint32_t fontSize, int lineNumber)
+{
+    auto overlay = new ActiveOverlayLineHandler(vtkRender, handledWidget,
+        corner, mitk::MouseModeSwitcher::MousePointer, fontSize, lineNumber, this);
+
+    connect(overlay, &ActiveOverlayLineHandler::needShowDialog, [this, handledWidget]
+    {
+        bool ok;
+        QString text = QInputDialog::getText(nullptr, QString("Окно ввода."),
+            QString("Введите ширину:"), QLineEdit::Normal,
+            "1", &ok);
+
+        text = text.replace(",", ".");
+
+        if (ok && !text.isEmpty())
+        {
+            int intTextValue = text.toInt();
+            auto baseRenderer = handledWidget->GetRenderer();
+            auto geometry = baseRenderer->GetCurrentWorldPlaneGeometryNode();
+
+            unsigned int thickSlicesMode = 0;
+            mitk::ResliceMethodProperty* resliceMethodEnumProperty = nullptr;
+
+            if (geometry->GetProperty(resliceMethodEnumProperty, "reslice.thickslices")
+                && resliceMethodEnumProperty)
+            {
+                thickSlicesMode = resliceMethodEnumProperty->GetValueAsId();
+            }
+
+            if (thickSlicesMode == 0)
+            {
+                geometry->SetProperty("reslice.thickslices", mitk::ResliceMethodProperty::New(3));
+            }
+
+            geometry->SetIntProperty("reslice.thickslices.num", intTextValue);
+            geometry->SetBoolProperty("reslice.thickslices.showarea", intTextValue > 1);
+
+            handledWidget->GetSliceNavigationController()->SendSlice();
+            baseRenderer->SendUpdateSlice();
+            baseRenderer->RequestUpdate();
+        }
+    });
+
+    return overlay;
+}
+
 void AnnotationOverlay::setDataStorage(mitk::DataStorage *ds)
 {
     m_dataStorage = ds;
@@ -317,7 +377,8 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
                 }
                 if (thickslices > 0)
                 {
-                    infoStringStream[axisIndices[i]] << "\nWidth: " << thickslices;
+                    m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::Width)]
+                        ->addText(std::string("Width: ") + std::to_string(thickslices));
                 }
             }
             else
@@ -327,7 +388,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
             auto infoString = infoStringStream[axisIndices[i]].str();
 
-            m_activeOverlayLineHandlers[axisIndices[i]].ImHandler->addText(infoString.c_str());
+            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::Im)]->addText(infoString.c_str());
 
             // Left Right annotiation
             setViewDirectionAnnontation(image, axisIndices[i]);
@@ -336,13 +397,12 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
             if (wlProperty)
             {
-                m_activeOverlayLineHandlers[axisIndices[i]].WLHandler->addText(wlProperty->GetValueAsString().c_str());
+                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::WL)]->addText(wlProperty->GetValueAsString().c_str());
             }
 
             const double widthImageMM = image->GetDimension(1) * image->GetGeometry()->GetSpacing()[1];
             float scale = widthImageMM / 2.0f / baseRenderes[axisIndices[i]]->GetVtkRenderer()->GetActiveCamera()->GetParallelScale();
-            std::string scaleTextActive = std::to_string(scale) + "\n";
-            m_activeOverlayLineHandlers[axisIndices[i]].ScaleHandler->addText(scaleTextActive.c_str());
+            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::Scale)]->addText(std::to_string(scale));
         }
 
         bool value = false;
@@ -774,11 +834,12 @@ bool AnnotationOverlay::isContainMousePos(QPoint globalMousePos)
 {
     for (auto &overlay : m_activeOverlayLineHandlers)
     {
-        if (overlay.WLHandler->isContainMousePos(globalMousePos) ||
-            overlay.ImHandler->isContainMousePos(globalMousePos) ||
-            overlay.ScaleHandler->isContainMousePos(globalMousePos))
+        for (auto handler : overlay.Handlers)
         {
-            return true;
+            if (handler->isContainMousePos(globalMousePos))
+            {
+                return true;
+            }
         }
     }
 

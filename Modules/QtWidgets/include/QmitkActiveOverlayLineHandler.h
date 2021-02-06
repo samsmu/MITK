@@ -24,7 +24,7 @@ public:
         uint32_t fontSize, int lineNumber, QObject *parent = nullptr);
 
     bool isActive() { return m_isContainMousePos; };
-    void addText(const char *text);
+    void addText(const std::string &text);
     bool isContainMousePos(QPoint globalMousePos);
 
 protected:
@@ -40,6 +40,8 @@ private:
 
     QmitkRenderWindow* m_handledWidget;
     QTimer m_clickEventTimer;
+
+    std::string m_endls;
 
     int m_corner = 0;
     int m_numberLine = 0;

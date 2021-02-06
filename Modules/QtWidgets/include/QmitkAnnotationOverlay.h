@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include <vector>
+#include <array>
 
 #include <vtkCornerAnnotation.h>
 
@@ -55,11 +56,26 @@ signals:
 
 private:
 
+
+    template<typename T>
+    static constexpr std::underlying_type_t<T> enumToIntegral(T value)
+    {
+        return static_cast<std::underlying_type_t<T>>(value);
+    }
+
     struct ActiveOverlayLine
     {
-        ActiveOverlayLineHandler *WLHandler = nullptr;
-        ActiveOverlayLineHandler *ImHandler = nullptr;
-        ActiveOverlayLineHandler *ScaleHandler = nullptr;
+        enum class Type
+        {
+            WL = 0,
+            Im = 1,
+            Scale,
+            Width,
+
+            Count,
+        };
+
+        std::array<ActiveOverlayLineHandler *, enumToIntegral(Type::Count)> Handlers;
     };
 
     void setViewDirectionAnnontation(mitk::Image* image, int index);
@@ -78,6 +94,10 @@ private:
         uint32_t fontSize, int lineNumber = 0);
 
     ActiveOverlayLineHandler *createZoomOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
+        QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner,
+        uint32_t fontSize, int lineNumber = 0);
+
+    ActiveOverlayLineHandler *createWidthOverlay(vtkSmartPointer<vtkRenderer> vtkRender,
         QmitkRenderWindow *handledWidget, vtkCornerAnnotation::TextPosition corner,
         uint32_t fontSize, int lineNumber = 0);
 
