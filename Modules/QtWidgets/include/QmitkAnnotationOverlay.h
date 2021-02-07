@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <array>
+#include <type_traits>
 
 #include <vtkCornerAnnotation.h>
 
@@ -58,9 +59,9 @@ private:
 
 
     template<typename T>
-    static constexpr std::underlying_type_t<T> enumToIntegral(T value)
+    static constexpr typename std::underlying_type<T>::type enumToIntegral(T value)
     {
-        return static_cast<std::underlying_type_t<T>>(value);
+        return static_cast<typename std::underlying_type<T>::type>(value);
     }
 
     struct ActiveOverlayLine
