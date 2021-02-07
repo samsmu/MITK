@@ -57,16 +57,9 @@ signals:
 
 private:
 
-
-    template<typename T>
-    static constexpr typename std::underlying_type<T>::type enumToIntegral(T value)
-    {
-        return static_cast<typename std::underlying_type<T>::type>(value);
-    }
-
     struct ActiveOverlayLine
     {
-        enum class Type
+        enum Type
         {
             WL = 0,
             Im = 1,
@@ -76,7 +69,7 @@ private:
             Count,
         };
 
-        std::array<ActiveOverlayLineHandler *, enumToIntegral(Type::Count)> Handlers;
+        std::array<ActiveOverlayLineHandler *, Count> Handlers;
     };
 
     void setViewDirectionAnnontation(mitk::Image* image, int index);

@@ -42,19 +42,19 @@ bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelat
         vtkRen->InteractiveOff();
 
         ActiveOverlayLine activeOverlayLine;
-        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::WL)] = createWLOverlay(vtkRen, renderers[relationship],
+        activeOverlayLine.Handlers[ActiveOverlayLine::WL] = createWLOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::LowerLeft, fontSize);
-        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Im)] = createImOverlay(vtkRen, renderers[relationship],
+        activeOverlayLine.Handlers[ActiveOverlayLine::Im] = createImOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::UpperLeft, fontSize);
-        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Scale)] = createZoomOverlay(vtkRen, renderers[relationship],
+        activeOverlayLine.Handlers[ActiveOverlayLine::Scale] = createZoomOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::LowerLeft, fontSize, 1);
-        activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Width)] = createWidthOverlay(vtkRen, renderers[relationship],
+        activeOverlayLine.Handlers[ActiveOverlayLine::Width] = createWidthOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::UpperLeft, fontSize, 2);
 
         std::vector<ActiveOverlayLineHandler *> handlers{
-            activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::WL)],
-            activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Im)],
-            activeOverlayLine.Handlers[enumToIntegral(ActiveOverlayLine::Type::Scale)] };
+            activeOverlayLine.Handlers[ActiveOverlayLine::WL],
+            activeOverlayLine.Handlers[ActiveOverlayLine::Im],
+            activeOverlayLine.Handlers[ActiveOverlayLine::Scale] };
 
         auto oneAcive = [handlers]() -> bool
         {
@@ -377,7 +377,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
                 }
                 if (thickslices > 0)
                 {
-                    m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::Width)]
+                    m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Width]
                         ->addText(std::string("Width: ") + std::to_string(thickslices));
                 }
             }
@@ -388,7 +388,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
             auto infoString = infoStringStream[axisIndices[i]].str();
 
-            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::Im)]->addText(infoString.c_str());
+            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Im]->addText(infoString.c_str());
 
             // Left Right annotiation
             setViewDirectionAnnontation(image, axisIndices[i]);
@@ -397,12 +397,12 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
             if (wlProperty)
             {
-                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::WL)]->addText(wlProperty->GetValueAsString().c_str());
+                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::WL]->addText(wlProperty->GetValueAsString().c_str());
             }
 
             const double widthImageMM = image->GetDimension(1) * image->GetGeometry()->GetSpacing()[1];
             float scale = widthImageMM / 2.0f / baseRenderes[axisIndices[i]]->GetVtkRenderer()->GetActiveCamera()->GetParallelScale();
-            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[enumToIntegral(ActiveOverlayLine::Type::Scale)]->addText(std::to_string(scale));
+            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Scale]->addText(std::to_string(scale));
         }
 
         bool value = false;
