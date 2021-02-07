@@ -26,12 +26,14 @@ AnnotationOverlay::~AnnotationOverlay()
 }
 
 bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelationships &relationships,
-    uint32_t fontSize)
+    uint32_t fontSize, TFlags::T flags)
 {
     if (renderers.size() != relationships.size())
     {
         return false;
     }
+
+    const auto raiseOne = (flags & TFlags::RiseLowerLeft) ? 1 : 0;
 
     for (auto relationship : relationships)
     {
@@ -43,11 +45,11 @@ bool AnnotationOverlay::initialize(const TRenderWindows &renderers, const TRelat
 
         ActiveOverlayLine activeOverlayLine;
         activeOverlayLine.Handlers[ActiveOverlayLine::WL] = createWLOverlay(vtkRen, renderers[relationship],
-            vtkCornerAnnotation::LowerLeft, fontSize);
+            vtkCornerAnnotation::LowerLeft, fontSize, raiseOne);
         activeOverlayLine.Handlers[ActiveOverlayLine::Im] = createImOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::UpperLeft, fontSize);
         activeOverlayLine.Handlers[ActiveOverlayLine::Scale] = createZoomOverlay(vtkRen, renderers[relationship],
-            vtkCornerAnnotation::LowerLeft, fontSize, 1);
+            vtkCornerAnnotation::LowerLeft, fontSize, raiseOne + 1);
         activeOverlayLine.Handlers[ActiveOverlayLine::Width] = createWidthOverlay(vtkRen, renderers[relationship],
             vtkCornerAnnotation::UpperLeft, fontSize, 2);
 

@@ -366,7 +366,7 @@ void QmitkStdMultiWidget::InitializeWidget(bool showPlanesIn3d)
           this->GetRenderWindow2(),
           this->GetRenderWindow3(),
           this->GetRenderWindow4()
-      }, { 1, 2, 0, 3 }, 12);
+      }, { 1, 2, 0, 3 }, 12, AnnotationOverlay::TFlags::RiseLowerLeft);
 
   //connect to the "time navigation controller": send time via sliceNavigationControllers
   m_TimeNavigationController->ConnectGeometryTimeEvent(

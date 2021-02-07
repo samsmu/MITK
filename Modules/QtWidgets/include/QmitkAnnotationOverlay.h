@@ -27,9 +27,18 @@ public:
     using TRenderWindows = std::vector<QmitkRenderWindow *>;
     using TRelationships = std::vector<uint32_t>;
 
+    struct TFlags
+    {
+        enum T
+        {
+            None = 0,
+            RiseLowerLeft = 1,
+        };
+    };
+
     ~AnnotationOverlay();
 
-    bool initialize(const TRenderWindows &, const TRelationships &, uint32_t fontSize);
+    bool initialize(const TRenderWindows &, const TRelationships &, uint32_t fontSize, TFlags::T);
     void deinitialize();
 
     void setDataStorage(mitk::DataStorage *ds);

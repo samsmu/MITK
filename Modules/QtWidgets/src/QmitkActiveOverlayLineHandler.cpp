@@ -41,6 +41,7 @@ ActiveOverlayLineHandler::ActiveOverlayLineHandler(vtkSmartPointer<vtkRenderer> 
     m_textProperty->SetFontFamilyToArial();
     m_textProperty->SetColor(0, 0, 1);
     m_textProperty->SetBold(false);
+    m_textProperty->SetFontSize(fontSize);
     m_cornerAnnotation->SetTextProperty(m_textProperty);
     m_cornerAnnotation->QueueFontUpdate();
 
