@@ -124,6 +124,7 @@ if(NOT DEFINED ITK_DIR)
        ${additional_cmake_args}
        -DBUILD_EXAMPLES:BOOL=OFF
        -DITK_USE_SYSTEM_GDCM:BOOL=ON
+       -DModule_ITKIOPhilipsREC:BOOL=ON
        -DGDCM_DIR:PATH=${GDCM_DIR}
        -DITK_USE_SYSTEM_HDF5:BOOL=OFF
        -DHDF5_DIR:PATH=${HDF5_DIR}
