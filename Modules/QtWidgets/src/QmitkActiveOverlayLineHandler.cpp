@@ -77,6 +77,8 @@ void ActiveOverlayLineHandler::addText(const std::string &text)
         textWithEndls = text;
     }
 
+    m_cornerAnnotation->QueueFontUpdate();
+
     m_cornerAnnotation->SetText(m_corner, textWithEndls.c_str());
     m_cornerAnnotation->SetMaximumLengthText(m_corner, text.c_str());
 
