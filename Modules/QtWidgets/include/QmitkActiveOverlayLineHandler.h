@@ -23,6 +23,8 @@ public:
         mitk::MouseModeSwitcher::MouseMode mode,
         uint32_t fontSize, int lineNumber, QObject *parent = nullptr);
 
+    ~ActiveOverlayLineHandler();
+
     bool isActive() { return m_isContainMousePos; };
     void addText(const std::string &text);
     bool isContainMousePos(QPoint globalMousePos);

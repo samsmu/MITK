@@ -5,6 +5,11 @@
 
 #include <mitkVtkLayerController.h>
 
+ActiveOverlayLineHandler::~ActiveOverlayLineHandler()
+{
+    m_cornerAnnotation->Delete();;
+}
+
 ActiveOverlayLineHandler::ActiveOverlayLineHandler(vtkSmartPointer<vtkRenderer> vtkRener, 
     QmitkRenderWindow * handledWidget, vtkCornerAnnotation::TextPosition corner,
     mitk::MouseModeSwitcher::MouseMode mode, uint32_t fontSize,
@@ -45,7 +50,7 @@ ActiveOverlayLineHandler::ActiveOverlayLineHandler(vtkSmartPointer<vtkRenderer> 
     m_cornerAnnotation->SetTextProperty(m_textProperty);
     m_cornerAnnotation->QueueFontUpdate();
 
-    QTimer * activeOverlay = new QTimer;
+    QTimer * activeOverlay = new QTimer(this);
     activeOverlay->start(50);
 
     connect(activeOverlay, &QTimer::timeout, [this]
@@ -76,6 +81,8 @@ void ActiveOverlayLineHandler::addText(const std::string &text)
     {
         textWithEndls = text;
     }
+
+    m_cornerAnnotation->QueueFontUpdate();
 
     m_cornerAnnotation->SetText(m_corner, textWithEndls.c_str());
     m_cornerAnnotation->SetMaximumLengthText(m_corner, text.c_str());
@@ -207,4 +214,3 @@ void ActiveOverlayLineHandler::updateOverlay()
     mitk::VtkLayerController::GetInstance(m_handledWidget->GetRenderWindow())->UpdateLayers();
     m_handledWidget->GetRenderer()->RequestUpdate();
 }
-
