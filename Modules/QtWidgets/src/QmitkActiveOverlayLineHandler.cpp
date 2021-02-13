@@ -7,7 +7,8 @@
 
 ActiveOverlayLineHandler::~ActiveOverlayLineHandler()
 {
-    m_cornerAnnotation->Delete();;
+    m_vtkRender->RemoveActor(m_cornerAnnotation);
+    m_cornerAnnotation->Delete();
 }
 
 ActiveOverlayLineHandler::ActiveOverlayLineHandler(vtkSmartPointer<vtkRenderer> vtkRener, 
