@@ -124,6 +124,8 @@ private:
     bool m_displayPatientInfoEx = false;
     bool m_displayDirectionOnly = false;
 
+    bool m_displayUpdate = false;
+
     mitk::DataStorage::Pointer m_dataStorage = nullptr;
 
     SetWLDialog m_tSetWL;

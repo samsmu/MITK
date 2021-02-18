@@ -362,7 +362,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
             const auto pos = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetPos() + 1;
             const auto max = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetSteps();
 
-            if (m_displayPositionInfo && !m_displayDirectionOnly)
+            if (m_displayPositionInfo && !m_displayDirectionOnly && m_displayMetaInfo)
             {
                 infoStringStream[axisIndices[i]] << "Im: " << pos << "/" << max;
                 if (timeSteps > 1)
@@ -385,6 +385,8 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
             }
             else
             {
+                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Width]
+                    ->addText("");
                 infoStringStream[axisIndices[i]].clear();
             }
 
@@ -397,14 +399,25 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
 
             auto wlProperty = dynamic_cast<mitk::LevelWindowProperty*>(node->GetProperty("levelwindow"));
 
-            if (wlProperty)
+            if (wlProperty && m_displayMetaInfo)
             {
                 m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::WL]->addText(wlProperty->GetValueAsString().c_str());
             }
+            else
+            {
+                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::WL]->addText("");
+            }
 
-            const double widthImageMM = image->GetDimension(1) * image->GetGeometry()->GetSpacing()[1];
-            float scale = widthImageMM / 2.0f / baseRenderes[axisIndices[i]]->GetVtkRenderer()->GetActiveCamera()->GetParallelScale();
-            m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Scale]->addText(std::to_string(scale));
+            if (m_displayMetaInfo)
+            {
+                const double widthImageMM = image->GetDimension(1) * image->GetGeometry()->GetSpacing()[1];
+                float scale = widthImageMM / 2.0f / baseRenderes[axisIndices[i]]->GetVtkRenderer()->GetActiveCamera()->GetParallelScale();
+                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Scale]->addText(std::to_string(scale));
+            }
+            else
+            {
+                m_activeOverlayLineHandlers[axisIndices[i]].Handlers[ActiveOverlayLine::Scale]->addText("");
+            }
         }
 
         bool value = false;
@@ -427,8 +440,9 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
         std::string newNodeName = node->GetName();
 
         // check if image is changed or node is renamed
-        if (m_imageMTime != newImageMTime || m_imageName != newNodeName)
+        if (m_imageMTime != newImageMTime || m_imageName != newNodeName || m_displayUpdate)
         {
+            m_displayUpdate = false;
             m_imageMTime = newImageMTime;
             m_imageName = newNodeName;
 
@@ -482,34 +496,34 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
             char mi[3]; mi[2] = 0;
             char ss[3]; ss[2] = 0;
 
-            if (m_displayMetaInfo && !m_displayDirectionOnly)
+            if (!m_displayDirectionOnly)
             {
-                if (m_displayPatientInfo)
+                if (m_displayPatientInfo && m_displayMetaInfo)
                 {
                     infoStringStream[0]
                         << patient.c_str()
                         << "\n" << patientId.c_str();
+
+                    if (birthday != "")
+                    {
+                        sscanf(birthday.c_str(), "%4c%2c%2c", yy, mm, dd);
+                        infoStringStream[0] << "\n" << dd << "." << mm << "." << yy << " " << sex.c_str();
+                    }
+                    else
+                    {
+                        infoStringStream[0] << '\n';
+                    }
+
+                    infoStringStream[0]
+                        << "\n" << institution.c_str()
+                        << "\n" << studiId;
                 }
                 else
                 {
-                    infoStringStream[0] << "***\n***";
+                    infoStringStream[0].clear();
                 }
-
-                if (birthday != "")
-                {
-                    sscanf(birthday.c_str(), "%4c%2c%2c", yy, mm, dd);
-                    infoStringStream[0] << "\n" << dd << "." << mm << "." << yy << " " << sex.c_str();
-                }
-                else
-                {
-                    infoStringStream[0] << '\n';
-                }
-
-                infoStringStream[0]
-                    << "\n" << institution.c_str()
-                    << "\n" << studiId;
                 
-                if (m_displayPatientInfoEx)
+                if (m_displayPatientInfoEx && m_displayMetaInfo)
                 {
                     infoStringStream[0]
                         << "\n" << studyDescription
@@ -524,7 +538,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
                 infoStringStream[0].clear();
             }
 
-            if (m_displayMetaInfo && !m_displayDirectionOnly)
+            if (!m_displayDirectionOnly && m_displayMetaInfo)
             {
                 if (m_displayMetaInfoEx)
                 {
@@ -677,31 +691,37 @@ void AnnotationOverlay::resetImageMTime()
 void AnnotationOverlay::setDisplayPositionInfo(bool value)
 {
     m_displayPositionInfo = value;
+    m_displayUpdate = true;
 }
 
 void AnnotationOverlay::setDisplayMetaInfo(bool value)
 {
     m_displayMetaInfo = value;
+    m_displayUpdate = true;
 }
 
 void AnnotationOverlay::setDisplayMetaInfoEx(bool value)
 {
     m_displayMetaInfoEx = value;
+    m_displayUpdate = true;
 }
 
 void AnnotationOverlay::setDisplayPatientInfo(bool value)
 {
     m_displayPatientInfo = value;
+    m_displayUpdate = true;
 }
 
 void AnnotationOverlay::setDisplayPatientInfoEx(bool value)
 {
     m_displayPatientInfoEx = value;
+    m_displayUpdate = true;
 }
 
 void AnnotationOverlay::setDisplayDirectionOnly(bool value)
 {
     m_displayDirectionOnly = value;
+    m_displayUpdate = true;
 }
 
 void AnnotationOverlay::setViewDirectionAnnontation(mitk::Image* image, int i)
