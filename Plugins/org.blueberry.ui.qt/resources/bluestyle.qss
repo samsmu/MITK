@@ -846,7 +846,7 @@ QLabel#study_tree_header{
   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
     stop: 0 rgb(187, 217, 238), stop : 1 rgb(216, 233, 245));
   color: rgb(21, 66, 139);
-  qproperty-alignment: AlignCenter;
+  qproperty-alignment: AlignLeft;
 }
 
 QTreeWidget#study_tree{

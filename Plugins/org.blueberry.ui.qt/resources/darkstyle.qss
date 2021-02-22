@@ -831,7 +831,7 @@ QLabel#study_tree_header{
     stop: 0 rgb(195, 201, 208), stop : 0.57 rgb(164, 171, 180),
     stop : 0.58 rgb(133, 146, 159), stop : 1 rgb(133, 146, 159));
   color: black;
-  qproperty-alignment: AlignCenter;
+  qproperty-alignment: AlignLeft;
 }
 
 QTreeWidget#study_tree{
