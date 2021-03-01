@@ -39,7 +39,7 @@ ProvisioningInfo::ProvisioningInfo(const std::string& file)
 
 QStringList ProvisioningInfo::getPluginDirs() const
 {
-  return pluginDirs.toList();
+  return pluginDirs.values();
 }
 
 QList<QUrl> ProvisioningInfo::getPluginsToInstall() const
