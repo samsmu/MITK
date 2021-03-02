@@ -58,20 +58,30 @@ void QmitkGnuplotWidget::CreateContextMenu()
 
 void QmitkGnuplotWidget::contextMenuEvent(QContextMenuEvent* event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   QPixmap plot = m_Ui->label->pixmap(Qt::ReturnByValueConstant::ReturnByValue);
-
   m_CopyPlotAction->setEnabled(true);
+#else 
+  const QPixmap* plot = m_Ui->label->pixmap();
+  m_CopyPlotAction->setEnabled(plot != nullptr && !plot->isNull());
+#endif
+
   m_CopyScriptAction->setEnabled(!m_Commands.empty());
-
   m_ContextMenu->popup(event->globalPos());
-
   event->accept();
 }
 
 void QmitkGnuplotWidget::OnCopyPlot()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
   QPixmap plot = m_Ui->label->pixmap(Qt::ReturnByValueConstant::ReturnByValue);
   QApplication::clipboard()->setPixmap(plot);
+#else 
+  const QPixmap* plot = m_Ui->label->pixmap();
+
+  if (plot != nullptr && !plot->isNull())
+    QApplication::clipboard()->setPixmap(*plot);
+#endif
 }
 
 void QmitkGnuplotWidget::OnCopyScript()
