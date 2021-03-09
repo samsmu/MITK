@@ -170,6 +170,13 @@ bool ActiveOverlayLineHandler::isContainMousePos(QPoint globalMousePos)
     }
 }
 
+void ActiveOverlayLineHandler::forceUpdateFont()
+{
+    m_cornerAnnotation->QueueFontUpdate();
+    m_textProperty->Modified();
+    m_cornerAnnotation->SetTextProperty(m_textProperty);
+}
+
 void ActiveOverlayLineHandler::changeActiveElements(QPoint globalMousePos)
 {
     bool newValue = false;

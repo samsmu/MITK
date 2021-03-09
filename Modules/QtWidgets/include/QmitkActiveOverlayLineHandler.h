@@ -28,6 +28,7 @@ public:
     bool isActive() { return m_isContainMousePos; };
     void addText(const std::string &text);
     bool isContainMousePos(QPoint globalMousePos);
+    void forceUpdateFont();
 
 protected:
     void changeActiveElements(QPoint globalMousePos);

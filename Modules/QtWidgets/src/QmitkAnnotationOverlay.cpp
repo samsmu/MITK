@@ -289,6 +289,29 @@ void AnnotationOverlay::deinitialize()
     m_ren.clear();
 }
 
+void AnnotationOverlay::forceUpdateFont()
+{
+    for (uint32_t i = 0; i < m_cornerText.size(); i++)
+    {
+        m_textProp[i]->Modified();
+        m_cornerText[i]->SetTextProperty(m_textProp[i]);
+        m_cornerText[i]->QueueFontUpdate();
+    }
+
+    for (auto &overlay : m_activeOverlayLineHandlers)
+    {
+        for (auto handler : overlay.Handlers)
+        {
+            handler->forceUpdateFont();
+        }
+    }
+
+    for (auto renderer : m_renderWindows)
+    {
+        renderer->GetRenderer()->RequestUpdate();
+    }
+}
+
 mitk::DataNode::Pointer AnnotationOverlay::getNode(mitk::DataStorage::Pointer dataStorage)
 {
     if (dataStorage.IsNull() || m_renderWindows.empty())
