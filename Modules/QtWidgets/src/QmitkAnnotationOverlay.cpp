@@ -353,12 +353,18 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
         }
 
         for (int i = 0; i < m_renderWindows.size(); i++)
-        {
-            auto geometry = baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode();
+        {   
+            if(!baseRenderes[axisIndices[i]])
+                continue;
+                
             int thickslices = 0;
-            geometry->GetIntProperty("reslice.thickslices.num", thickslices);
-            thickslices = thickslices == 0 ? 1 : thickslices;
-
+            if( baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode())
+            {
+                auto geometry = baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode();
+                geometry->GetIntProperty("reslice.thickslices.num", thickslices);
+                thickslices = thickslices == 0 ? 1 : thickslices;
+            }
+            
             const auto pos = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetPos() + 1;
             const auto max = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetSteps();
 
