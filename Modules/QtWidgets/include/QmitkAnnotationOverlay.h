@@ -41,6 +41,8 @@ public:
     bool initialize(const TRenderWindows &, const TRelationships &, uint32_t fontSize, TFlags::T);
     void deinitialize();
 
+    void forceUpdateFont();
+
     void setDataStorage(mitk::DataStorage *ds);
 
     mitk::DataNode::Pointer getNode(mitk::DataStorage::Pointer);
