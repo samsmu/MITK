@@ -5,7 +5,9 @@ cmake_minimum_required(VERSION ${MITK_CMAKE_MINIMUM_REQUIRED_VERSION})
 # See http://www.cmake.org/cmake/help/v3.2/manual/cmake-policies.7.html for details
 #-----------------------------------------------------------------------------
 
-set(project_policies )
+set(project_policies
+    CMP0057
+ )
 foreach(policy ${project_policies})
   if(POLICY ${policy})
     cmake_policy(SET ${policy} NEW)
