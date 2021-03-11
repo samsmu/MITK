@@ -7,9 +7,9 @@ if(DEFINED Vigra_DIR AND NOT EXISTS ${Vigra_DIR})
 message(FATAL_ERROR "Vigra_DIR variable is defined but corresponds to non-existing directory")
 endif()
 
-#if(NOT ${MITK_USE_HDF5})
-#message(FATAL_ERROR "HDF5 is required for Vigra. Please enable it.")
-#endif()
+if(NOT ${MITK_USE_HDF5})
+message(FATAL_ERROR "HDF5 is required for Vigra. Please enable it.")
+endif()
 
 set(proj Vigra)
 set(proj_DEPENDENCIES HDF5)
