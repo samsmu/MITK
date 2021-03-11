@@ -275,8 +275,8 @@ mitkFunctionAddExternalProject(NAME CppUnit     ON  ADVANCED DOC "Use CppUnit fo
 mitkFunctionAddExternalProject(NAME PCRE        OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME ZLIB        OFF ADVANCED NO_PACKAGE NO_CACHE)
 
-mitkFunctionAddExternalProject(NAME HDF5        OFF ADVANCED)
-
+mitkFunctionAddExternalProject(NAME HDF5        ON ADVANCED)
+mitkFunctionAddExternalProject(NAME MatchPoint        ON ADVANCED DEPENDS ITK DOC "Use the MatchPoint translation image registration library")
 # -----------------------------------------
 # The following external projects must be
 # ordered according to their
@@ -286,7 +286,7 @@ mitkFunctionAddExternalProject(NAME SWIG      OFF ADVANCED NO_PACKAGE DEPENDS PC
 mitkFunctionAddExternalProject(NAME Python    OFF          NO_PACKAGE DEPENDS SWIG DOC "Use Python wrapping in MITK")
 mitkFunctionAddExternalProject(NAME Numpy     OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME OpenCV    OFF)
-mitkFunctionAddExternalProject(NAME Vigra     OFF          DEPENDS HDF5)
+mitkFunctionAddExternalProject(NAME Vigra     ON          DEPENDS HDF5)
 
 # These are "hard" dependencies and always set to ON
 mitkFunctionAddExternalProject(NAME VTK       ON           NO_CACHE)
