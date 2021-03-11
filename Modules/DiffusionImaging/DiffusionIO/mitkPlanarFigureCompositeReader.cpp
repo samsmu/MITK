@@ -26,7 +26,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #define RAPIDXML_NO_EXCEPTIONS
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
+#include <mitkLexicalCast.h>
 #include <mitkPlanarFigureComposite.h>
 
 
@@ -54,7 +54,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::PlanarFigureCompositeReade
     try
     {
         const std::string& locale = "C";
-        const std::string& currLocale = setlocale( LC_ALL, NULL );
+        const std::string& currLocale = setlocale( LC_ALL, nullptr );
         setlocale(LC_ALL, locale.c_str());
 
         std::string filename = this->GetInputLocation();

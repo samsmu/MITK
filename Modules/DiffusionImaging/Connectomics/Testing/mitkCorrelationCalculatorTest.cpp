@@ -24,9 +24,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 // MITK includes
 #include "mitkCorrelationCalculator.h"
 #include <mitkImage.h>
+#include <mitkImagePixelWriteAccessor.h>
 #include <mitkImageCast.h>
 #include <mitkITKImageImport.h>
-#include <mitkImageRegionAccessor.h>
 
 // VTK includes
 #include <vtkDebugLeaks.h>
@@ -52,7 +52,7 @@ public:
   /**
   * @brief Setup Always call this method before each Test-case to ensure correct and new intialization of the used members for a new test case. (If the members are not used in a test, the method does not need to be called).
   */
-  void setUp()
+  void setUp() override
   {
     // The setup is somewhat cumbersome, due to the fact, that the mitk-itk conversion
     // functions do not play nicely with 4D images
@@ -126,7 +126,7 @@ public:
       }
     }
 
-    mitk::ImageRegionAccessor writeAccess (tsTestImage);
+    mitk::ImagePixelWriteAccessor<int,4> writeAccess( tsTestImage );
 
     //fill time series image with similar time series in each parcel
     for( int loop(0); loop < 270; ++loop)
@@ -144,15 +144,15 @@ public:
 
       if( mitk::Equal(parcellationTestImage->GetPixel(parcellationIndex), 1) )
       {
-        *(int*)writeAccess.getPixel(timeSeriesIndex) = 1 + loop;
+        writeAccess.SetPixelByIndex(timeSeriesIndex, 1 + loop);
       }
       else if( mitk::Equal(parcellationTestImage->GetPixel(parcellationIndex), 2) )
       {
-        *(int*)writeAccess.getPixel(timeSeriesIndex) = 1 + (loop % 13 - loop % 11);
+        writeAccess.SetPixelByIndex(timeSeriesIndex, 1 + (loop % 13 - loop % 11) );
       }
       else
       {
-        *(int*)writeAccess.getPixel(timeSeriesIndex) = 1 + (loop - loop % 2);
+        writeAccess.SetPixelByIndex(timeSeriesIndex, 1 + ( loop - loop % 2) );
       }
     }
 
@@ -162,7 +162,7 @@ public:
     m_TimeSeriesImage = tsTestImage;
   }
 
-  void tearDown()
+  void tearDown() override
   {
     m_ParcellationImage = nullptr;
     m_TimeSeriesImage = nullptr;
@@ -253,9 +253,9 @@ public:
     mitk::ConnectomicsNetwork::VertexDescriptorType x = refNetwork->AddVertex( 1 );
     mitk::ConnectomicsNetwork::VertexDescriptorType y = refNetwork->AddVertex( 2 );
     mitk::ConnectomicsNetwork::VertexDescriptorType z = refNetwork->AddVertex( 3 );
-    refNetwork->AddEdge(x,y);
-    refNetwork->AddEdge(x,z);
-    refNetwork->AddEdge(y,z);
+    refNetwork->AddEdge(x,y,1);
+    refNetwork->AddEdge(x,z,1);
+    refNetwork->AddEdge(y,z,1);
     CPPUNIT_ASSERT_MESSAGE( "Comparing created and reference network.", mitk::Equal( network.GetPointer(), refNetwork, mitk::eps, true) );
 
     // check sample parcels for other methods

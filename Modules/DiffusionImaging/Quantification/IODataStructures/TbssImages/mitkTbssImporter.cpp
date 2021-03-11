@@ -18,8 +18,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #define __mitkTbssImporter_cpp
 
 #include "mitkTbssImporter.h"
-#include <mitkImageRegionAccessor.h>
 #include <mitkPixelTypeMultiplex.h>
+#include "mitkImagePixelReadAccessor.h"
 
 namespace mitk
 {
@@ -89,7 +89,7 @@ void TbssImporter::Import(const mitk::PixelType , mitk::TbssImage::Pointer tbssI
 
   MITK_INFO << "vecsize " <<vecSize;
   try {
-    mitk::ImageRegionAccessor readTbss(m_InputVolume);
+    mitk::ImagePixelReadAccessor<TPixel,4> readTbss( m_InputVolume );
 
     for(unsigned int i=0; i<dataSize[0]; i++)
     {
@@ -111,7 +111,7 @@ void TbssImporter::Import(const mitk::PixelType , mitk::TbssImage::Pointer tbssI
           for(int z=0; z<vecSize; z++)
           {
             ix[3] = z;
-            float value = *(TPixel*)readTbss.getPixel(ix);
+            float value = readTbss.GetPixelByIndex(ix);
             pixel.SetElement(z, value);
           }
           m_Data->SetPixel(id, pixel);
