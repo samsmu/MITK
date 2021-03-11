@@ -37,6 +37,8 @@ set(mitk_modules
   QtWidgetsExt
   QtWidgetsWeb
   SegmentationUI
+  MatchPointRegistration
+  MatchPointRegistrationUI
   DiffusionImaging
   GPGPU
   OpenIGTLink
