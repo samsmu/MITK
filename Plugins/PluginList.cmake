@@ -60,7 +60,7 @@ set(MITK_PLUGINS
   org.mitk.planarfigure:ON
   org.mitk.core.ext:OFF
   org.mitk.core.jobs:OFF
-  org.mitk.diffusionimaging:OFF
+  #org.mitk.diffusionimaging:OFF
   org.mitk.gui.qt.application:ON
   org.mitk.gui.qt.coreapplication:OFF
   org.mitk.gui.qt.ext:OFF
@@ -69,17 +69,29 @@ set(MITK_PLUGINS
 
   #org.mitk.gui.qt.cmdlinemodules:OFF
 
-  org.mitk.gui.qt.diffusionimagingapp:OFF
+  #org.mitk.gui.qt.diffusionimagingapp:OFF
   org.mitk.gui.qt.datamanager:ON
   org.mitk.gui.qt.properties:ON
   org.mitk.gui.qt.basicimageprocessing:OFF
-  org.mitk.gui.qt.diffusionimaging:OFF
+  #org.mitk.gui.qt.diffusionimaging:OFF
   org.mitk.gui.qt.geometrytools:OFF
   org.mitk.gui.qt.imagecropper:OFF
   org.mitk.gui.qt.imagenavigator:ON
   org.mitk.gui.qt.remeshing:ON
   org.mitk.gui.qt.imagestatistics:OFF
-
+  org.mitk.gui.qt.diffusionimaging:ON
+  org.mitk.gui.qt.diffusionimaging.connectomics:ON
+  org.mitk.gui.qt.diffusionimaging.denoising:ON
+  org.mitk.gui.qt.diffusionimaging.fiberfox:ON
+  org.mitk.gui.qt.diffusionimaging.fiberprocessing:ON
+  org.mitk.gui.qt.diffusionimaging.ivim:ON
+  org.mitk.gui.qt.diffusionimaging.odfpeaks:ON
+  org.mitk.gui.qt.diffusionimaging.partialvolume:ON
+  org.mitk.gui.qt.diffusionimaging.preprocessing:ON
+  org.mitk.gui.qt.diffusionimaging.reconstruction:ON
+  org.mitk.gui.qt.diffusionimaging.registration:ON
+  org.mitk.gui.qt.diffusionimaging.tbss:ON
+  org.mitk.gui.qt.diffusionimaging.tractography:ON
   #org.mitk.gui.qt.tofutil:OFF
   #org.mitk.gui.qt.igttracking:OFF
   #org.mitk.gui.qt.aicpregistration:OFF
