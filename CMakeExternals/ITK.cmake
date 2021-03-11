@@ -126,7 +126,7 @@ if(NOT DEFINED ITK_DIR)
        -DITK_USE_SYSTEM_GDCM:BOOL=ON
        -DModule_ITKIOPhilipsREC:BOOL=ON
        -DGDCM_DIR:PATH=${GDCM_DIR}
-       -DITK_USE_SYSTEM_HDF5:BOOL=OFF
+       -DITK_USE_SYSTEM_HDF5:BOOL=ON
        -DHDF5_DIR:PATH=${HDF5_DIR}
      CMAKE_CACHE_ARGS
        ${ep_common_cache_args}
