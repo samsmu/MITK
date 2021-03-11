@@ -586,6 +586,7 @@ include(mitkMacroInstall)
 include(mitkMacroInstallHelperApp)
 include(mitkMacroInstallTargets)
 include(mitkMacroMultiplexPicType)
+include(mitkFunctionCreateMatchPointDeployedAlgorithm)
 
 # Deprecated
 include(mitkMacroCreateCTKPlugin)
