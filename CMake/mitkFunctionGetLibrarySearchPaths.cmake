@@ -50,7 +50,7 @@ function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
   get_property(_additional_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
 
   if(MITK_USE_HDF5)
-    _find_package(HDF5)
+    FIND_PACKAGE(HDF5 COMPONENTS C HL NO_MODULE REQUIRED shared)
     get_target_property(_location hdf5 LOCATION)
     get_filename_component(_location ${_location} PATH)
     list(APPEND _additional_paths ${_location})
