@@ -338,6 +338,8 @@ mitkFunctionFindWhitelists(MITK)
 
 option(MITK_USE_SYSTEM_Boost "Use the system Boost" OFF)
 set(MITK_USE_Boost_LIBRARIES "" CACHE STRING "A semi-colon separated list of required Boost libraries")
+set(MITK_USE_Vigra ON CACHE BOOL "MITK Use Vigra Library" FORCE)
+set(MITK_USE_HDF5 ON CACHE BOOL "MITK Use HDF5 Library" FORCE)
 
 # loggin needs regex and log libraries
 list(FIND MITK_USE_Boost_LIBRARIES regex _result)
