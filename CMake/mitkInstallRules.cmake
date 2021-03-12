@@ -59,6 +59,12 @@ if(MACOSX_BUNDLE_NAMES)
   endforeach()
 endif()
 
+# Install MatchPoint binaries that are not auto-detected
+if(MITK_USE_MatchPoint)
+  MITK_INSTALL(DIRECTORY "${MITK_EXTERNAL_PROJECT_PREFIX}/bin/" FILES_MATCHING PATTERN "MapUtilities*")
+  MITK_INSTALL(DIRECTORY "${MITK_EXTERNAL_PROJECT_PREFIX}/bin/" FILES_MATCHING PATTERN "MapAlgorithms*")
+endif()
+
 if(WIN32)
   if(MITK_USE_QT)
     get_property(_qmake_location TARGET ${Qt5Core_QMAKE_EXECUTABLE}
