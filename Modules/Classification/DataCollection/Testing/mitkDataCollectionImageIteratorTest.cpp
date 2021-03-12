@@ -24,6 +24,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkImageGenerator.h>
 #include <mitkImageCast.h>
+#include <mitkImagePixelReadAccessor.h>
 #include <mitkImageToItk.h>
 #include <mitkIOUtil.h>
 
@@ -148,7 +149,7 @@ public:
 
 };
 
-int mitkDataCollectionImageIteratorTest(int argc, char* argv[])
+int mitkDataCollectionImageIteratorTest(int, char* [])
 {
   MITK_TEST_BEGIN("mitkDataCollectionImageIteratorTest");
 

@@ -16,7 +16,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkCoreObjectFactory.h>
 #include "mitkImage.h"
-#include <boost/lexical_cast.hpp>
+#include <mitkLexicalCast.h>
 #include "mitkCommandLineParser.h"
 #include <mitkIOUtil.h>
 #include <itksys/SystemTools.hxx>
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
   //  float precision = parsedArgs.count("precision") ? us::any_cast<float>(parsedArgs["precision"]) : mitk::eps;
   //  float fraction = parsedArgs.count("fraction") ? us::any_cast<float>(parsedArgs["fraction"]) : 0.6;
   //  bool withreplacement = parsedArgs.count("replacment") ? us::any_cast<float>(parsedArgs["replacment"]) : true;
-  std::string filt_select = parsedArgs.count("select") ? us::any_cast<std::string>(parsedArgs["select"]) : "*.autoplan";
+  std::string filt_select = parsedArgs.count("select") ? us::any_cast<std::string>(parsedArgs["select"]) : "*.mitk";
 
   QString filter(filt_select.c_str());
   QDir dir(inputdir.c_str());
