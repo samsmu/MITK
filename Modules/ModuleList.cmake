@@ -34,6 +34,7 @@ set(mitk_modules
   Segmentation
   MatchPointRegistration
   MatchPointRegistrationUI
+  Classification
   PlanarFigureSegmentation
   QtWidgets
   QtWidgetsExt
@@ -70,7 +71,6 @@ set(mitk_modules
   XNAT
   TubeGraph
   BiophotonicsHardware
-  Classification
   TumorInvasionAnalysis
 )
 
