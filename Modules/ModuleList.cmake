@@ -72,6 +72,7 @@ set(mitk_modules
   BiophotonicsHardware
   Classification
   TumorInvasionAnalysis
+  Chart
 )
 
 if(MITK_ENABLE_PIC_READER)
