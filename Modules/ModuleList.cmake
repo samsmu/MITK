@@ -32,6 +32,8 @@ set(mitk_modules
   ContourModel
   SurfaceInterpolation
   Segmentation
+  MatchPointRegistration
+  MatchPointRegistrationUI
   PlanarFigureSegmentation
   QtWidgets
   QtWidgetsExt
