@@ -21,7 +21,9 @@
 #include <vtkXMLDataElement.h>
 
 #include <mitkIOUtil.h>
-//#include <mitkBaseDataIOFactory.h>
+#include <mitkBaseDataIOFactory.h>
+#include <mitkFiberBundle.h>
+#include <mitkFiberBundleVtkReader.h>
 
 #include <QDir>
 

@@ -8,7 +8,11 @@ set(MITK_PLUGINS
   org.blueberry.core.commands:OFF
   org.blueberry.core.expressions:OFF
   org.blueberry.core.jobs:OFF
-
+  org.mitk.gui.qt.diffusionimaging:ON
+  org.mitk.gui.qt.diffusionimaging.fiberprocessing:ON
+  org.mitk.gui.qt.diffusionimaging.preprocessing:ON
+  org.mitk.gui.qt.diffusionimaging.reconstruction:ON
+  org.mitk.gui.qt.diffusionimaging.tractography:ON
   #Mask unused plugins for Autoplan [AUT-2521]
   #org.blueberry.ui.qt.objectinspector:OFF
   #org.blueberry.ui.qt.help:OFF
