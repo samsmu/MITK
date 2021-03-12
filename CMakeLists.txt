@@ -292,7 +292,7 @@ mitkFunctionAddExternalProject(NAME Vigra     OFF          DEPENDS HDF5)
 mitkFunctionAddExternalProject(NAME VTK       ON           NO_CACHE)
 mitkFunctionAddExternalProject(NAME Boost     ON           NO_CACHE)
 mitkFunctionAddExternalProject(NAME ITK       ON           NO_CACHE)
-
+mitkFunctionAddExternalProject(NAME MatchPoint  OFF ADVANCED  DEPENDS ITK DOC "Use the MatchPoint translation image registration library")
 mitkFunctionAddExternalProject(NAME SimpleITK OFF          DEPENDS ITK GDCM SWIG)
 mitkFunctionAddExternalProject(NAME ACVD      ON           DOC "Use Approximated Centroidal Voronoi Diagrams")
 mitkFunctionAddExternalProject(NAME CTK       ON           DEPENDS QT DCMTK DOC "Use CTK in MITK")
