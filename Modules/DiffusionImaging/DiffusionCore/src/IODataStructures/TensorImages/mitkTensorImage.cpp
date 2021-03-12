@@ -17,7 +17,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkTensorImage.h"
 #include "mitkImageDataItem.h"
 #include "mitkImageCast.h"
-#include <mitkImageVtkAccessor.h>
 
 #include "itkDiffusionTensor3D.h"
 #include "itkTensorToRgbImageFilter.h"
@@ -38,13 +37,30 @@ mitk::TensorImage::~TensorImage()
 
 }
 
+vtkImageData* mitk::TensorImage::GetVtkImageData(int t, int n)
+{
+  if(m_RgbImage.IsNull())
+  {
+    ConstructRgbImage();
+  }
+  return m_RgbImage->GetVtkImageData(t,n);
+}
+
+const vtkImageData*mitk::TensorImage::GetVtkImageData(int t, int n) const
+{
+  if(m_RgbImage.IsNull())
+  {
+    ConstructRgbImage();
+  }
+  return m_RgbImage->GetVtkImageData(t,n);
+}
+
 void mitk::TensorImage::ConstructRgbImage() const
 {
-    typedef itk::Image<itk::DiffusionTensor3D<float>,3> ImageType;
-    typedef itk::TensorToRgbImageFilter<ImageType> FilterType;
+    typedef itk::TensorToRgbImageFilter<ItkTensorImageType> FilterType;
     FilterType::Pointer filter = FilterType::New();
 
-    ImageType::Pointer itkvol = ImageType::New();
+    ItkTensorImageType::Pointer itkvol = ItkTensorImageType::New();
     mitk::CastToItkImage(this, itkvol);
     filter->SetInput(itkvol);
     filter->Update();
@@ -57,6 +73,5 @@ void mitk::TensorImage::ConstructRgbImage() const
 
 vtkImageData* mitk::TensorImage::GetNonRgbVtkImageData(int t, int n)
 {
-  mitk::ImageVtkAccessor accessor(this);
-  return accessor.getVtkImageData(t);
+  return Superclass::GetVtkImageData(t,n);
 }

@@ -18,7 +18,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <vtkMaskedGlyph3D.h>
 #include <vtkActor.h>
-#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkArrowSource.h>
 #include <vtkLineSource.h>
 #include <vtkImageData.h>
@@ -27,8 +27,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkLookupTable.h>
 #include <mitkLookupTable.h>
 #include <mitkLookupTableProperty.h>
-
-#include <mitkImageVtkAccessor.h>
 
 
 /*
@@ -41,7 +39,7 @@ mitk::VectorImageVtkGlyphMapper3D::VectorImageVtkGlyphMapper3D()
   m_MaximumNumberOfPoints = 5000;
   m_GlyphType = ArrowGlyph;
   m_Glyph3DGenerator = vtkMaskedGlyph3D::New();
-  m_Glyph3DMapper = vtkOpenGLPolyDataMapper::New();
+  m_Glyph3DMapper = vtkPolyDataMapper::New();
   m_Glyph3DActor = vtkActor::New();
 }
 
@@ -55,9 +53,9 @@ vtkProp* mitk::VectorImageVtkGlyphMapper3D::GetVtkProp(mitk::BaseRenderer*  /*re
 */
 mitk::VectorImageVtkGlyphMapper3D::~VectorImageVtkGlyphMapper3D()
 {
-  if ( m_Glyph3DMapper != NULL )
+  if ( m_Glyph3DMapper != nullptr )
     m_Glyph3DMapper->Delete();
-  if ( m_Glyph3DGenerator != NULL )
+  if ( m_Glyph3DGenerator != nullptr )
     m_Glyph3DGenerator->Delete();
 }
 
@@ -73,13 +71,13 @@ void mitk::VectorImageVtkGlyphMapper3D::GenerateDataForRenderer( mitk::BaseRende
 
   if ( !visible )
   {
-    if ( m_Glyph3DActor != NULL )
+    if ( m_Glyph3DActor != nullptr )
       m_Glyph3DActor->VisibilityOff();
     return ;
   }
   else
   {
-    if ( m_Glyph3DActor != NULL )
+    if ( m_Glyph3DActor != nullptr )
       m_Glyph3DActor->VisibilityOn();
   }
 
@@ -97,7 +95,7 @@ void mitk::VectorImageVtkGlyphMapper3D::GenerateDataForRenderer( mitk::BaseRende
   // get the input image...
   //
   mitk::Image::Pointer mitkImage = this->GetInput();
-  if ( mitkImage.GetPointer() == NULL )
+  if ( mitkImage.GetPointer() == nullptr )
   {
     itkWarningMacro( << "VectorImage is null !" );
     return;
@@ -112,17 +110,15 @@ void mitk::VectorImageVtkGlyphMapper3D::GenerateDataForRenderer( mitk::BaseRende
     return ;
   }
 
-  ImageVtkAccessor accessor(mitkImage);
-  ImageAccessLock lock(&accessor);
-  vtkImageData* vtkImage = accessor.getVtkImageData();
+  vtkImageData* vtkImage = mitkImage->GetVtkImageData();
 
   //
   // make sure, that we have point data with more than 1 component (as vectors)
   //
   vtkPointData* pointData = vtkImage->GetPointData();
-  if ( pointData == NULL )
+  if ( pointData == nullptr )
   {
-    itkWarningMacro( << "vtkImage->GetPointData() returns NULL!" );
+    itkWarningMacro( << "vtkImage->GetPointData() returns nullptr!" );
     return ;
   }
   if ( pointData->GetNumberOfArrays() == 0 )
@@ -130,7 +126,7 @@ void mitk::VectorImageVtkGlyphMapper3D::GenerateDataForRenderer( mitk::BaseRende
     itkWarningMacro( << "vtkImage->GetPointData()->GetNumberOfArrays() is 0!" );
     return ;
   }
-  else if ( pointData->GetArrayName( 0 ) == NULL )
+  else if ( pointData->GetArrayName( 0 ) == nullptr )
   {
     vtkImage->GetPointData() ->GetArray( 0 ) ->SetName( "vector" );
   }
@@ -218,6 +214,6 @@ m_MaximumNumberOfPoints = 80*80*80;
 */
 mitk::Image* mitk::VectorImageVtkGlyphMapper3D::GetInput()
 {
-  return const_cast<mitk::Image*>( dynamic_cast<mitk::Image*>( GetDataNode()->GetData() ) );
+  return dynamic_cast<mitk::Image*>( GetDataNode()->GetData() );
 }
 

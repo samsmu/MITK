@@ -62,7 +62,7 @@ See LICENSE.txt or http://www.mitk.org for details.
     msg.append(pixelType1.GetComponentTypeAsString() );                                             \
     msg.append(" or pixel type ");                                                                  \
     msg.append(pixelType2.GetComponentTypeAsString() );                                             \
-    msg.append(" is not in " MITK_PP_STRINGIZE(MITK_ACCESSBYITK_TYPES_DIMN_SEQ(dimension)));        \
+    msg.append(" is not in " BOOST_PP_STRINGIZE(MITK_ACCESSBYITK_TYPES_DIMN_SEQ(dimension)));        \
     throw mitk::AccessByItkException(msg);                                                          \
   }                                                                                                 \
 }
@@ -87,7 +87,7 @@ public:
   {
     RegistrationType* registration = dynamic_cast< RegistrationType* >( caller );
 
-    if( registration == NULL)
+    if( registration == nullptr)
       return;
 
     MITK_DEBUG << "\t - Pyramid level " << registration->GetCurrentLevel();
@@ -98,7 +98,7 @@ public:
 
     OptimizerType* optimizer = dynamic_cast< OptimizerType* >(registration->GetOptimizer());
 
-    if( optimizer == NULL)
+    if( optimizer == nullptr)
     { MITK_WARN("OptCommand") << "Cast to optimizer failed";
           return;
     }
@@ -131,7 +131,7 @@ public:
   {
     RegistrationType* registration = dynamic_cast< RegistrationType* >( caller );
 
-    if( registration == NULL)
+    if( registration == nullptr)
       return;
 
     MITK_DEBUG << "\t - Pyramid level " << registration->GetCurrentLevel();
@@ -140,7 +140,7 @@ public:
 
     OptimizerType* optimizer = dynamic_cast< OptimizerType* >( registration->GetOptimizer() );
 
-    if( optimizer == NULL)
+    if( optimizer == nullptr)
     { MITK_WARN("OptCommand4") << "Cast to optimizer failed";
           return;
     }

@@ -24,7 +24,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 //#include "itkNiftiImageIO.h"
 #include "itkImageFileWriter.h"
 #include "itksys/SystemTools.hxx"
-#include "boost/lexical_cast.hpp"
+#include "mitkLexicalCast.h"
 
 #include <iostream>
 #include <fstream>
@@ -46,7 +46,7 @@ void mitk::NrrdTbssImageWriter::GenerateData()
   InputType* input = this->GetInput();
   if (input == nullptr)
   {
-    itkWarningMacro(<<"Sorry, input to NrrdTbssImageWriter is NULL!");
+    itkWarningMacro(<<"Sorry, input to NrrdTbssImageWriter is nullptr!");
     return;
   }
   if ( m_FileName == "" )
