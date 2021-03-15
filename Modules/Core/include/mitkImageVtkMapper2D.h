@@ -42,6 +42,7 @@ class vtkMitkThickSlicesFilter;
 class vtkPolyData;
 class vtkMitkApplyLevelWindowToRGBFilter;
 class vtkMitkLevelWindowFilter;
+class vtkMitkBlurSharpnessFilter;
 
 namespace mitk {
 
@@ -198,6 +199,8 @@ public:
 
     /** \brief This filter is used to apply the level window to Grayvalue and RBG(A) images. */
     vtkSmartPointer<vtkMitkLevelWindowFilter> m_LevelWindowFilter;
+
+    vtkSmartPointer<vtkMitkBlurSharpnessFilter> m_BlurSharpnessFilter;
 
     /** \brief Default constructor of the local storage. */
     LocalStorage();

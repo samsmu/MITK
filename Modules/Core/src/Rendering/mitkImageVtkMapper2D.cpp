@@ -34,6 +34,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkImageVtkMapper2D.h"
 #include "vtkMitkThickSlicesFilter.h"
 #include "vtkMitkLevelWindowFilter.h"
+#include "vtkMitkBlurSharpnessFilter.h"
 #include "vtkNeverTranslucentTexture.h"
 
 //VTK
@@ -200,9 +201,12 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
   //is done.
   localStorage->m_Reslicer->SetVtkOutputRequest(true);
 
-  //Thickslicing
+  //Thickslicing and BlurSharpness
   int thickSlicesMode = 0;
   int thickSlicesNum = 1;
+
+  int blurSharpness = 0;
+
   // Thick slices parameters
   //if( input->GetPixelType().GetNumberOfComponents() == 1 ) // for now only single component are allowed // AUT-4269
   {
@@ -220,6 +224,8 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
         thickSlicesNum = intProperty->GetValue();
         if(thickSlicesNum < 1) thickSlicesNum=1;
       }
+
+      dn->GetIntProperty("filter.blursharpness", blurSharpness);
     }
     else
     {
@@ -380,6 +386,8 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
   // do not use a VTK lookup table (we do that ourselves in m_LevelWindowFilter)
   localStorage->m_Texture->MapColorScalarsThroughLookupTableOff();
 
+  localStorage->m_BlurSharpnessFilter->setBlurSharpness(blurSharpness);
+
   int displayedComponent = 0;
   int numberOfComponents = localStorage->m_ReslicedImage->GetNumberOfScalarComponents();  //get the number of scalar components to distinguish between different image types
   if (datanode->GetIntProperty("Image.Displayed Component", displayedComponent, renderer) && numberOfComponents > 1)
@@ -387,17 +395,32 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
     localStorage->m_VectorComponentExtractor->SetComponents(displayedComponent);
     localStorage->m_VectorComponentExtractor->SetInputData(localStorage->m_ReslicedImage);
 
-    localStorage->m_LevelWindowFilter->SetInputConnection(localStorage->m_VectorComponentExtractor->GetOutputPort(0));
+    if (blurSharpness != 0)
+    {
+      localStorage->m_BlurSharpnessFilter->SetInputConnection(localStorage->m_VectorComponentExtractor->GetOutputPort(0));
+      localStorage->m_LevelWindowFilter->SetInputConnection(localStorage->m_BlurSharpnessFilter->GetOutputPort());
+    }
+    else
+    {
+      localStorage->m_LevelWindowFilter->SetInputConnection(localStorage->m_VectorComponentExtractor->GetOutputPort(0));
+    }
   }
   else
   {
-    //connect the input with the levelwindow filter
-    localStorage->m_LevelWindowFilter->SetInputData(localStorage->m_ReslicedImage);
+    if (blurSharpness != 0)
+    {
+        localStorage->m_BlurSharpnessFilter->SetInputData(localStorage->m_ReslicedImage);
+        localStorage->m_LevelWindowFilter->SetInputConnection(localStorage->m_BlurSharpnessFilter->GetOutputPort());
+    }
+    else
+    {
+        localStorage->m_LevelWindowFilter->SetInputData(localStorage->m_ReslicedImage);
+    }
   }
 
   // check for texture interpolation property
   bool textureInterpolation = false;
-  GetDataNode()->GetBoolProperty( "texture interpolation", textureInterpolation, renderer );
+  GetDataNode()->GetBoolProperty( "texture interpolation", textureInterpolation, renderer);
 
   //set the interpolation modus according to the property
   localStorage->m_Texture->SetInterpolate(textureInterpolation);
@@ -908,6 +931,7 @@ mitk::ImageVtkMapper2D::LocalStorage::LocalStorage()
 {
 
   m_LevelWindowFilter = vtkSmartPointer<vtkMitkLevelWindowFilter>::New();
+  m_BlurSharpnessFilter = vtkSmartPointer<vtkMitkBlurSharpnessFilter>::New();
 
   //Do as much actions as possible in here to avoid double executions.
   m_Plane = vtkSmartPointer<vtkPlaneSource>::New();

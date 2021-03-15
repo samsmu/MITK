@@ -282,6 +282,7 @@ set(CPP_FILES
   Rendering/mitkVtkPropRenderer.cpp
   Rendering/mitkVtkWidgetRendering.cpp
   Rendering/vtkMitkLevelWindowFilter.cpp
+  Rendering/vtkMitkBlurSharpnessFilter.cpp
   Rendering/vtkMitkRectangleProp.cpp
   Rendering/vtkMitkRenderProp.cpp
   Rendering/vtkMitkThickSlicesFilter.cpp
