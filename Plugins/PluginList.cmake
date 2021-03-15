@@ -64,7 +64,6 @@ set(MITK_PLUGINS
   org.mitk.planarfigure:ON
   org.mitk.core.ext:OFF
   org.mitk.core.jobs:OFF
-  org.mitk.diffusionimaging:OFF
   org.mitk.gui.qt.application:ON
   org.mitk.gui.qt.coreapplication:OFF
   org.mitk.gui.qt.ext:OFF
@@ -75,8 +74,7 @@ set(MITK_PLUGINS
 
   org.mitk.gui.qt.datamanager:ON
   org.mitk.gui.qt.properties:ON
-  org.mitk.gui.qt.basicimageprocessing:OFF
-  org.mitk.gui.qt.diffusionimaging:OFF
+  org.mitk.gui.qt.basicimageprocessing:ON
   org.mitk.gui.qt.geometrytools:OFF
   org.mitk.gui.qt.imagecropper:OFF
   org.mitk.gui.qt.imagenavigator:ON
