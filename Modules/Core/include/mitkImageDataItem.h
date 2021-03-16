@@ -51,7 +51,7 @@ namespace mitk {
   {
 
   friend class Image;
-
+  friend class ImageAccessorBase;
 //  template<class TOutputImage>
 //  friend class ImageToItk;
 

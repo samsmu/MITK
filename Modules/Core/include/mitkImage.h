@@ -431,7 +431,13 @@ public:
   /** \brief Sets a geometry to an image.
     */
   virtual void SetGeometry(BaseGeometry* aGeometry3D) override;
-
+  
+    /**
+    * @warning for internal use only
+    */
+    virtual ImageDataItemPointer GetChannelData(int n = 0,
+                                                void *data = nullptr,
+                                                ImportMemoryManagementType importMemoryManagement = CopyMemory) const;
   /**
   * @warning for internal use only
   */
