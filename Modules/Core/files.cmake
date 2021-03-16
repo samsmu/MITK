@@ -82,6 +82,7 @@ set(CPP_FILES
   DataManagement/mitkImageCastPart2.cpp
   DataManagement/mitkImageCastPart3.cpp
   DataManagement/mitkImageCastPart4.cpp
+  DataManagement/mitkImageAccessorBase.cpp
   DataManagement/mitkImageCaster.cpp
   DataManagement/mitkImageDataItem.cpp
   DataManagement/mitkImageDescriptor.cpp
