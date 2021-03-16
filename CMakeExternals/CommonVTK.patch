@@ -1,0 +1,85 @@
+diff --git a/Common/ExecutionModel/vtkSphereTree.cxx b/Common/ExecutionModel/vtkSphereTree.cxx
+index b33a921..23358f2 100644
+--- a/Common/ExecutionModel/vtkSphereTree.cxx
++++ b/Common/ExecutionModel/vtkSphereTree.cxx
+@@ -1352,6 +1352,7 @@ BuildUnstructuredHierarchy(vtkDataSet *input, double *tree)
+     return;
+   }
+   int dims[3], res=this->Resolution;
++  r = std::max(r, .5);
+   for (int i=0; i<3; ++i)
+   {
+     dims[i] = static_cast<int>( (bds[2*i+1]-bds[2*i])/(res*r) );
+diff --git a/Interaction/Widgets/vtkBorderRepresentation.cxx b/Interaction/Widgets/vtkBorderRepresentation.cxx
+index 28d6508..5621cd7 100644
+--- a/Interaction/Widgets/vtkBorderRepresentation.cxx
++++ b/Interaction/Widgets/vtkBorderRepresentation.cxx
+@@ -13,6 +13,7 @@
+ 
+ =========================================================================*/
+ #include "vtkBorderRepresentation.h"
++#include "vtkCamera.h"
+ #include "vtkRenderer.h"
+ #include "vtkPoints.h"
+ #include "vtkCellArray.h"
+@@ -485,7 +486,9 @@ void vtkBorderRepresentation::BuildRepresentation()
+   if (this->Renderer &&
+       (this->GetMTime() > this->BuildTime ||
+        (this->Renderer->GetVTKWindow() &&
+-        this->Renderer->GetVTKWindow()->GetMTime() > this->BuildTime)))
++        this->Renderer->GetVTKWindow()->GetMTime() > this->BuildTime) ||
++       (this->Renderer->GetActiveCamera() &&
++       this->Renderer->GetActiveCamera()->GetMTime() > this->BuildTime)))
+   {
+     // Negotiate with subclasses
+     if ( ! this->Negotiated )
+diff --git a/Interaction/Widgets/vtkContourRepresentation.cxx b/Interaction/Widgets/vtkContourRepresentation.cxx
+index 6816fc2..87514bd 100644
+--- a/Interaction/Widgets/vtkContourRepresentation.cxx
++++ b/Interaction/Widgets/vtkContourRepresentation.cxx
+@@ -140,6 +140,7 @@ void vtkContourRepresentation::AddNodeAtPositionInternal( double worldPos[3],
+ 
+   this->UpdateLines( static_cast<int>(this->Internal->Nodes.size())-1);
+   this->NeedToRender = 1;
++  this->BuildRepresentation();
+ }
+ 
+ //----------------------------------------------------------------------
+diff --git a/Rendering/VolumeOpenGL2/vtkOpenGLVolumeGradientOpacityTable.h b/Rendering/VolumeOpenGL2/vtkOpenGLVolumeGradientOpacityTable.h
+index dd8cf86..17cf7f1 100644
+--- a/Rendering/VolumeOpenGL2/vtkOpenGLVolumeGradientOpacityTable.h
++++ b/Rendering/VolumeOpenGL2/vtkOpenGLVolumeGradientOpacityTable.h
+@@ -81,7 +81,7 @@ public:
+ 
+     if(gradientOpacity->GetMTime() > this->BuildTime ||
+        this->TextureObject->GetMTime() > this->BuildTime ||
+-       this->LastSampleDistance != sampleDistance ||
++       //this->LastSampleDistance != sampleDistance ||
+        needUpdate || !this->TextureObject->GetHandle())
+     {
+       int const idealW = gradientOpacity->EstimateMinNumberOfSamples(this->LastRange[0],
+diff --git a/Rendering/VolumeOpenGL2/vtkSmartVolumeMapper.cxx b/Rendering/VolumeOpenGL2/vtkSmartVolumeMapper.cxx
+index 4f60942..de11a2f 100644
+--- a/Rendering/VolumeOpenGL2/vtkSmartVolumeMapper.cxx
++++ b/Rendering/VolumeOpenGL2/vtkSmartVolumeMapper.cxx
+@@ -89,7 +89,7 @@ vtkSmartVolumeMapper::vtkSmartVolumeMapper()
+   // also true for the GPU ray cast mapper.
+   this->RayCastMapper->LockSampleDistanceToInputSpacingOn();
+   this->GPUMapper->LockSampleDistanceToInputSpacingOn();
+-
++  this->GPUMapper->UseJitteringOn();
+   // Default to the default mode - which will use the best option that
+   // is supported by the hardware
+   this->RequestedRenderMode = vtkSmartVolumeMapper::DefaultRenderMode;
+diff --git a/Rendering/VolumeOpenGL2/vtkVolumeShaderComposer.h b/Rendering/VolumeOpenGL2/vtkVolumeShaderComposer.h
+index 7cee83d..34ca548 100644
+--- a/Rendering/VolumeOpenGL2/vtkVolumeShaderComposer.h
++++ b/Rendering/VolumeOpenGL2/vtkVolumeShaderComposer.h
+@@ -1843,6 +1843,7 @@ namespace vtkvolume
+       \n\
+       \n  g_terminatePointMax = length(terminatePoint.xyz - g_dataPos.xyz) /\
+       \n                        length(g_dirStep);\
++      \n  if (isnan(g_terminatePointMax)) g_terminatePointMax = 0.;\
+       \n  g_currentT = 0.0;");
+   }
+ 
