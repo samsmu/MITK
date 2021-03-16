@@ -27,6 +27,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <MitkCoreExports.h>
 #include "mitkSlicedData.h"
 #include "mitkBaseData.h"
+#include "mitkImageAccessorBase.h"
 #include "mitkLevelWindow.h"
 #include "mitkPlaneGeometry.h"
 #include <mitkProportionalTimeGeometry.h>
@@ -89,7 +90,7 @@ class ImageStatisticsHolder;
 class MITKCORE_EXPORT Image : public SlicedData
 {
   friend class SubImageSelector;
-
+  friend class ImageAccessorBase;
   friend class ImageRegionAccessor;
   friend class ImageAccessLock;
   friend class ImageVtkAccessor;
