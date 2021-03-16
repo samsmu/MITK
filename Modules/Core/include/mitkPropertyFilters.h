@@ -17,8 +17,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef mitkPropertyFilters_h
 #define mitkPropertyFilters_h
 
-#include <map>
 #include <mitkIPropertyFilters.h>
+#include <map>
 
 namespace mitk
 {
@@ -26,19 +26,18 @@ namespace mitk
   {
   public:
     PropertyFilters();
-    ~PropertyFilters() override;
+    ~PropertyFilters();
 
-    bool AddFilter(const PropertyFilter &filter, const std::string &className, bool overwrite) override;
-    std::map<std::string, BaseProperty::Pointer> ApplyFilter(
-      const std::map<std::string, BaseProperty::Pointer> &propertyMap, const std::string &className) const override;
-    PropertyFilter GetFilter(const std::string &className) const override;
-    bool HasFilter(const std::string &className) const override;
+    bool AddFilter(const PropertyFilter& filter, const std::string& className, bool overwrite) override;
+    std::map<std::string, BaseProperty::Pointer> ApplyFilter(const std::map<std::string, BaseProperty::Pointer>& propertyMap, const std::string& className) const override;
+    PropertyFilter GetFilter(const std::string& className) const override;
+    bool HasFilter(const std::string& className) const override;
     void RemoveAllFilters() override;
-    void RemoveFilter(const std::string &className) override;
+    void RemoveFilter(const std::string& className) override;
 
   private:
-    PropertyFilters(const PropertyFilters &);
-    PropertyFilters &operator=(const PropertyFilters &);
+    PropertyFilters(const PropertyFilters&);
+    PropertyFilters& operator=(const PropertyFilters&);
 
     std::map<std::string, PropertyFilter> m_Filters;
   };

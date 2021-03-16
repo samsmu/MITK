@@ -14,13 +14,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef MITKPROGRESSBAR_H
 #define MITKPROGRESSBAR_H
-#include <MitkCoreExports.h>
 #include <itkObject.h>
+#include <MitkCoreExports.h>
+
 
 namespace mitk
 {
+
   class ProgressBarImplementation;
 
   //##Documentation
@@ -32,6 +35,7 @@ namespace mitk
   //## @ingroup Interaction
   class MITKCORE_EXPORT ProgressBar : public itk::Object
   {
+
   public:
     itkTypeMacro(ProgressBar, itk::Object);
 
@@ -39,14 +43,14 @@ namespace mitk
     //## @brief static method to get the GUI dependent ProgressBar-instance
     //## so the methods for steps to do and progress can be called
     //## No reference counting, cause of decentral static use!
-    static ProgressBar *GetInstance();
+    static ProgressBar* GetInstance();
 
     //##Documentation
     //## @brief Supply a GUI- dependent ProgressBar. Has to be set by the application
     //## to connect the application dependent subclass of mitkProgressBar
-    void RegisterImplementationInstance(ProgressBarImplementation *implementation);
+    void RegisterImplementationInstance(ProgressBarImplementation* implementation);
 
-    void UnregisterImplementationInstance(ProgressBarImplementation *implementation);
+    void UnregisterImplementationInstance(ProgressBarImplementation* implementation);
 
     //##Documentation
     //## @brief Adds steps to totalSteps.
@@ -63,21 +67,25 @@ namespace mitk
 
     //##Documentation
     //## @brief Sets whether the current progress value is displayed.
-    void SetPercentageVisible(bool visible);
+    void SetPercentageVisible (bool visible);
+
+    bool IsProgressBarActive() const;
 
   protected:
-    typedef std::vector<ProgressBarImplementation *> ProgressBarImplementationsList;
+
+    typedef std::vector< ProgressBarImplementation* > ProgressBarImplementationsList;
     typedef ProgressBarImplementationsList::iterator ProgressBarImplementationsListIterator;
 
     ProgressBar();
 
-    ~ProgressBar() override;
+    virtual ~ProgressBar();
 
     ProgressBarImplementationsList m_Implementations;
 
-    static ProgressBar *m_Instance;
+    static ProgressBar* m_Instance;
   };
 
-} // end namespace mitk
+}// end namespace mitk
 
 #endif /* define MITKPROGRESSBAR_H */
+

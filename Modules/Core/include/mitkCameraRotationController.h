@@ -17,34 +17,63 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef CAMERAROTATIONCONTROLLER_H_HEADER_INCLUDED_NXYCBIU
 #define CAMERAROTATIONCONTROLLER_H_HEADER_INCLUDED_NXYCBIU
 
-#include "mitkBaseController.h"
 #include <MitkCoreExports.h>
+#include "mitkBaseController.h"
 
 class vtkCamera;
 class vtkRenderWindow;
 
-namespace mitk
+namespace mitk {
+
+
+class MITKCORE_EXPORT CameraRotationController : public BaseController
 {
-  class MITKCORE_EXPORT CameraRotationController : public BaseController
+public:
+  mitkClassMacro(CameraRotationController,BaseController);
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+  //mitkNewMacro1Param(Self, const char *);
+
+  void RotateCamera();
+  void Elevate();
+
+  void RotateToAngle(double angle);
+  void AcquireCamera();
+
+  void SetRenderWindow(vtkRenderWindow * renWin)
   {
-  public:
-    mitkClassMacro(CameraRotationController, BaseController);
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
-      // mitkNewMacro1Param(Self, const char *);
+    m_RenderWindow = renWin;
+  }
 
-      void RotateCamera();
-    void AcquireCamera();
+  Stepper::Pointer GetElevationSlice() {
+    return m_ElevationSlice;
+  }
 
-    void SetRenderWindow(vtkRenderWindow *renWin) { m_RenderWindow = renWin; }
-  protected:
-    CameraRotationController();
-    ~CameraRotationController() override;
+  //virtual bool ExecuteAction(Action* action, mitk::StateEvent const* stateEvent) override;
+  void RotateCameraToTransformationAngles();
+  void RotateCameraBack();
+  void Mirror(bool horizontal);
+  void ResetTransformationAngles();
 
-  private:
-    int m_LastStepperValue;
-    vtkCamera *m_Camera;
-    vtkRenderWindow *m_RenderWindow;
-  };
+  double getRoll() { return m_Roll; }
+  double getAzimuth() { return m_Azimuth; }
+
+protected:
+  CameraRotationController();
+  virtual ~CameraRotationController();
+
+  int m_LastStepperValue;
+  int m_ElevateLastStepperValue;
+
+  vtkCamera* m_Camera;
+  vtkRenderWindow* m_RenderWindow;
+
+  Stepper::Pointer m_ElevationSlice;
+
+  double m_Roll;
+  double m_Azimuth;
+};
+
 }
 
 #endif

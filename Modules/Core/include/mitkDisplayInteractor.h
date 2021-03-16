@@ -17,8 +17,8 @@
 #ifndef mitkDisplayInteractor_h
 #define mitkDisplayInteractor_h
 
-#include "mitkInteractionEventObserver.h"
 #include <MitkCoreExports.h>
+#include "mitkInteractionEventObserver.h"
 
 namespace mitk
 {
@@ -34,21 +34,40 @@ namespace mitk
    * Inherits from mitk::InteractionEventObserver since it doesn't alter any data (only their representation),
    * and its actions cannot be associated with a DataNode. Also inherits from EventStateMachine
    */
-  class MITKCORE_EXPORT DisplayInteractor : public EventStateMachine, public InteractionEventObserver
+  class MITKCORE_EXPORT DisplayInteractor: public EventStateMachine, public InteractionEventObserver
   {
   public:
-    mitkClassMacro(DisplayInteractor, EventStateMachine) itkFactorylessNewMacro(Self) itkCloneMacro(Self)
-      /**
-       * By this function the Observer gets notified about new events.
-       * Here it is adapted to pass the events to the state machine in order to use
-       * its infrastructure.
-       * It also checks if event is to be accepted when it already has been processed by a DataInteractor.
-       */
-      void Notify(InteractionEvent *interactionEvent, bool isHandled) override;
+    mitkClassMacro(DisplayInteractor, EventStateMachine)
+    itkFactorylessNewMacro(Self)
+    itkCloneMacro(Self)
+    /**
+     * By this function the Observer gets notified about new events.
+     * Here it is adapted to pass the events to the state machine in order to use
+     * its infrastructure.
+     * It also checks if event is to be accepted when it already has been processed by a DataInteractor.
+     */
+    virtual void Notify(InteractionEvent* interactionEvent, bool isHandled) override;
+
+    void SetSelectionMode(bool selection);
+    static bool GetMouseRotationMode();
+
+    void SetOnly3D(bool only3D) { m_Only3D = only3D; }
+
+    static void SetSynchronization(bool on, bool studySync);
+
+    static void RotateCamera(BaseRenderer* renderer, bool clockwise);
+    static void MirrorCamera(BaseRenderer* renderer, bool horizontal);
+    static void ResetCamera(BaseRenderer* renderer);
+
+    /**
+    * \brief Change Clock rotation spead for ctrl+arrow rotation
+    */
+    static double GetClockRotationSpeed();
+    static void SetClockRotationSpeed(double newRotationSpeed);
 
   protected:
     DisplayInteractor();
-    ~DisplayInteractor() override;
+    virtual ~DisplayInteractor();
     /**
      * Derived function.
      * Connects the action names used in the state machine pattern with functions implemented within
@@ -61,7 +80,7 @@ namespace mitk
      * Here it is used to read out the parameters set in the configuration file,
      * and set the member variables accordingly.
      */
-    void ConfigurationChanged() override;
+    virtual void ConfigurationChanged() override;
 
     /**
      * Derived function.
@@ -69,37 +88,40 @@ namespace mitk
      * Here it is used to read out the parameters set in the configuration file,
      * and set the member variables accordingly.
      */
-    bool FilterEvents(InteractionEvent *interactionEvent, DataNode *dataNode) override;
+    virtual bool FilterEvents(InteractionEvent* interactionEvent, DataNode* dataNode) override;
 
-    virtual bool CheckPositionEvent(const InteractionEvent *interactionEvent);
+    mitk::DataNode::Pointer m_CurrentNode;
+    mitk::DataNode::Pointer m_SelectedNode;
+    float m_OldColor[3];
+    bool m_Selector;
 
-    virtual bool CheckRotationPossible(const InteractionEvent *interactionEvent);
+    virtual bool CheckPositionEvent( const InteractionEvent* interactionEvent );
 
-    virtual bool CheckSwivelPossible(const InteractionEvent *interactionEvent);
+    virtual bool CheckRotationPossible( const InteractionEvent* interactionEvent );
+
+    virtual bool CheckSwivelPossible( const InteractionEvent* interactionEvent );
+
+    bool IsInMouseRotationMode(const InteractionEvent* interactionEvent);
+
+    bool IsOverObject(const InteractionEvent* interactionEvent);
+    void SelectObject(StateMachineAction*, InteractionEvent* interactionEvent);
+    void DeSelectObject(StateMachineAction*, InteractionEvent* interactionEvent);
+
+    static void RotateCameraImpl(BaseRenderer* renderer, double value);
 
     /**
      * \brief Initializes an interaction, saves the pointers start position for further reference.
      */
-    virtual void Init(StateMachineAction *, InteractionEvent *);
+    virtual void Init(StateMachineAction*, InteractionEvent*);
     /**
      * \brief Performs panning of the data set in the render window.
      */
-    virtual void Move(StateMachineAction *, InteractionEvent *);
+    virtual void Move(StateMachineAction*, InteractionEvent*);
 
     /**
      * \brief Sets crosshair at clicked position*
      */
-    virtual void SetCrosshair(StateMachineAction *, InteractionEvent *);
-
-    /**
-     * \brief Increases the time step in 3d+t data
-     */
-    virtual void IncreaseTimeStep(StateMachineAction *, InteractionEvent *);
-
-    /**
-     * \brief Decreases the time step in 3d+t data
-     */
-    virtual void DecreaseTimeStep(StateMachineAction *, InteractionEvent *);
+    virtual void SetCrosshair(StateMachineAction*, InteractionEvent*);
 
     /**
      * \brief Performs zooming relative to mouse/pointer movement.
@@ -107,70 +129,79 @@ namespace mitk
      * Behavior is determined by \see m_ZoomDirection and \see m_ZoomFactor.
      *
      */
-    virtual void Zoom(StateMachineAction *, InteractionEvent *);
+    virtual void Zoom(StateMachineAction*, InteractionEvent*);
     /**
      * \brief Performs scrolling relative to mouse/pointer movement.
      *
      * Behavior is determined by \see m_ScrollDirection and \see m_AutoRepeat.
      *
      */
-    virtual void Scroll(StateMachineAction *, InteractionEvent *);
+    virtual void Scroll(StateMachineAction*, InteractionEvent*);
     /**
      * \brief Scrolls one layer up
      */
-    virtual void ScrollOneDown(StateMachineAction *, InteractionEvent *);
+    virtual void ScrollOneDown(StateMachineAction*, InteractionEvent*);
     /**
      * \brief Scrolls one layer down
      */
-    virtual void ScrollOneUp(StateMachineAction *, InteractionEvent *);
+    virtual void ScrollOneUp(StateMachineAction*, InteractionEvent*);
     /**
      * \brief Adjusts the level windows relative to mouse/pointer movement.
      */
-    virtual void AdjustLevelWindow(StateMachineAction *, InteractionEvent *);
+
+    virtual void AdjustLevelWindow(StateMachineAction*, InteractionEvent*);
 
     /**
      * \brief Starts crosshair rotation
      */
-    virtual void StartRotation(StateMachineAction *, InteractionEvent *);
+    virtual void StartRotation(StateMachineAction*, InteractionEvent*);
+
 
     /**
      * \brief Ends crosshair rotation
      */
-    virtual void EndRotation(StateMachineAction *, InteractionEvent *);
+    virtual void EndRotation(StateMachineAction*, InteractionEvent*);
+
+    virtual void MouseRotateCamera(StateMachineAction*, InteractionEvent*);
 
     /**
      * \brief
      */
-    virtual void Rotate(StateMachineAction *, InteractionEvent *event);
+    virtual void Rotate(StateMachineAction*, InteractionEvent* event);
+    
+    virtual void RotateClock(StateMachineAction*, InteractionEvent*);
+    virtual void RotateBackClock(StateMachineAction*, InteractionEvent*);
 
-    virtual void Swivel(StateMachineAction *, InteractionEvent *event);
+    virtual void Swivel(StateMachineAction*, InteractionEvent* event);
+
+
+    virtual void ScrollTimeOneDown(StateMachineAction*, InteractionEvent*);
+    virtual void ScrollTimeOneUp(StateMachineAction*, InteractionEvent*);
 
     /**
      * \brief Updates the Statusbar information with the information about the clicked position
      */
-    virtual void UpdateStatusbar(StateMachineAction *, InteractionEvent *event);
+    virtual void UpdateStatusbar(StateMachineAction*, InteractionEvent* event);
 
     /**
     * \brief Method to retrieve bool-value for given property from string-property
     * in given propertylist.
     */
-    bool GetBoolProperty(mitk::PropertyList::Pointer propertyList, const char *propertyName, bool defaultValue);
+    bool GetBoolProperty( mitk::PropertyList::Pointer propertyList, const char* propertyName, bool defaultValue );
 
     // Typedefs
-    typedef std::vector<SliceNavigationController *> SNCVector;
+    typedef std::vector<SliceNavigationController*> SNCVector;
 
   private:
-    /**
-     * @brief UpdateStatusBar
-     * @param image3D
-     * @param idx
-     * @param time
-     * @param component If the PixelType of image3D is a vector (for example a 2D velocity vector), then only one of the vector components can be
-     * displayed at once. Setting this parameter will determine which of the vector's components will be used to determine the displayed PixelValue.
-     * Set this to 0 for scalar images
-     */
-    void UpdateStatusBar(itk::SmartPointer<mitk::Image> image3D, itk::Index<3> idx, TimeStepType time=0, int component=0);
 
+    mitk::Point3D getRendererCenter(mitk::BaseRenderer* ren);
+
+    mitk::DataNode::Pointer GetTopLayerNode(mitk::DataStorage::SetOfObjects::ConstPointer nodes,mitk::Point3D worldposition, BaseRenderer* ren);
+
+    /**
+     * \brief Coordinate of the pointer at begin of an interaction
+     */
+    mitk::Point2D m_StartDisplayCoordinate;
 
     /**
      * \brief Coordinate of the pointer at begin of an interaction translated to mm unit
@@ -188,8 +219,6 @@ namespace mitk
      * \brief Current coordinates of the pointer.
      */
     mitk::Point2D m_CurrentDisplayCoordinate;
-
-
     /**
      * \brief Modifier that defines how many slices are scrolled per pixel that the mouse has moved
      *
@@ -218,6 +247,7 @@ namespace mitk
     */
     bool m_InvertScrollDirection;
 
+
     /**
     * Defines scroll behavior.
     * Default is up/down movement of pointer performs zooming
@@ -233,6 +263,7 @@ namespace mitk
     * Defines how the axis of interaction influences move behavior.
     */
     bool m_InvertMoveDirection;
+
 
     /**
     * Defines level/window behavior.
@@ -262,12 +293,14 @@ namespace mitk
      */
     bool m_LinkPlanes;
 
-    SNCVector m_RotatableSNCs; /// all SNCs that currently have CreatedWorldGeometries, that can be rotated.
-    SNCVector
-      m_SNCsToBeRotated; /// all SNCs that will be rotated (exceptions are the ones parallel to the one being clicked)
+    // If set will be filtering all 2d events out. Otherwise all 3d events
+    bool m_Only3D;
 
-    Point3D m_LastCursorPosition; /// used for calculation of the rotation angle
-    Point3D m_CenterOfRotation;   /// used for calculation of the rotation angle
+    SNCVector m_RotatableSNCs; /// all SNCs that currently have CreatedWorldGeometries, that can be rotated.
+    SNCVector m_SNCsToBeRotated; /// all SNCs that will be rotated (exceptions are the ones parallel to the one being clicked)
+
+    Point3D  m_LastCursorPosition; /// used for calculation of the rotation angle
+    Point3D  m_CenterOfRotation; /// used for calculation of the rotation angle
 
     Point2D m_ReferenceCursor;
 
@@ -277,6 +310,25 @@ namespace mitk
 
     Vector3D m_PreviousRotationAxis;
     ScalarType m_PreviousRotationAngle;
+
+     /**
+     * Clock rotation spead for ctrl+arrow rotation
+     */
+    static double m_ClockRotationSpeed;
+    /**
+    * 3D view selection mode
+    */
+    static bool m_MouseRotationMode;
+    static bool s_PanZoomSynchronization;
+    static bool s_PanZoomSynchronizationStudy;
+    bool m_SelectionMode;
+    /// <summary>
+    /// TODO: select world point on multiwidget
+    /// </summary>
+    /**
+    * \brief Coordinate of the picked pointer in the world
+    */
+    //double m_InitialPickedWorldPoint[4];
   };
 }
 #endif

@@ -21,18 +21,18 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkITKImageImport.h>
 #include <mitkImageAccessByItk.h>
 
-#define TestImageType(type, dim)                                                                                       \
-  MITK_TEST_CONDITION(typeid(type) == typeid(TPixel) && dim == VDimension,                                             \
-                      "Checking for correct type itk::Image<" #type "," #dim ">")
+#define TestImageType(type, dim) \
+  MITK_TEST_CONDITION(typeid(type) == typeid(TPixel) && dim == VDimension, "Checking for correct type itk::Image<" #type "," #dim ">")
 
-#define TestVectorImageType(type, dim)                                                                                 \
-  MITK_TEST_CONDITION(typeid(type) == typeid(TPixel) && dim == VDimension &&                                           \
-                        typeid(itk::VariableLengthVector<type>) == typeid(typename ImageType::PixelType),              \
-                      "Checking for correct type itk::VectorImage<" #type "," #dim ">")
+#define TestVectorImageType(type, dim) \
+  MITK_TEST_CONDITION(typeid(type) == typeid(TPixel) && dim == VDimension && \
+                      typeid(itk::VariableLengthVector<type>) == typeid(typename ImageType::PixelType), "Checking for correct type itk::VectorImage<" #type "," #dim ">")
+
 
 class AccessByItkTest
 {
 public:
+
   typedef AccessByItkTest Self;
 
   typedef itk::Image<int, 2> IntImage2D;
@@ -42,8 +42,7 @@ public:
 
   typedef itk::VectorImage<int, 3> IntVectorImage3D;
 
-  enum EImageType
-  {
+  enum EImageType {
     Unknown = 0,
     Int2D,
     Int3D,
@@ -72,9 +71,9 @@ public:
 
     // Test for wrong pixel type (the AccessByItk macro multi-plexes integral
     // types only by default)
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessByItk(mitkIntVectorImage3D, AccessItkImage);
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
 
     // Test for correct handling of vector images
     AccessVectorPixelTypeByItk(mitkIntVectorImage3D, AccessItkImage);
@@ -99,13 +98,13 @@ public:
     AccessFixedDimensionByItk_n(mitkFloatImage3D, AccessItkImage, 3, (Float3D, 2));
 
     // Test for wrong dimension
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedDimensionByItk(mitkFloatImage3D, AccessItkImage, 2);
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
 
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedDimensionByItk_n(mitkFloatImage3D, AccessItkImage, 2, (Float3D, 2));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
   }
 
   void testAccessFixedPixelTypeByItk()
@@ -126,13 +125,14 @@ public:
     AccessFixedPixelTypeByItk_n(mitkFloatImage3D, AccessItkImage, (int)(float), (Float3D, 2));
 
     // Test for wrong pixel type
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedPixelTypeByItk(mitkFloatImage3D, AccessItkImage, (int));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
 
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedPixelTypeByItk_n(mitkFloatImage3D, AccessItkImage, (int), (Float3D, 2));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
+
   }
 
   void testAccessFixedTypeByItk()
@@ -153,22 +153,22 @@ public:
     AccessFixedTypeByItk_n(mitkFloatImage3D, AccessItkImage, (int)(float), (2)(3), (Float3D, 2));
 
     // Test for wrong dimension
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedTypeByItk(mitkFloatImage3D, AccessItkImage, (float), (2));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
 
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedTypeByItk_n(mitkFloatImage3D, AccessItkImage, (float), (2), (Float3D, 2));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
 
     // Test for wrong pixel type
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedTypeByItk(mitkFloatImage3D, AccessItkImage, (int), (3));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
 
-    MITK_TEST_FOR_EXCEPTION_BEGIN(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_BEGIN(const mitk::AccessByItkException&)
     AccessFixedTypeByItk_n(mitkFloatImage3D, AccessItkImage, (int), (3), (Float3D, 2));
-    MITK_TEST_FOR_EXCEPTION_END(mitk::AccessByItkException)
+    MITK_TEST_FOR_EXCEPTION_END(const mitk::AccessByItkException&)
   }
 
   void testAccessTwoImagesFixedDimensionByItk()
@@ -179,24 +179,17 @@ public:
     AccessTwoImagesFixedDimensionByItk(mitkIntImage2D, mitkFloatImage2D, AccessTwoItkImages, 2);
   }
 
-  template <typename TPixel, unsigned int VDimension>
-  void AccessItkImage(const itk::Image<TPixel, VDimension> *,
-                      EImageType param1 = Unknown,
-                      int param2 = 0,
-                      int param3 = 0)
+  template<typename TPixel, unsigned int VDimension>
+  void AccessItkImage(const itk::Image<TPixel, VDimension>*,
+                      EImageType param1 = Unknown, int param2 = 0, int param3 = 0)
   {
     switch (param1)
     {
-      case Int2D:
-        TestImageType(int, 2) break;
-      case Int3D:
-        TestImageType(int, 3) break;
-      case Float2D:
-        TestImageType(float, 2) break;
-      case Float3D:
-        TestImageType(float, 3) break;
-      default:
-        break;
+    case Int2D:   TestImageType(int , 2) break;
+    case Int3D:   TestImageType(int, 3) break;
+    case Float2D: TestImageType(float, 2) break;
+    case Float3D: TestImageType(float, 3) break;
+    default: break;
     }
 
     if (param2)
@@ -209,25 +202,18 @@ public:
     }
   }
 
-  template <typename TPixel, unsigned int VDimension>
-  void AccessItkImage(itk::VectorImage<TPixel, VDimension> *,
-                      EImageType param1 = Unknown,
-                      int param2 = 0,
-                      int param3 = 0)
+  template<typename TPixel, unsigned int VDimension>
+  void AccessItkImage(itk::VectorImage<TPixel, VDimension>*,
+                      EImageType param1 = Unknown, int param2 = 0, int param3 = 0)
   {
     typedef itk::VectorImage<TPixel, VDimension> ImageType;
     switch (param1)
     {
-      case Int2D:
-        TestVectorImageType(int, 2) break;
-      case Int3D:
-        TestVectorImageType(int, 3) break;
-      case Float2D:
-        TestVectorImageType(float, 2) break;
-      case Float3D:
-        TestVectorImageType(float, 3) break;
-      default:
-        break;
+    case Int2D:   TestVectorImageType(int , 2) break;
+    case Int3D:   TestVectorImageType(int, 3) break;
+    case Float2D: TestVectorImageType(float, 2) break;
+    case Float3D: TestVectorImageType(float, 3) break;
+    default: break;
     }
 
     if (param2)
@@ -241,17 +227,18 @@ public:
   }
 
 private:
-  template <typename TPixel1, unsigned int VDimension1, typename TPixel2, unsigned int VDimension2>
-  void AccessTwoItkImages(itk::Image<TPixel1, VDimension1> * /*itkImage1*/,
-                          itk::Image<TPixel2, VDimension2> * /*itkImage2*/)
+
+  template<typename TPixel1, unsigned int VDimension1, typename TPixel2, unsigned int VDimension2>
+  void AccessTwoItkImages(itk::Image<TPixel1,VDimension1>* /*itkImage1*/, itk::Image<TPixel2,VDimension2>* /*itkImage2*/)
   {
-    if (!(typeid(int) == typeid(TPixel1) && typeid(float) == typeid(TPixel2) && VDimension1 == 2 && VDimension2 == 2))
+    if (!(typeid(int) == typeid(TPixel1) && typeid(float) == typeid(TPixel2) &&
+          VDimension1 == 2 && VDimension2 == 2))
     {
       throw std::runtime_error("Image type mismatch");
     }
   }
 
-  template <typename ImageType>
+  template<typename ImageType>
   mitk::Image::Pointer createMitkImage()
   {
     typename ImageType::Pointer itkImage = ImageType::New();
@@ -267,7 +254,7 @@ private:
     return mitk::GrabItkImageMemory(itkImage);
   }
 
-  template <typename ImageType>
+  template<typename ImageType>
   mitk::Image::Pointer createMitkImage(std::size_t vectorLength)
   {
     typename ImageType::Pointer itkImage = ImageType::New();
@@ -283,10 +270,12 @@ private:
     itkImage->Allocate();
     return mitk::GrabItkImageMemory(itkImage);
   }
+
 };
 
-int mitkAccessByItkTest(int /*argc*/, char * /*argv*/ [])
+int mitkAccessByItkTest(int /*argc*/, char* /*argv*/[])
 {
+
   MITK_TEST_BEGIN("AccessByItk")
 
   AccessByItkTest accessTest;

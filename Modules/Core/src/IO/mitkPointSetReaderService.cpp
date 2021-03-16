@@ -17,12 +17,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 // MITK
 #include "mitkPointSetReaderService.h"
 #include "mitkGeometry3DToXML.h"
-#include "mitkIOMimeTypes.h"
 #include "mitkProportionalTimeGeometry.h"
+#include "mitkIOMimeTypes.h"
 
 // STL
-#include <fstream>
 #include <iostream>
+#include <fstream>
 #include <mitkLocaleSwitch.h>
 
 #include <tinyxml.h>
@@ -34,15 +34,14 @@ mitk::PointSetReaderService::PointSetReaderService()
 }
 
 mitk::PointSetReaderService::~PointSetReaderService()
-{
-}
+{}
 
-std::vector<itk::SmartPointer<mitk::BaseData>> mitk::PointSetReaderService::Read()
+std::vector< itk::SmartPointer<mitk::BaseData> > mitk::PointSetReaderService::Read()
 {
   // Switch the current locale to "C"
   LocaleSwitch localeSwitch("C");
 
-  std::vector<itk::SmartPointer<mitk::BaseData>> result;
+  std::vector< itk::SmartPointer<mitk::BaseData> > result;
 
   InputStream stream(this);
 
@@ -50,12 +49,10 @@ std::vector<itk::SmartPointer<mitk::BaseData>> mitk::PointSetReaderService::Read
   stream >> doc;
   if (!doc.Error())
   {
-    TiXmlHandle docHandle(&doc);
-    // unsigned int pointSetCounter(0);
-    for (TiXmlElement *currentPointSetElement =
-           docHandle.FirstChildElement("point_set_file").FirstChildElement("point_set").ToElement();
-         currentPointSetElement != nullptr;
-         currentPointSetElement = currentPointSetElement->NextSiblingElement())
+    TiXmlHandle docHandle( &doc );
+    //unsigned int pointSetCounter(0);
+    for( TiXmlElement* currentPointSetElement = docHandle.FirstChildElement("point_set_file").FirstChildElement("point_set").ToElement();
+         currentPointSetElement != NULL; currentPointSetElement = currentPointSetElement->NextSiblingElement())
     {
       mitk::PointSet::Pointer newPointSet = mitk::PointSet::New();
 
@@ -63,34 +60,33 @@ std::vector<itk::SmartPointer<mitk::BaseData>> mitk::PointSetReaderService::Read
       // else the SetPoint method would already transform the points that we provide it
       mitk::ProportionalTimeGeometry::Pointer timeGeometry = mitk::ProportionalTimeGeometry::New();
 
-      if (currentPointSetElement->FirstChildElement("time_series") != nullptr)
+      if(currentPointSetElement->FirstChildElement("time_series") != NULL)
       {
-        for (TiXmlElement *currentTimeSeries = currentPointSetElement->FirstChildElement("time_series")->ToElement();
-             currentTimeSeries != nullptr;
-             currentTimeSeries = currentTimeSeries->NextSiblingElement())
+        for( TiXmlElement* currentTimeSeries = currentPointSetElement->FirstChildElement("time_series")->ToElement();
+             currentTimeSeries != NULL; currentTimeSeries = currentTimeSeries->NextSiblingElement())
         {
           unsigned int currentTimeStep(0);
-          TiXmlElement *currentTimeSeriesID = currentTimeSeries->FirstChildElement("time_series_id");
+          TiXmlElement* currentTimeSeriesID = currentTimeSeries->FirstChildElement("time_series_id");
 
           currentTimeStep = atoi(currentTimeSeriesID->GetText());
 
-          timeGeometry->Expand(currentTimeStep + 1); // expand (default to identity) in any case
-          TiXmlElement *geometryElem = currentTimeSeries->FirstChildElement("Geometry3D");
-          if (geometryElem)
+          timeGeometry->Expand( currentTimeStep + 1 ); // expand (default to identity) in any case
+          TiXmlElement* geometryElem = currentTimeSeries->FirstChildElement("Geometry3D");
+          if ( geometryElem )
           {
-            Geometry3D::Pointer geometry = Geometry3DToXML::FromXML(geometryElem);
-            if (geometry.IsNotNull())
-            {
-              timeGeometry->SetTimeStepGeometry(geometry, currentTimeStep);
-            }
-            else
-            {
-              MITK_ERROR << "Could not deserialize Geometry3D element.";
-            }
+              Geometry3D::Pointer geometry = Geometry3DToXML::FromXML(geometryElem);
+              if (geometry.IsNotNull())
+              {
+                timeGeometry->SetTimeStepGeometry(geometry,currentTimeStep);
+              }
+              else
+              {
+                MITK_ERROR << "Could not deserialize Geometry3D element.";
+              }
           }
           else
           {
-            MITK_WARN << "Fallback to legacy behavior: defining PointSet geometry as identity";
+              MITK_WARN << "Fallback to legacy behavior: defining PointSet geometry as identity";
           }
 
           newPointSet = this->ReadPoints(newPointSet, currentTimeSeries, currentTimeStep);
@@ -103,7 +99,7 @@ std::vector<itk::SmartPointer<mitk::BaseData>> mitk::PointSetReaderService::Read
 
       newPointSet->SetTimeGeometry(timeGeometry);
 
-      result.push_back(newPointSet.GetPointer());
+      result.push_back( newPointSet.GetPointer() );
     }
   }
   else
@@ -114,11 +110,10 @@ std::vector<itk::SmartPointer<mitk::BaseData>> mitk::PointSetReaderService::Read
   return result;
 }
 
-mitk::BaseGeometry::Pointer mitk::PointSetReaderService::ReadGeometry(TiXmlElement *parentElement)
+mitk::BaseGeometry::Pointer mitk::PointSetReaderService::ReadGeometry(TiXmlElement* parentElement)
 {
-  TiXmlElement *geometryElem = parentElement->FirstChildElement("geometry3d");
-  if (!geometryElem)
-    return nullptr;
+  TiXmlElement* geometryElem = parentElement->FirstChildElement("geometry3d");
+  if (!geometryElem) return nullptr;
 
   // data to generate
   AffineTransform3D::MatrixType matrix;
@@ -130,16 +125,16 @@ mitk::BaseGeometry::Pointer mitk::PointSetReaderService::ReadGeometry(TiXmlEleme
   bool somethingMissing(false);
 
   // find data in xml structure
-  TiXmlElement *imageGeometryElem = geometryElem->FirstChildElement("image_geometry");
+  TiXmlElement* imageGeometryElem = geometryElem->FirstChildElement("image_geometry");
   if (imageGeometryElem)
   {
     std::string igs = imageGeometryElem->GetText();
-    isImageGeometry = igs == "true" || igs == "TRUE" || igs == "1";
+    isImageGeometry = igs == "true" || igs == "TRUE" || igs =="1";
   }
   else
     somethingMissing = true;
 
-  TiXmlElement *frameOfReferenceElem = geometryElem->FirstChildElement("frame_of_reference_id");
+  TiXmlElement* frameOfReferenceElem = geometryElem->FirstChildElement("frame_of_reference_id");
   if (frameOfReferenceElem)
   {
     frameOfReferenceID = atoi(frameOfReferenceElem->GetText());
@@ -147,16 +142,16 @@ mitk::BaseGeometry::Pointer mitk::PointSetReaderService::ReadGeometry(TiXmlEleme
   else
     somethingMissing = true;
 
-  TiXmlElement *indexToWorldElem = geometryElem->FirstChildElement("index_to_world");
+  TiXmlElement* indexToWorldElem = geometryElem->FirstChildElement("index_to_world");
   if (indexToWorldElem)
   {
-    TiXmlElement *matrixElem = indexToWorldElem->FirstChildElement("matrix3x3");
-    TiXmlElement *offsetElem = indexToWorldElem->FirstChildElement("offset");
+    TiXmlElement* matrixElem = indexToWorldElem->FirstChildElement("matrix3x3");
+    TiXmlElement* offsetElem = indexToWorldElem->FirstChildElement("offset");
     if (indexToWorldElem && offsetElem)
     {
-      TiXmlElement *col0 = matrixElem->FirstChildElement("column_0");
-      TiXmlElement *col1 = matrixElem->FirstChildElement("column_1");
-      TiXmlElement *col2 = matrixElem->FirstChildElement("column_2");
+      TiXmlElement* col0 = matrixElem->FirstChildElement("column_0");
+      TiXmlElement* col1 = matrixElem->FirstChildElement("column_1");
+      TiXmlElement* col2 = matrixElem->FirstChildElement("column_2");
 
       if (col0 && col1 && col2)
       {
@@ -182,11 +177,11 @@ mitk::BaseGeometry::Pointer mitk::PointSetReaderService::ReadGeometry(TiXmlEleme
     else
       somethingMissing = true;
 
-    TiXmlElement *boundsElem = geometryElem->FirstChildElement("bounds");
+    TiXmlElement* boundsElem = geometryElem->FirstChildElement("bounds");
     if (boundsElem)
     {
-      TiXmlElement *minBoundsElem = boundsElem->FirstChildElement("min");
-      TiXmlElement *maxBoundsElem = boundsElem->FirstChildElement("max");
+      TiXmlElement* minBoundsElem = boundsElem->FirstChildElement("min");
+      TiXmlElement* maxBoundsElem = boundsElem->FirstChildElement("max");
 
       if (minBoundsElem && maxBoundsElem)
       {
@@ -215,39 +210,38 @@ mitk::BaseGeometry::Pointer mitk::PointSetReaderService::ReadGeometry(TiXmlEleme
   else
   {
     Geometry3D::Pointer g = Geometry3D::New();
-    g->SetImageGeometry(isImageGeometry);
-    g->SetFrameOfReferenceID(frameOfReferenceID);
+    g->SetImageGeometry( isImageGeometry );
+    g->SetFrameOfReferenceID( frameOfReferenceID );
     g->SetBounds(bounds);
 
     AffineTransform3D::Pointer transform = AffineTransform3D::New();
     transform->SetMatrix(matrix);
     transform->SetOffset(offset);
 
-    g->SetIndexToWorldTransform(transform);
+    g->SetIndexToWorldTransform( transform );
 
     return g.GetPointer();
   }
 }
 
 mitk::PointSet::Pointer mitk::PointSetReaderService::ReadPoints(mitk::PointSet::Pointer newPointSet,
-                                                                TiXmlElement *currentTimeSeries,
-                                                                unsigned int currentTimeStep)
+                                                               TiXmlElement* currentTimeSeries, unsigned int currentTimeStep)
 {
-  if (currentTimeSeries->FirstChildElement("point") != nullptr)
+  if(currentTimeSeries->FirstChildElement("point") != NULL)
   {
-    for (TiXmlElement *currentPoint = currentTimeSeries->FirstChildElement("point")->ToElement(); currentPoint != nullptr;
-         currentPoint = currentPoint->NextSiblingElement())
+    for( TiXmlElement* currentPoint = currentTimeSeries->FirstChildElement("point")->ToElement();
+      currentPoint != NULL; currentPoint = currentPoint->NextSiblingElement())
     {
       unsigned int id(0);
-      auto spec((mitk::PointSpecificationType)0);
+      mitk::PointSpecificationType spec((mitk::PointSpecificationType) 0);
       double x(0.0);
       double y(0.0);
       double z(0.0);
 
       id = atoi(currentPoint->FirstChildElement("id")->GetText());
-      if (currentPoint->FirstChildElement("specification") != nullptr)
+      if(currentPoint->FirstChildElement("specification") != NULL)
       {
-        spec = (mitk::PointSpecificationType)atoi(currentPoint->FirstChildElement("specification")->GetText());
+        spec = (mitk::PointSpecificationType) atoi(currentPoint->FirstChildElement("specification")->GetText());
       }
       x = atof(currentPoint->FirstChildElement("x")->GetText());
       y = atof(currentPoint->FirstChildElement("y")->GetText());
@@ -260,20 +254,20 @@ mitk::PointSet::Pointer mitk::PointSetReaderService::ReadPoints(mitk::PointSet::
   }
   else
   {
-    if (currentTimeStep != newPointSet->GetTimeSteps() + 1)
+    if(currentTimeStep != newPointSet->GetTimeSteps()+1)
     {
-      newPointSet->Expand(currentTimeStep + 1); // expand time step series with empty time step
+      newPointSet->Expand(currentTimeStep+1);     // expand time step series with empty time step
     }
   }
   return newPointSet;
 }
 
-mitk::PointSetReaderService::PointSetReaderService(const mitk::PointSetReaderService &other)
+mitk::PointSetReaderService::PointSetReaderService(const mitk::PointSetReaderService& other)
   : mitk::AbstractFileReader(other)
 {
 }
 
-mitk::PointSetReaderService *mitk::PointSetReaderService::Clone() const
+mitk::PointSetReaderService* mitk::PointSetReaderService::Clone() const
 {
   return new mitk::PointSetReaderService(*this);
 }

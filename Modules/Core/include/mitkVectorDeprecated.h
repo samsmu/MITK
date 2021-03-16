@@ -63,19 +63,19 @@ template <>
 class VectorTraits<itk::SizeValueType[3]>
 {
 public:
-	typedef itk::SizeValueType ValueType;
+  typedef itk::SizeValueType ValueType;
 };
 template <>
 class VectorTraits<itk::IndexValueType[3]>
 {
 public:
-	typedef itk::IndexValueType ValueType;
+  typedef itk::IndexValueType ValueType;
 };
 template <>
 class VectorTraits<unsigned int[3]>
 {
 public:
-	typedef unsigned int ValueType;
+  typedef unsigned int ValueType;
 };
 template <>
 class VectorTraits<float[3]>

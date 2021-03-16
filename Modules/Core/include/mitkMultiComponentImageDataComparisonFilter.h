@@ -18,13 +18,14 @@ See LICENSE.txt or http://www.mitk.org for details.
 #define MITKMULTICOMPONENTIMAGEDATACOMPARISONFILTER_H
 
 // mitk includes
-#include "mitkCompareImageDataFilter.h"
 #include "mitkImageToImageFilter.h"
+#include "mitkCompareImageDataFilter.h"
 
-// struct CompareFilterResults;
+//struct CompareFilterResults;
 
 namespace mitk
 {
+
   /*! Documentation:
   * \brief Filter for comparing two multi channel mitk::Image objects by channel wise by pixel values
   *
@@ -33,18 +34,19 @@ namespace mitk
   class MITKCORE_EXPORT MultiComponentImageDataComparisonFilter : public ImageToImageFilter
   {
   public:
+
     mitkClassMacro(MultiComponentImageDataComparisonFilter, ImageToImageFilter);
     itkSimpleNewMacro(Self);
 
     /*! /brief
     */
-    void SetTestImage(const Image *_arg);
-    const Image *GetTestImage();
+    void SetTestImage( const Image *_arg);
+    const Image* GetTestImage();
 
     /*! /brief
     */
-    void SetValidImage(const Image *_arg);
-    const Image *GetValidImage();
+    void SetValidImage( const Image *_arg);
+    const Image* GetValidImage();
 
     /*! /brief Specify the tolerance of the image data comparison
         /param Tolerance Default is 0.0f. */
@@ -53,11 +55,11 @@ namespace mitk
 
     /*! /brief
     */
-    void SetCompareFilterResult(CompareFilterResults *results);
+    void SetCompareFilterResult( CompareFilterResults* results);
 
     /*! /brief Get the detailed results of the comparison run
     * /sa CompareFilterResults */
-    CompareFilterResults *GetCompareFilterResult();
+    CompareFilterResults* GetCompareFilterResult();
 
     /*! /brief Get the result of the comparison
 
@@ -67,22 +69,23 @@ namespace mitk
     * Returns false also if the itk ComparisionImageFilter raises an exception during update.
 
     * /param threshold Allowed percentage of pixels with differences (between 0.0...1.0) */
-    bool GetResult(double threshold = 0.0f);
+    bool GetResult( double threshold = 0.0f);
 
   protected:
+
     MultiComponentImageDataComparisonFilter();
 
-    ~MultiComponentImageDataComparisonFilter() override;
+    ~MultiComponentImageDataComparisonFilter();
 
-    void GenerateData() override;
+    virtual void GenerateData() override;
 
-    template <typename TPixel>
-    void CompareMultiComponentImage(const Image *testImage, const Image *validImage);
+    template < typename TPixel >
+    void CompareMultiComponentImage( const Image* testImage, const Image* validImage);
 
     double m_Tolerance;
     bool m_CompareResult;
 
-    CompareFilterResults *m_CompareDetails;
+    CompareFilterResults* m_CompareDetails;
   };
 } // end namespace mitk
 

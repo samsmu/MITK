@@ -16,80 +16,321 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkSurfaceVtkMapper2D.h"
 
-// MITK includes
-#include "mitkVtkPropRenderer.h"
-#include <mitkCoreServices.h>
+//mitk includes
 #include <mitkDataNode.h>
+#include <mitkProperties.h>
+#include "mitkVtkPropRenderer.h"
+#include <mitkSurface.h>
+#include <mitkLookupTableProperty.h>
+#include <mitkVtkScalarModeProperty.h>
+#include <mitkTransferFunctionProperty.h>
+#include <mitkCoreServices.h>
 #include <mitkIPropertyAliases.h>
 #include <mitkIPropertyDescriptions.h>
-#include <mitkLookupTableProperty.h>
-#include <mitkProperties.h>
-#include <mitkSurface.h>
-#include <mitkTransferFunctionProperty.h>
-#include <mitkVtkScalarModeProperty.h>
 
-// VTK includes
+//vtk includes
 #include <vtkActor.h>
-#include <vtkArrowSource.h>
-#include <vtkAssembly.h>
 #include <vtkCutter.h>
-#include <vtkGlyph3D.h>
 #include <vtkLookupTable.h>
 #include <vtkPlane.h>
-#include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkAssembly.h>
+#include <vtkPointData.h>
+#include <vtkGlyph3D.h>
 #include <vtkReverseSense.h>
+#include <vtkArrowSource.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkSphereTree.h>
+#include <vtkSMPThreadLocal.h>
+#include <vtkSMPThreadLocalObject.h>
+#include <vtkNonMergingPointLocator.h>
+#include <vtkGenericCell.h>
+#include <vtkDoubleArray.h>
+#include <vtkSMPTools.h>
+#include <vtkMultiPieceDataSet.h>
+#include <vtkCellData.h>
+#include <vtkAppendPolyData.h>
+
+struct vtkLocalDataType
+{
+  vtkPolyData* Output;
+  vtkNonMergingPointLocator* Locator;
+  vtkCellData* NewVertsData;
+  vtkCellData* NewLinesData;
+  vtkCellData* NewPolysData;
+
+  vtkLocalDataType()
+    : Output(nullptr)
+    , Locator(nullptr)
+  {
+  }
+};
+
+struct PlaneCutFunctor {
+  vtkPolyData* polyData;
+
+  vtkDataSet* Input;
+  vtkPoints* InPoints;
+  int PointsType;
+  vtkDataObject* Output;
+  vtkPlane* Plane;
+  vtkSphereTree* SphereTree;
+  const unsigned char* Selected;
+  unsigned char* InOutArray;
+
+  vtkSMPThreadLocal<vtkDoubleArray*> CellScalars;
+  vtkSMPThreadLocalObject<vtkGenericCell> Cell;
+  vtkSMPThreadLocalObject<vtkPoints> NewPts;
+  vtkSMPThreadLocalObject<vtkCellArray> NewVerts;
+  vtkSMPThreadLocalObject<vtkCellArray> NewLines;
+  vtkSMPThreadLocalObject<vtkCellArray> NewPolys;
+
+  vtkSMPThreadLocal<vtkLocalDataType> LocalData;
+
+  double* Origin;
+  double* Normal;
+  vtkIdType NumSelected;
+  bool Interpolate;
+  bool GeneratePolygons;
+
+  void SetInPoints(vtkPoints* inPts)
+  {
+    this->InPoints = inPts;
+    inPts->Register(nullptr);
+    this->PointsType = this->InPoints->GetDataType();
+  }
+
+  void operator() (vtkIdType cellId, vtkIdType endCellId)
+  {
+    vtkLocalDataType& localData = this->LocalData.Local();
+    vtkPointLocator* loc = localData.Locator;
+
+    vtkGenericCell* cell = this->Cell.Local();
+    vtkDoubleArray* cellScalars = this->CellScalars.Local();
+    vtkPointData* inPD = this->Input->GetPointData();
+    vtkCellData* inCD = this->Input->GetCellData();
+
+    vtkPolyData* output = localData.Output;
+    vtkPointData* outPD = nullptr;
+
+    vtkCellArray* newVerts = this->NewVerts.Local();
+    vtkCellArray* newLines = this->NewLines.Local();
+    vtkCellArray* newPolys = this->NewPolys.Local();
+
+    vtkCellData* newVertsData = nullptr;
+    vtkCellData* newLinesData = nullptr;
+    vtkCellData* newPolysData = localData.NewPolysData;
+
+    vtkCellData* tmpOutCD = nullptr;
+    outPD = output->GetPointData();
+
+    double* s;
+    int i, numPts;
+    vtkPoints* cellPoints;
+    const unsigned char* selected = this->Selected + cellId;
+
+    for (; cellId < endCellId; ++cellId) {
+      if ((*selected++) != 0) {
+
+        this->Input->GetCell(cellId, cell);
+        numPts = cell->GetNumberOfPoints();
+        cellScalars->SetNumberOfTuples(numPts);
+        s = cellScalars->GetPointer(0);
+        cellPoints = cell->GetPoints();
+
+        for (i = 0; i < numPts; i++) {
+          *s++ = this->Plane->FunctionValue(cellPoints->GetPoint(i));
+        }
+
+        tmpOutCD = newPolysData;
+        cell->Contour(0., cellScalars, loc, newVerts, newLines, newPolys, inPD, outPD, inCD, cellId, tmpOutCD);
+      }
+    }
+  }
+
+  PlaneCutFunctor(vtkDataSet* input, vtkDataObject* output,
+      vtkPlane* plane, vtkSphereTree* tree,
+      double* origin, double* normal)
+  {
+    this->Input = input;
+    this->InPoints = nullptr;
+    this->Output = output;
+    this->Plane = plane;
+    this->SphereTree = tree;
+    this->InOutArray = nullptr;
+    this->Origin = origin;
+    this->Normal = normal;
+
+    this->polyData = vtkPolyData::SafeDownCast(input);
+    if (this->polyData->NeedToBuildCells()) {
+      this->polyData->BuildCells();
+    }
+    this->SetInPoints(this->polyData->GetPoints());
+  }
+
+  virtual ~PlaneCutFunctor()
+  {
+    vtkSMPThreadLocal<vtkLocalDataType>::iterator dataIter = this->LocalData.begin();
+    while (dataIter != this->LocalData.end()) {
+      (*dataIter).NewVertsData->Delete();
+      (*dataIter).NewLinesData->Delete();
+      (*dataIter).NewPolysData->Delete();
+      ++dataIter;
+    }
+
+    vtkSMPThreadLocal<vtkDoubleArray*>::iterator cellScalarsIter = this->CellScalars.begin();
+    while (cellScalarsIter != this->CellScalars.end()) {
+      (*cellScalarsIter)->Delete();
+      ++cellScalarsIter;
+    }
+
+    dataIter = this->LocalData.begin();
+    while (dataIter != this->LocalData.end()) {
+      (*dataIter).Output->Delete();
+      (*dataIter).Locator->Delete();
+      ++dataIter;
+    }
+
+    if (this->InPoints) {
+      this->InPoints->Delete();
+    }
+
+    delete[] this->InOutArray;
+  }
+
+  void BuildAccelerationStructure()
+  {
+    this->Selected = this->SphereTree->SelectPlane(this->Origin, this->Normal, this->NumSelected);
+  }
+
+  static void Execute(vtkDataSet* input, vtkDataObject* output,
+      vtkPlane* plane, vtkSphereTree* tree,
+      double* origin, double* normal)
+  {
+    vtkIdType numCells = input->GetNumberOfCells();
+    PlaneCutFunctor functor(input, output, plane, tree, origin, normal);
+    functor.BuildAccelerationStructure();
+    vtkSMPTools::For(0, numCells, functor);
+  }
+  
+  // Called at the start of each thread
+  void Initialize()
+  {
+    vtkLocalDataType& localData = this->LocalData.Local();
+
+    localData.Output = vtkPolyData::New();
+    vtkPolyData* output = localData.Output;
+
+    localData.Locator = vtkNonMergingPointLocator::New();
+    vtkPointLocator* locator = localData.Locator;
+
+    vtkIdType numCells = this->Input->GetNumberOfCells();
+
+    vtkPoints*& newPts = this->NewPts.Local();
+    newPts->SetDataType(VTK_FLOAT);
+    output->SetPoints(newPts);
+
+    vtkIdType estimatedSize = static_cast<vtkIdType>(sqrt(static_cast<double>(numCells)));
+    estimatedSize = estimatedSize / 1024 * 1024; // Multiple of 1024
+    estimatedSize = (estimatedSize < 1024 ? 1024 : estimatedSize);
+
+    newPts->Allocate(estimatedSize, estimatedSize);
+
+    // Bounds are not important for non-merging locator
+    double bounds[6];
+    bounds[0] = bounds[2] = bounds[4] = (VTK_FLOAT_MIN);
+    bounds[1] = bounds[3] = bounds[5] = (VTK_FLOAT_MAX);
+    locator->InitPointInsertion(newPts, bounds, this->Input->GetNumberOfPoints());
+
+    vtkCellArray*& newVerts = this->NewVerts.Local();
+    newVerts->Allocate(estimatedSize, estimatedSize);
+    output->SetVerts(newVerts);
+
+    vtkCellArray*& newLines = this->NewLines.Local();
+    newLines->Allocate(estimatedSize, estimatedSize);
+    output->SetLines(newLines);
+
+    vtkCellArray*& newPolys = this->NewPolys.Local();
+    newPolys->Allocate(estimatedSize, estimatedSize);
+    output->SetPolys(newPolys);
+
+    vtkDoubleArray*& cellScalars = this->CellScalars.Local();
+    cellScalars = vtkDoubleArray::New();
+    cellScalars->SetNumberOfComponents(1);
+    cellScalars->Allocate(VTK_CELL_SIZE);
+
+    vtkPointData* outPd = output->GetPointData();
+    vtkCellData* outCd = output->GetCellData();
+    vtkPointData* inPd = this->Input->GetPointData();
+    vtkCellData* inCd = this->Input->GetCellData();
+
+    outPd->InterpolateAllocate(inPd, estimatedSize, estimatedSize);
+    outCd->CopyAllocate(inCd, estimatedSize, estimatedSize);
+
+    localData.NewVertsData = vtkCellData::New();
+    localData.NewLinesData = vtkCellData::New();
+    localData.NewPolysData = vtkCellData::New();
+    localData.NewVertsData->CopyAllocate(outCd);
+    localData.NewLinesData->CopyAllocate(outCd);
+    localData.NewPolysData->CopyAllocate(outCd);
+  }
+
+  // Called after all threads are finished
+  void Reduce()
+  {
+    // Recover multipiece output
+    vtkMultiPieceDataSet* mp = vtkMultiPieceDataSet::SafeDownCast(this->Output);
+
+    // Remove useless FieldData Array from multipiece
+    // Created by automatic pass data in pipeline
+    vtkFieldData* mpFieldData = mp->GetFieldData();
+    for (int i = mpFieldData->GetNumberOfArrays() - 1; i >= 0; i--) {
+      mpFieldData->RemoveArray(i);
+    }
+
+    // Create the final multi-piece
+    int count = 0;
+    vtkSMPThreadLocal<vtkLocalDataType>::iterator outIter = this->LocalData.begin();
+    while (outIter != this->LocalData.end()) {
+      vtkPolyData* output = (*outIter).Output;
+      mp->SetPiece(count++, output);
+      output->GetFieldData()->PassData(this->Input->GetFieldData());
+      ++outIter;
+    }
+
+    outIter = this->LocalData.begin();
+    while (outIter != this->LocalData.end()) {
+      vtkPolyData* output = (*outIter).Output;
+      vtkCellArray* newVerts = output->GetVerts();
+      vtkCellArray* newLines = output->GetLines();
+      vtkCellArray* newPolys = output->GetPolys();
+      vtkCellData* outCD = output->GetCellData();
+      vtkCellData* newVertsData = (*outIter).NewVertsData;
+      vtkCellData* newLinesData = (*outIter).NewLinesData;
+      vtkCellData* newPolysData = (*outIter).NewPolysData;
+
+      // Reconstruct cell data
+      outCD->CopyData(newVertsData, 0, newVerts->GetNumberOfCells(), 0);
+      vtkIdType offset = newVerts->GetNumberOfCells();
+      outCD->CopyData(newLinesData, offset, newLines->GetNumberOfCells(), 0);
+      offset += newLines->GetNumberOfCells();
+      outCD->CopyData(newPolysData, offset, newPolys->GetNumberOfCells(), 0);
+      ++outIter;
+    }
+  }
+};
 
 // constructor LocalStorage
 mitk::SurfaceVtkMapper2D::LocalStorage::LocalStorage()
 {
-  m_Mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  m_Mapper = vtkSmartPointer<vtkOpenGLPolyDataMapper>::New();
   m_Mapper->ScalarVisibilityOff();
   m_Actor = vtkSmartPointer<vtkActor>::New();
-  m_PropAssembly = vtkSmartPointer<vtkAssembly>::New();
-  m_PropAssembly->AddPart(m_Actor);
+  m_PropAssembly = vtkSmartPointer <vtkAssembly>::New();
+  m_PropAssembly->AddPart( m_Actor );
   m_CuttingPlane = vtkSmartPointer<vtkPlane>::New();
-  m_Cutter = vtkSmartPointer<vtkCutter>::New();
-  m_Cutter->SetCutFunction(m_CuttingPlane);
-  m_Mapper->SetInputConnection(m_Cutter->GetOutputPort());
-
-  m_NormalGlyph = vtkSmartPointer<vtkGlyph3D>::New();
-
-  m_InverseNormalGlyph = vtkSmartPointer<vtkGlyph3D>::New();
-
-  // Source for the glyph filter
-  m_ArrowSource = vtkSmartPointer<vtkArrowSource>::New();
-  // set small default values for fast rendering
-  m_ArrowSource->SetTipRadius(0.05);
-  m_ArrowSource->SetTipLength(0.20);
-  m_ArrowSource->SetTipResolution(5);
-  m_ArrowSource->SetShaftResolution(5);
-  m_ArrowSource->SetShaftRadius(0.01);
-
-  m_NormalGlyph->SetSourceConnection(m_ArrowSource->GetOutputPort());
-  m_NormalGlyph->SetVectorModeToUseNormal();
-  m_NormalGlyph->OrientOn();
-
-  m_InverseNormalGlyph->SetSourceConnection(m_ArrowSource->GetOutputPort());
-  m_InverseNormalGlyph->SetVectorModeToUseNormal();
-  m_InverseNormalGlyph->OrientOn();
-
-  m_NormalMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-  m_NormalMapper->SetInputConnection(m_NormalGlyph->GetOutputPort());
-  m_NormalMapper->ScalarVisibilityOff();
-
-  m_InverseNormalMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-  m_InverseNormalMapper->SetInputConnection(m_NormalGlyph->GetOutputPort());
-  m_InverseNormalMapper->ScalarVisibilityOff();
-
-  m_NormalActor = vtkSmartPointer<vtkActor>::New();
-  m_NormalActor->SetMapper(m_NormalMapper);
-
-  m_InverseNormalActor = vtkSmartPointer<vtkActor>::New();
-  m_InverseNormalActor->SetMapper(m_InverseNormalMapper);
-
-  m_ReverseSense = vtkSmartPointer<vtkReverseSense>::New();
+  m_SphereTree = nullptr;
+  m_EmptyPolyData = vtkSmartPointer<vtkPolyData>::New();
 }
 
 // destructor LocalStorage
@@ -97,9 +338,9 @@ mitk::SurfaceVtkMapper2D::LocalStorage::~LocalStorage()
 {
 }
 
-const mitk::Surface *mitk::SurfaceVtkMapper2D::GetInput() const
+const mitk::Surface* mitk::SurfaceVtkMapper2D::GetInput() const
 {
-  return static_cast<const mitk::Surface *>(GetDataNode()->GetData());
+  return static_cast<const mitk::Surface * > ( GetDataNode()->GetData() );
 }
 
 // constructor PointSetVtkMapper2D
@@ -112,60 +353,56 @@ mitk::SurfaceVtkMapper2D::~SurfaceVtkMapper2D()
 }
 
 // reset mapper so that nothing is displayed e.g. toggle visiblity of the propassembly
-void mitk::SurfaceVtkMapper2D::ResetMapper(BaseRenderer *renderer)
+void mitk::SurfaceVtkMapper2D::ResetMapper( BaseRenderer* renderer )
 {
   LocalStorage *ls = m_LSH.GetLocalStorage(renderer);
   ls->m_PropAssembly->VisibilityOff();
 }
 
-vtkProp *mitk::SurfaceVtkMapper2D::GetVtkProp(mitk::BaseRenderer *renderer)
+vtkProp* mitk::SurfaceVtkMapper2D::GetVtkProp(mitk::BaseRenderer * renderer)
 {
   LocalStorage *ls = m_LSH.GetLocalStorage(renderer);
   return ls->m_PropAssembly;
 }
 
-void mitk::SurfaceVtkMapper2D::Update(mitk::BaseRenderer *renderer)
+void mitk::SurfaceVtkMapper2D::Update(mitk::BaseRenderer* renderer)
 {
-  const mitk::DataNode *node = GetDataNode();
-  if (node == nullptr)
+  const mitk::DataNode* node = GetDataNode();
+  if( node == NULL )
     return;
   bool visible = true;
   node->GetVisibility(visible, renderer, "visible");
-  if (!visible)
+  if ( !visible )
     return;
 
-  auto *surface = static_cast<mitk::Surface *>(node->GetData());
-  if (surface == nullptr)
+  mitk::Surface* surface  = static_cast<mitk::Surface *>( node->GetData() );
+  if ( surface == NULL )
     return;
 
   // Calculate time step of the input data for the specified renderer (integer value)
-  this->CalculateTimeStep(renderer);
+  this->CalculateTimeStep( renderer );
 
   // Check if time step is valid
   const mitk::TimeGeometry *dataTimeGeometry = surface->GetTimeGeometry();
-  if ((dataTimeGeometry == nullptr) || (dataTimeGeometry->CountTimeSteps() == 0) ||
-      (!dataTimeGeometry->IsValidTimeStep(this->GetTimestep())))
+  if ( ( dataTimeGeometry == NULL )
+       || ( dataTimeGeometry->CountTimeSteps() == 0 )
+       || ( !dataTimeGeometry->IsValidTimeStep( this->GetTimestep() ) ) )
   {
     return;
   }
 
   surface->UpdateOutputInformation();
-  LocalStorage *localStorage = m_LSH.GetLocalStorage(renderer);
+  LocalStorage* localStorage = m_LSH.GetLocalStorage(renderer);
 
-  // check if something important has changed and we need to rerender
-  if ((localStorage->m_LastUpdateTime < node->GetMTime()) // was the node modified?
-      ||
-      (localStorage->m_LastUpdateTime < surface->GetPipelineMTime()) // Was the data modified?
-      ||
-      (localStorage->m_LastUpdateTime <
-       renderer->GetCurrentWorldPlaneGeometryUpdateTime()) // was the geometry modified?
-      ||
-      (localStorage->m_LastUpdateTime < renderer->GetCurrentWorldPlaneGeometry()->GetMTime()) ||
-      (localStorage->m_LastUpdateTime < node->GetPropertyList()->GetMTime()) // was a property modified?
-      ||
-      (localStorage->m_LastUpdateTime < node->GetPropertyList(renderer)->GetMTime()))
+  //check if something important has changed and we need to rerender
+  if ( (localStorage->m_LastUpdateTime < node->GetMTime()) //was the node modified?
+       || (localStorage->m_LastUpdateTime < surface->GetPipelineMTime()) //Was the data modified?
+       || (localStorage->m_LastUpdateTime < renderer->GetCurrentWorldPlaneGeometryUpdateTime()) //was the geometry modified?
+       || (localStorage->m_LastUpdateTime < renderer->GetCurrentWorldPlaneGeometry()->GetMTime())
+       || (localStorage->m_LastUpdateTime < node->GetPropertyList()->GetMTime()) //was a property modified?
+       || (localStorage->m_LastUpdateTime < node->GetPropertyList(renderer)->GetMTime()) )
   {
-    this->GenerateDataForRenderer(renderer);
+    this->GenerateDataForRenderer( renderer );
   }
 
   // since we have checked that nothing important has changed, we can set
@@ -173,33 +410,39 @@ void mitk::SurfaceVtkMapper2D::Update(mitk::BaseRenderer *renderer)
   localStorage->m_LastUpdateTime.Modified();
 }
 
-void mitk::SurfaceVtkMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *renderer)
+void mitk::SurfaceVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *renderer )
 {
-  const DataNode *node = GetDataNode();
-  auto *surface = static_cast<Surface *>(node->GetData());
+  LocalStorage* localStorage = m_LSH.GetLocalStorage(renderer);
+
+  if (renderer->is3dDrawingLocked()) {
+    localStorage->m_Mapper->SetInputData(localStorage->m_EmptyPolyData);
+    return;
+  }
+
+  const DataNode* node = GetDataNode();
+  Surface* surface  = static_cast<Surface *>( node->GetData() );
   const TimeGeometry *dataTimeGeometry = surface->GetTimeGeometry();
-  LocalStorage *localStorage = m_LSH.GetLocalStorage(renderer);
 
-  ScalarType time = renderer->GetTime();
-  int timestep = 0;
+  ScalarType time =renderer->GetTime();
+  int timestep=0;
 
-  if (time > itk::NumericTraits<ScalarType>::NonpositiveMin())
-    timestep = dataTimeGeometry->TimePointToTimeStep(time);
+  if( time > itk::NumericTraits<ScalarType>::NonpositiveMin() )
+    timestep = dataTimeGeometry->TimePointToTimeStep( time );
 
-  vtkSmartPointer<vtkPolyData> inputPolyData = surface->GetVtkPolyData(timestep);
-  if ((inputPolyData == nullptr) || (inputPolyData->GetNumberOfPoints() < 1))
+  vtkSmartPointer<vtkPolyData> inputPolyData = surface->GetVtkPolyData( timestep );
+  if ((inputPolyData == NULL) || (inputPolyData->GetNumberOfPoints() < 1))
     return;
 
-  // apply color and opacity read from the PropertyList
+  //apply color and opacity read from the PropertyList
   this->ApplyAllProperties(renderer);
 
-  const PlaneGeometry *planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
-  if ((planeGeometry == nullptr) || (!planeGeometry->IsValid()) || (!planeGeometry->HasReferenceGeometry()))
+  const PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  if( ( planeGeometry == NULL ) || ( !planeGeometry->IsValid() ) || ( !planeGeometry->HasReferenceGeometry() ))
   {
     return;
   }
 
-  if (localStorage->m_Actor->GetMapper() == nullptr)
+  if (localStorage->m_Actor->GetMapper() == NULL)
     localStorage->m_Actor->SetMapper(localStorage->m_Mapper);
 
   double origin[3];
@@ -214,143 +457,108 @@ void mitk::SurfaceVtkMapper2D::GenerateDataForRenderer(mitk::BaseRenderer *rende
 
   localStorage->m_CuttingPlane->SetOrigin(origin);
   localStorage->m_CuttingPlane->SetNormal(normal);
-  // Transform the data according to its geometry.
-  // See UpdateVtkTransform documentation for details.
+  //Transform the data according to its geometry.
+  //See UpdateVtkTransform documentation for details.
   vtkSmartPointer<vtkLinearTransform> vtktransform = GetDataNode()->GetVtkTransform(this->GetTimestep());
   vtkSmartPointer<vtkTransformPolyDataFilter> filter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
   filter->SetTransform(vtktransform);
   filter->SetInputData(inputPolyData);
-  localStorage->m_Cutter->SetInputConnection(filter->GetOutputPort());
-  localStorage->m_Cutter->Update();
 
-  bool generateNormals = false;
-  node->GetBoolProperty("draw normals 2D", generateNormals);
-  if (generateNormals)
-  {
-    localStorage->m_NormalGlyph->SetInputConnection(localStorage->m_Cutter->GetOutputPort());
-    localStorage->m_NormalGlyph->Update();
-
-    localStorage->m_NormalMapper->SetInputConnection(localStorage->m_NormalGlyph->GetOutputPort());
-
-    localStorage->m_PropAssembly->AddPart(localStorage->m_NormalActor);
-  }
-  else
-  {
-    localStorage->m_NormalGlyph->SetInputConnection(nullptr);
-    localStorage->m_PropAssembly->RemovePart(localStorage->m_NormalActor);
-  }
-
-  bool generateInverseNormals = false;
-  node->GetBoolProperty("invert normals", generateInverseNormals);
-  if (generateInverseNormals)
-  {
-    localStorage->m_ReverseSense->SetInputConnection(localStorage->m_Cutter->GetOutputPort());
-    localStorage->m_ReverseSense->ReverseCellsOff();
-    localStorage->m_ReverseSense->ReverseNormalsOn();
-
-    localStorage->m_InverseNormalGlyph->SetInputConnection(localStorage->m_ReverseSense->GetOutputPort());
-    localStorage->m_InverseNormalGlyph->Update();
-
-    localStorage->m_InverseNormalMapper->SetInputConnection(localStorage->m_InverseNormalGlyph->GetOutputPort());
-
-    localStorage->m_PropAssembly->AddPart(localStorage->m_InverseNormalActor);
-  }
-  else
-  {
-    localStorage->m_ReverseSense->SetInputConnection(nullptr);
-    localStorage->m_PropAssembly->RemovePart(localStorage->m_InverseNormalActor);
-  }
-}
-
-void mitk::SurfaceVtkMapper2D::FixupLegacyProperties(PropertyList *properties)
-{
-  // Before bug 18528, "line width" was an IntProperty, now it is a FloatProperty
-  float lineWidth = 1.0f;
-  if (!properties->GetFloatProperty("line width", lineWidth))
-  {
-    int legacyLineWidth = lineWidth;
-    if (properties->GetIntProperty("line width", legacyLineWidth))
-    {
-      properties->ReplaceProperty("line width", FloatProperty::New(static_cast<float>(legacyLineWidth)));
+  // Build Sphere Tree
+  if (localStorage->m_SphereTree == nullptr) {
+    localStorage->m_SphereTree = vtkSmartPointer<vtkSphereTree>::New();
+    if (inputPolyData->NeedToBuildCells()) {
+      inputPolyData->BuildCells();
     }
+    // Should be OK to init with polydata only once. Mitk logic recreates mappers when data changes.
+    localStorage->m_SphereTree->SetDataSet(inputPolyData);
   }
+  localStorage->m_SphereTree->Build();
+
+  // Iterate over cells and map them onto polyData
+  vtkSmartPointer<vtkMultiPieceDataSet> outputPolyData = vtkSmartPointer<vtkMultiPieceDataSet>::New();
+  PlaneCutFunctor::Execute(inputPolyData, outputPolyData, localStorage->m_CuttingPlane, localStorage->m_SphereTree, origin, normal);
+
+  vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
+  for (unsigned int i = 0; i < outputPolyData->GetNumberOfPieces(); i++) {
+    appendFilter->AddInputDataObject(outputPolyData->GetPieceAsDataObject(i));
+  }
+
+  appendFilter->Update();
+
+  localStorage->m_Mapper->SetInputData(appendFilter->GetOutput());
 }
 
-void mitk::SurfaceVtkMapper2D::ApplyAllProperties(mitk::BaseRenderer *renderer)
+void mitk::SurfaceVtkMapper2D::ApplyAllProperties(mitk::BaseRenderer* renderer)
 {
-  const DataNode *node = GetDataNode();
+  const DataNode * node = GetDataNode();
 
-  if (node == nullptr)
+  if(node == NULL)
   {
     return;
   }
 
-  FixupLegacyProperties(node->GetPropertyList(renderer));
-  FixupLegacyProperties(node->GetPropertyList());
-
   float lineWidth = 1.0f;
   node->GetFloatProperty("line width", lineWidth, renderer);
 
-  LocalStorage *localStorage = m_LSH.GetLocalStorage(renderer);
+  LocalStorage* localStorage = m_LSH.GetLocalStorage(renderer);
 
   // check for color and opacity properties, use it for rendering if they exists
-  float color[3] = {1.0f, 1.0f, 1.0f};
+  float color[3]= { 1.0f, 1.0f, 1.0f };
   node->GetColor(color, renderer, "color");
   float opacity = 1.0f;
   node->GetOpacity(opacity, renderer, "opacity");
 
-  // Pass properties to VTK
+  //Pass properties to VTK
   localStorage->m_Actor->GetProperty()->SetColor(color[0], color[1], color[2]);
   localStorage->m_Actor->GetProperty()->SetOpacity(opacity);
-  localStorage->m_NormalActor->GetProperty()->SetOpacity(opacity);
-  localStorage->m_InverseNormalActor->GetProperty()->SetOpacity(opacity);
   localStorage->m_Actor->GetProperty()->SetLineWidth(lineWidth);
-  // By default, the cutter will also copy/compute normals of the cut
-  // to the output polydata. The normals will influence the
-  // vtkPolyDataMapper lightning. To view a clean cut the lighting has
-  // to be disabled.
-  localStorage->m_Actor->GetProperty()->SetLighting(false);
+  //By default, the cutter will also copy/compute normals of the cut
+  //to the output polydata. The normals will influence the
+  //vtkPolyDataMapper lightning. To view a clean cut the lighting has
+  //to be disabled.
+  localStorage->m_Actor->GetProperty()->SetLighting(0);
 
   // same block for scalar data rendering as in 3D mapper
   mitk::TransferFunctionProperty::Pointer transferFuncProp;
   this->GetDataNode()->GetProperty(transferFuncProp, "Surface.TransferFunction", renderer);
-  if (transferFuncProp.IsNotNull())
+  if (transferFuncProp.IsNotNull() )
   {
     localStorage->m_Mapper->SetLookupTable(transferFuncProp->GetValue()->GetColorTransferFunction());
   }
 
   mitk::LookupTableProperty::Pointer lookupTableProp;
   this->GetDataNode()->GetProperty(lookupTableProp, "LookupTable", renderer);
-  if (lookupTableProp.IsNotNull())
+  if (lookupTableProp.IsNotNull() )
   {
     localStorage->m_Mapper->SetLookupTable(lookupTableProp->GetLookupTable()->GetVtkLookupTable());
   }
 
   mitk::LevelWindow levelWindow;
-  if (this->GetDataNode()->GetLevelWindow(levelWindow, renderer, "levelWindow"))
+  if(this->GetDataNode()->GetLevelWindow(levelWindow, renderer, "levelWindow"))
   {
-    localStorage->m_Mapper->SetScalarRange(levelWindow.GetLowerWindowBound(), levelWindow.GetUpperWindowBound());
+    localStorage->m_Mapper->SetScalarRange(levelWindow.GetLowerWindowBound(),levelWindow.GetUpperWindowBound());
   }
-  else if (this->GetDataNode()->GetLevelWindow(levelWindow, renderer))
+  else if(this->GetDataNode()->GetLevelWindow(levelWindow, renderer))
   {
-    localStorage->m_Mapper->SetScalarRange(levelWindow.GetLowerWindowBound(), levelWindow.GetUpperWindowBound());
+    localStorage->m_Mapper->SetScalarRange(levelWindow.GetLowerWindowBound(),levelWindow.GetUpperWindowBound());
   }
 
   bool scalarVisibility = false;
   this->GetDataNode()->GetBoolProperty("scalar visibility", scalarVisibility);
-  localStorage->m_Mapper->SetScalarVisibility((scalarVisibility ? 1 : 0));
+  localStorage->m_Mapper->SetScalarVisibility( (scalarVisibility ? 1 : 0) );
 
-  if (scalarVisibility)
+  if(scalarVisibility)
   {
-    mitk::VtkScalarModeProperty *scalarMode;
-    if (this->GetDataNode()->GetProperty(scalarMode, "scalar mode", renderer))
+    mitk::VtkScalarModeProperty* scalarMode;
+    if(this->GetDataNode()->GetProperty(scalarMode, "scalar mode", renderer))
       localStorage->m_Mapper->SetScalarMode(scalarMode->GetVtkScalarMode());
     else
       localStorage->m_Mapper->SetScalarModeToDefault();
 
     bool colorMode = false;
     this->GetDataNode()->GetBoolProperty("color mode", colorMode);
-    localStorage->m_Mapper->SetColorMode((colorMode ? 1 : 0));
+    localStorage->m_Mapper->SetColorMode( (colorMode ? 1 : 0) );
 
     double scalarsMin = 0;
     this->GetDataNode()->GetDoubleProperty("ScalarsRangeMinimum", scalarsMin, renderer);
@@ -358,49 +566,16 @@ void mitk::SurfaceVtkMapper2D::ApplyAllProperties(mitk::BaseRenderer *renderer)
     double scalarsMax = 1.0;
     this->GetDataNode()->GetDoubleProperty("ScalarsRangeMaximum", scalarsMax, renderer);
 
-    localStorage->m_Mapper->SetScalarRange(scalarsMin, scalarsMax);
+    localStorage->m_Mapper->SetScalarRange(scalarsMin,scalarsMax);
   }
-
-  // color for inverse normals
-  float inverseNormalsColor[3] = {1.0f, 0.0f, 0.0f};
-  node->GetColor(inverseNormalsColor, renderer, "back color");
-  localStorage->m_InverseNormalActor->GetProperty()->SetColor(
-    inverseNormalsColor[0], inverseNormalsColor[1], inverseNormalsColor[2]);
-
-  // color for normals
-  float normalsColor[3] = {0.0f, 1.0f, 0.0f};
-  node->GetColor(normalsColor, renderer, "front color");
-  localStorage->m_NormalActor->GetProperty()->SetColor(normalsColor[0], normalsColor[1], normalsColor[2]);
-
-  // normals scaling
-  float normalScaleFactor = 10.0f;
-  node->GetFloatProperty("front normal lenth (px)", normalScaleFactor, renderer);
-  localStorage->m_NormalGlyph->SetScaleFactor(normalScaleFactor);
-
-  // inverse normals scaling
-  float inverseNormalScaleFactor = 10.0f;
-  node->GetFloatProperty("back normal lenth (px)", inverseNormalScaleFactor, renderer);
-  localStorage->m_InverseNormalGlyph->SetScaleFactor(inverseNormalScaleFactor);
 }
 
-void mitk::SurfaceVtkMapper2D::SetDefaultProperties(mitk::DataNode *node, mitk::BaseRenderer *renderer, bool overwrite)
+void mitk::SurfaceVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer, bool overwrite)
 {
-  mitk::IPropertyAliases *aliases = mitk::CoreServices::GetPropertyAliases();
-  node->AddProperty("line width", FloatProperty::New(2.0f), renderer, overwrite);
-  aliases->AddAlias("line width", "Surface.2D.Line Width", "Surface");
-  node->AddProperty("scalar mode", VtkScalarModeProperty::New(), renderer, overwrite);
-  node->AddProperty("draw normals 2D", BoolProperty::New(false), renderer, overwrite);
-  aliases->AddAlias("draw normals 2D", "Surface.2D.Normals.Draw Normals", "Surface");
-  node->AddProperty("invert normals", BoolProperty::New(false), renderer, overwrite);
-  aliases->AddAlias("invert normals", "Surface.2D.Normals.Draw Inverse Normals", "Surface");
-  node->AddProperty("front color", ColorProperty::New(0.0, 1.0, 0.0), renderer, overwrite);
-  aliases->AddAlias("front color", "Surface.2D.Normals.Normals Color", "Surface");
-  node->AddProperty("back color", ColorProperty::New(1.0, 0.0, 0.0), renderer, overwrite);
-  aliases->AddAlias("back color", "Surface.2D.Normals.Inverse Normals Color", "Surface");
-  node->AddProperty("front normal lenth (px)", FloatProperty::New(10.0), renderer, overwrite);
-  aliases->AddAlias("front normal lenth (px)", "Surface.2D.Normals.Normals Scale Factor", "Surface");
-  node->AddProperty("back normal lenth (px)", FloatProperty::New(10.0), renderer, overwrite);
-  aliases->AddAlias("back normal lenth (px)", "Surface.2D.Normals.Inverse Normals Scale Factor", "Surface");
-  node->AddProperty("layer", IntProperty::New(100), renderer, overwrite);
+  mitk::IPropertyAliases* aliases = mitk::CoreServices::GetPropertyAliases();
+  node->AddProperty( "line width", FloatProperty::New(2.0f), renderer, overwrite );
+  aliases->AddAlias( "line width", "Surface.2D.Line Width", "Surface");
+  node->AddProperty( "scalar mode", VtkScalarModeProperty::New(), renderer, overwrite );
+  node->AddProperty( "layer", IntProperty::New(100), renderer, overwrite);
   Superclass::SetDefaultProperties(node, renderer, overwrite);
 }

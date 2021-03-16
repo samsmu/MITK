@@ -16,106 +16,107 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkSurfaceVtkLegacyIO.h"
 
-#include "mitkIOMimeTypes.h"
 #include "mitkSurface.h"
+#include "mitkIOMimeTypes.h"
 
-#include <vtkErrorCode.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>
-#include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
+#include <vtkErrorCode.h>
+#include <vtkSmartPointer.h>
 
-namespace mitk
+namespace mitk {
+
+SurfaceVtkLegacyIO::SurfaceVtkLegacyIO()
+  : SurfaceVtkIO(Surface::GetStaticNameOfClass(), IOMimeTypes::VTK_POLYDATA_LEGACY_MIMETYPE(), "VTK Legacy PolyData")
 {
-  SurfaceVtkLegacyIO::SurfaceVtkLegacyIO()
-    : SurfaceVtkIO(Surface::GetStaticNameOfClass(), IOMimeTypes::VTK_POLYDATA_LEGACY_MIMETYPE(), "VTK Legacy PolyData")
+  Options defaultOptions;
+  defaultOptions["Save as binary file"] = false;
+  this->SetDefaultWriterOptions(defaultOptions);
+  this->RegisterService();
+}
+
+std::vector<itk::SmartPointer<BaseData> > SurfaceVtkLegacyIO::Read()
+{
+  mitk::Surface::Pointer output = mitk::Surface::New();
+
+  // The legay vtk reader cannot work with input streams
+  const std::string fileName = this->GetLocalFileName();
+  vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+  reader->SetFileName(fileName.c_str());
+  reader->Update();
+
+  if ( reader->GetOutput() != NULL )
   {
-    Options defaultOptions;
-    defaultOptions["Save as binary file"] = false;
-    this->SetDefaultWriterOptions(defaultOptions);
-    this->RegisterService();
+    output->SetVtkPolyData(reader->GetOutput());
+  }
+  else
+  {
+    mitkThrow() << "vtkPolyDataReader error: " << vtkErrorCode::GetStringFromErrorCode(reader->GetErrorCode());
   }
 
-  std::vector<itk::SmartPointer<BaseData>> SurfaceVtkLegacyIO::Read()
+  std::vector<BaseData::Pointer> result;
+  result.push_back(output.GetPointer());
+  return result;
+}
+
+IFileIO::ConfidenceLevel SurfaceVtkLegacyIO::GetReaderConfidenceLevel() const
+{
+  if (AbstractFileIO::GetReaderConfidenceLevel() == Unsupported) return Unsupported;
+  vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
+  reader->SetFileName(this->GetLocalFileName().c_str());
+  if (reader->IsFilePolyData())
   {
-    mitk::Surface::Pointer output = mitk::Surface::New();
-
-    // The legay vtk reader cannot work with input streams
-    const std::string fileName = this->GetLocalFileName();
-    vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(fileName.c_str());
-    reader->Update();
-
-    if (reader->GetOutput() != nullptr)
-    {
-      output->SetVtkPolyData(reader->GetOutput());
+    if (std::strcmp(reader->GetHeader(),  "vtk output") == 0){
+      return Supported;
     }
-    else
-    {
-      mitkThrow() << "vtkPolyDataReader error: " << vtkErrorCode::GetStringFromErrorCode(reader->GetErrorCode());
-    }
-
-    std::vector<BaseData::Pointer> result;
-    result.push_back(output.GetPointer());
-    return result;
+    else return PartiallySupported;
   }
+  return Unsupported;
+}
 
-  IFileIO::ConfidenceLevel SurfaceVtkLegacyIO::GetReaderConfidenceLevel() const
+void SurfaceVtkLegacyIO::Write()
+{
+  ValidateOutputLocation();
+
+  const Surface* input = dynamic_cast<const Surface*>(this->GetInput());
+
+  const unsigned int timesteps = input->GetTimeGeometry()->CountTimeSteps();
+  for(unsigned int t = 0; t < timesteps; ++t)
   {
-    if (AbstractFileIO::GetReaderConfidenceLevel() == Unsupported)
-      return Unsupported;
-    vtkSmartPointer<vtkPolyDataReader> reader = vtkSmartPointer<vtkPolyDataReader>::New();
-    reader->SetFileName(this->GetLocalFileName().c_str());
-    if (reader->IsFilePolyData())
+    std::string fileName;
+    vtkSmartPointer<vtkPolyData> polyData = this->GetPolyData(t, fileName);
+    vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+    writer->SetInputData(polyData);
+    if (us::any_cast<bool> (GetWriterOption("Save as binary file")))
     {
-      if (std::strcmp(reader->GetHeader(), "vtk output") == 0)
-      {
-        return Supported;
-      }
-      else
-        return PartiallySupported;
+      writer->SetFileTypeToBinary();
     }
-    return Unsupported;
-  }
+    // The legacy vtk poly data writer cannot write to streams
+    LocalFile localFile(this);
+    writer->SetFileName(localFile.GetFileName().c_str());
 
-  void SurfaceVtkLegacyIO::Write()
-  {
-    ValidateOutputLocation();
-
-    const auto *input = dynamic_cast<const Surface *>(this->GetInput());
-
-    const unsigned int timesteps = input->GetTimeGeometry()->CountTimeSteps();
-    for (unsigned int t = 0; t < timesteps; ++t)
+    if (writer->Write() == 0 || writer->GetErrorCode() != 0 )
     {
-      std::string fileName;
-      vtkSmartPointer<vtkPolyData> polyData = this->GetPolyData(t, fileName);
-      vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
-      writer->SetInputData(polyData);
-      if (us::any_cast<bool>(GetWriterOption("Save as binary file")))
-      {
-        writer->SetFileTypeToBinary();
-      }
-      // The legacy vtk poly data writer cannot write to streams
-      LocalFile localFile(this);
-      writer->SetFileName(localFile.GetFileName().c_str());
+      mitkThrow() << "Error during surface writing" << (writer->GetErrorCode() ?
+                                                          std::string(": ") + vtkErrorCode::GetStringFromErrorCode(writer->GetErrorCode()) :
+                                                          std::string());
+    }
 
-      if (writer->Write() == 0 || writer->GetErrorCode() != 0)
-      {
-        mitkThrow() << "Error during surface writing"
-                    << (writer->GetErrorCode() ?
-                          std::string(": ") + vtkErrorCode::GetStringFromErrorCode(writer->GetErrorCode()) :
-                          std::string());
-      }
-
-      if (this->GetOutputStream() && input->GetTimeGeometry()->CountTimeSteps() > 1)
-      {
-        MITK_WARN << "Writing multiple time-steps to output streams is not supported. "
-                  << "Only the first time-step will be written";
-        break;
-      }
+    if (this->GetOutputStream() && input->GetTimeGeometry()->CountTimeSteps() > 1)
+    {
+      MITK_WARN << "Writing multiple time-steps to output streams is not supported. "
+                << "Only the first time-step will be written";
+      break;
     }
   }
+}
 
-  SurfaceVtkLegacyIO *SurfaceVtkLegacyIO::IOClone() const { return new SurfaceVtkLegacyIO(*this); }
+
+SurfaceVtkLegacyIO* SurfaceVtkLegacyIO::IOClone() const
+{
+  return new SurfaceVtkLegacyIO(*this);
+}
+
 }

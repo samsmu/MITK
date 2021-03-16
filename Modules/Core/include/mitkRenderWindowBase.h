@@ -19,65 +19,63 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <MitkCoreExports.h>
 
-#include "mitkCameraRotationController.h"
-#include "mitkSliceNavigationController.h"
 #include "mitkVtkPropRenderer.h"
 #include "vtkMitkRenderProp.h"
+#include "mitkSliceNavigationController.h"
+#include "mitkCameraRotationController.h"
 
 #include "mitkInteractionEvent.h"
 
 namespace mitk
 {
-  /**
-   * \brief Base class of MITK RenderWindows
-   *
-   * This class sets up the MITK rendering mechanism and it's integration into VTK.
-   *
-   * Currently, there are two specific implementations of this abstract class:
-   * QmitkRenderWindow, inerhits from the QVTKWidget and is the matured way for MITK rendering
-   * mitkRenderWindow is a new, QT-independent RenderWindow implementation
-   *
-   * \ingroup Renderer
-   */
+/**
+ * \brief Base class of MITK RenderWindows
+ *
+ * This class sets up the MITK rendering mechanism and it's integration into VTK.
+ *
+ * Currently, there are two specific implementations of this abstract class:
+ * QmitkRenderWindow, inerhits from the QVTKWidget and is the matured way for MITK rendering
+ * mitkRenderWindow is a new, QT-independent RenderWindow implementation
+ *
+ * \ingroup Renderer
+ */
 
-  class MITKCORE_EXPORT RenderWindowBase
-  {
-  public:
-    // mitkClassMacroItkParent(RenderWindowBase,itk::Object);
-    // itkFactorylessNewMacro(Self)
-    // itkCloneMacro(Self)
+class MITKCORE_EXPORT RenderWindowBase
+{
+public:
 
-    virtual ~RenderWindowBase();
+  //mitkClassMacroItkParent(RenderWindowBase,itk::Object);
+  //itkFactorylessNewMacro(Self)
+  //itkCloneMacro(Self)
 
-    void InitRenderer();
+  virtual ~RenderWindowBase();
 
-    virtual mitk::SliceNavigationController *GetSliceNavigationController();
-    virtual mitk::CameraRotationController *GetCameraRotationController();
-    virtual mitk::BaseController *GetController();
-    virtual mitk::VtkPropRenderer *GetRenderer();
-    virtual vtkRenderWindow *GetVtkRenderWindow() = 0;
-    virtual vtkRenderWindowInteractor *GetVtkRenderWindowInteractor() = 0;
+  void InitRenderer();
 
-    virtual bool HandleEvent(InteractionEvent *interactionEvent);
+  virtual mitk::SliceNavigationController * GetSliceNavigationController();
+  virtual mitk::CameraRotationController * GetCameraRotationController();
+  virtual mitk::BaseController * GetController();
+  virtual mitk::VtkPropRenderer* GetRenderer();
+  virtual vtkRenderWindow* GetVtkRenderWindow() = 0;
+  virtual vtkRenderWindowInteractor* GetVtkRenderWindowInteractor() = 0;
 
-  protected:
-    RenderWindowBase();
+  virtual bool HandleEvent(InteractionEvent* interactionEvent);
 
-    // helper functions: within constructors and destructors classes are not polymorph.
-    void Initialize(
-      mitk::RenderingManager *renderingManager = nullptr,
-      const char *name = "unnamed renderer",
-      mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard);
-    void Destroy();
+protected:
+  RenderWindowBase();
 
-    mitk::VtkPropRenderer::Pointer m_Renderer;
+  // helper functions: within constructors and destructors classes are not polymorph.
+  void Initialize( mitk::RenderingManager* renderingManager = NULL, const char* name = "unnamed renderer",mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard, bool useFXAA = true );
+  void Destroy();
 
-    vtkMitkRenderProp *m_RenderProp;
+  mitk::VtkPropRenderer::Pointer m_Renderer;
 
-    bool m_InResize;
+  vtkMitkRenderProp*             m_RenderProp;
+
+  bool                           m_InResize;
 
   private:
-  };
+};
 }
 
 #endif /* MITKRENDERWINDOWBASE_H_HEADER_INCLUDED_C1C40D66ASDF */

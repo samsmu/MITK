@@ -14,6 +14,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #include "mitkImageToImageFilter.h"
 
 mitk::ImageToImageFilter::ImageToImageFilter()
@@ -32,21 +33,26 @@ mitk::ImageToImageFilter::~ImageToImageFilter()
 void mitk::ImageToImageFilter::SetInput(const mitk::ImageToImageFilter::InputImageType *input)
 {
   // Process object is not const-correct so the const_cast is required here
-  this->ProcessObject::SetNthInput(0, const_cast<mitk::ImageToImageFilter::InputImageType *>(input));
+  this->ProcessObject::SetNthInput(0,
+    const_cast< mitk::ImageToImageFilter::InputImageType * >( input ) );
 }
+
 
 /**
 * Connect one of the operands for pixel-wise addition
 */
-void mitk::ImageToImageFilter::SetInput(unsigned int index, const mitk::ImageToImageFilter::InputImageType *image)
+void mitk::ImageToImageFilter::SetInput( unsigned int index, const mitk::ImageToImageFilter::InputImageType * image )
 {
-  if (index + 1 > this->GetNumberOfInputs())
+  if( index+1 > this->GetNumberOfInputs() )
   {
-    this->SetNumberOfRequiredInputs(index + 1);
+    this->SetNumberOfRequiredInputs( index + 1 );
   }
   // Process object is not const-correct so the const_cast is required here
-  this->ProcessObject::SetNthInput(index, const_cast<mitk::ImageToImageFilter::InputImageType *>(image));
+  this->ProcessObject::SetNthInput(index,
+    const_cast< mitk::ImageToImageFilter::InputImageType *>( image ) );
 }
+
+
 
 /**
 *
@@ -58,7 +64,8 @@ mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInput(voi
     return nullptr;
   }
 
-  return static_cast<mitk::ImageToImageFilter::InputImageType *>(this->ProcessObject::GetInput(0));
+  return static_cast<mitk::ImageToImageFilter::InputImageType * >
+    (this->ProcessObject::GetInput(0) );
 }
 
 /**
@@ -66,7 +73,8 @@ mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInput(voi
 */
 mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInput(unsigned int idx)
 {
-  return static_cast<mitk::ImageToImageFilter::InputImageType *>(this->ProcessObject::GetInput(idx));
+  return static_cast< mitk::ImageToImageFilter::InputImageType * >
+    (this->ProcessObject::GetInput(idx));
 }
 
 const mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInput(void) const
@@ -76,7 +84,8 @@ const mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInp
     return nullptr;
   }
 
-  return static_cast<const mitk::ImageToImageFilter::InputImageType *>(this->ProcessObject::GetInput(0));
+  return static_cast<const mitk::ImageToImageFilter::InputImageType * >
+    (this->ProcessObject::GetInput(0) );
 }
 
 /**
@@ -84,7 +93,8 @@ const mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInp
 */
 const mitk::ImageToImageFilter::InputImageType *mitk::ImageToImageFilter::GetInput(unsigned int idx) const
 {
-  return static_cast<const mitk::ImageToImageFilter::InputImageType *>(this->ProcessObject::GetInput(idx));
+  return static_cast< const mitk::ImageToImageFilter::InputImageType * >
+    (this->ProcessObject::GetInput(idx));
 }
 
 //-----------------------------------------------------------------------
@@ -97,7 +107,8 @@ void mitk::ImageToImageFilter::GenerateInputRequestedRegion()
   {
     if (this->GetInput(idx))
     {
-      mitk::ImageToImageFilter::InputImagePointer input = this->GetInput(idx);
+      mitk::ImageToImageFilter::InputImagePointer input =
+        const_cast< mitk::ImageToImageFilter::InputImageType * > ( this->GetInput(idx) );
 
       // Use the function object RegionCopier to copy the output region
       // to the input.  The default region copier has default implementations
@@ -107,12 +118,12 @@ void mitk::ImageToImageFilter::GenerateInputRequestedRegion()
       InputImageRegionType inputRegion;
       //      this->CallCopyRegion(inputRegion, this->GetOutput()->GetRequestedRegion()); @FIXME  ??
       //      input->SetRequestedRegion( inputRegion ); @FIXME ??
-      input->SetRequestedRegion(this->GetOutput()); // ersatz. @FIXME ??
+      input->SetRequestedRegion( this->GetOutput() ); // ersatz. @FIXME ??
     }
   }
 }
 
-void mitk::ImageToImageFilter::PrintSelf(std::ostream &os, itk::Indent indent) const
+void mitk::ImageToImageFilter::PrintSelf(std::ostream& os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
 }

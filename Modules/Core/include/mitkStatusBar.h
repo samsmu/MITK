@@ -14,6 +14,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef MITKSTATUSBAR_H
 #define MITKSTATUSBAR_H
 #include "mitkStatusBarImplementation.h"
@@ -85,7 +86,7 @@ namespace mitk
 
   protected:
     StatusBar();
-    ~StatusBar() override;
+    virtual ~StatusBar();
 
     static StatusBarImplementation *m_Implementation;
     static StatusBar *m_Instance;

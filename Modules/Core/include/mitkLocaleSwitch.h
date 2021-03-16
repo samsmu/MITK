@@ -18,48 +18,56 @@ See LICENSE.txt or http://www.mitk.org for details.
 #define __mitkLocaleSwitch_h
 
 #include "MitkCoreExports.h"
+#include "mitkLogMacros.h"
+
+#include <clocale>
+#include <string>
+
+#pragma warning(disable:4251)
 
 namespace mitk
 {
-  /**
-    \brief Convenience class to temporarily change the current locale.
 
-    This helper class can be used to switch to a specific locale
-    for a couple of operations. Once the class is destroyed, the previous
-    locale will be restored. This avoids calling or forgetting to call
-    setlocale() in multiple return locations.
+/**
+  \brief Convenience class to temporarily change the current locale.
 
-    Typically this is used to switch to a "C" locale when parsing or
-    printing numbers, in order to consistently get "." and not "," as
-    a decimal separator.
+  This helper class can be used to switch to a specific locale
+  for a couple of operations. Once the class is destroyed, the previous
+  locale will be restored. This avoids calling or forgetting to call
+  setlocale() in multiple return locations.
 
-    \code
+  Typically this is used to switch to a "C" locale when parsing or
+  printing numbers, in order to consistently get "." and not "," as
+  a decimal separator.
 
-    std::string toString(int number)
-    {
-      mitk::LocaleSwitch localeSwitch("C");// installs C locale until the end of the function
+  \code
 
-      std::stringstream parser;
-      parser << number;
-
-      return parser.str();
-    }
-    \endcode
-  */
-
-  struct MITKCORE_EXPORT LocaleSwitch
+  std::string toString(int number)
   {
-    explicit LocaleSwitch(const char *newLocale);
+    mitk::LocaleSwitch localeSwitch("C");// installs C locale until the end of the function
 
-    ~LocaleSwitch();
+    std::stringstream parser;
+    parser << number;
 
-    LocaleSwitch(LocaleSwitch &) = delete;
-    LocaleSwitch operator=(LocaleSwitch &) = delete;
+    return parser.str();
+  }
+  \endcode
+*/
 
-  private:
-    struct Impl;
-    Impl *m_LocaleSwitchImpl;
-  };
+struct MITKCORE_EXPORT LocaleSwitch
+{
+  explicit LocaleSwitch(const char* newLocale);
+
+  ~LocaleSwitch();
+
+  LocaleSwitch(LocaleSwitch&) = delete;
+  LocaleSwitch operator=(LocaleSwitch&) = delete;
+private:
+
+  struct Impl;
+  Impl* m_LocaleSwitchImpl;
+};
+
 }
 
 #endif // __mitkLocaleSwitch_h

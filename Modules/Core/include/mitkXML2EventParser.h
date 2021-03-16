@@ -25,70 +25,80 @@
 
 #include "mitkInteractionEvent.h"
 
-namespace us
-{
-  class Module;
+namespace us {
+class Module;
 }
 
 namespace mitk
 {
+
+/**
+   * \class InteractionEventList
+   * \brief Generates a list of InteractionEvents based on an XML file-
+   *
+   * @sa EventRecorder
+   * @ingroup Interaction
+   **/
+class MITKCORE_EXPORT XML2EventParser : public vtkXMLParser
+{
+
+public:
+
   /**
-     * \class InteractionEventList
-     * \brief Generates a list of InteractionEvents based on an XML file-
+     * @brief Construct an InteractionEventList object based on a XML configuration file.
      *
-     * @sa EventRecorder
-     * @ingroup Interaction
-     **/
-  class MITKCORE_EXPORT XML2EventParser : public vtkXMLParser
+     * Uses the specified resource file containing an XML event configuration to
+     * construct an EventConfig object. If the resource is invalid, the created
+     * EventConfig object will also be invalid.
+     *
+     * @param filename The resource name relative to the Interactions resource folder.
+     * @param module
+     */
+  XML2EventParser(const std::string& filename, const us::Module* module = NULL);
+
+  /**
+     * @brief Construct an InteractionEventList object based on a XML configuration file.
+     *
+     * Uses the specified istream refering to a file containing an XML event configuration to
+     * construct an EventConfig object. If the resource is invalid, the created
+     * EventConfig object will also be invalid.
+     *
+     * @param inputStream std::ifstream to XML configuration file
+     */
+  XML2EventParser(std::istream &inputStream);
+
+  typedef std::vector<mitk::InteractionEvent::Pointer> EventContainerType;
+
+  EventContainerType GetInteractions()
   {
-  public:
-    /**
-       * @brief Construct an InteractionEventList object based on a XML configuration file.
-       *
-       * Uses the specified resource file containing an XML event configuration to
-       * construct an EventConfig object. If the resource is invalid, the created
-       * EventConfig object will also be invalid.
-       *
-       * @param filename The resource name relative to the Interactions resource folder.
-       * @param module
-       */
-    XML2EventParser(const std::string &filename, const us::Module *module = nullptr);
+    return m_InteractionList;
+  }
 
-    /**
-       * @brief Construct an InteractionEventList object based on a XML configuration file.
-       *
-       * Uses the specified istream refering to a file containing an XML event configuration to
-       * construct an EventConfig object. If the resource is invalid, the created
-       * EventConfig object will also be invalid.
-       *
-       * @param inputStream std::ifstream to XML configuration file
-       */
-    XML2EventParser(std::istream &inputStream);
+  ~XML2EventParser(){};
+protected:
 
-    typedef std::vector<mitk::InteractionEvent::Pointer> EventContainerType;
+  /**
+     * @brief Derived from XMLReader
+     **/
+  void StartElement(const char* elementName, const char **atts) override;
 
-    EventContainerType GetInteractions() { return m_InteractionList; }
-    ~XML2EventParser() override{};
+  /**
+     * @brief Derived from XMLReader
+     **/
+  void EndElement(const char* elementName) override;
 
-  protected:
-    /**
-       * @brief Derived from XMLReader
-       **/
-    void StartElement(const char *elementName, const char **atts) override;
+  std::string ReadXMLStringAttribute(const std::string& name, const char** atts);
+  bool ReadXMLBooleanAttribute(const std::string& name, const char** atts);
 
-    /**
-       * @brief Derived from XMLReader
-       **/
-    void EndElement(const char *elementName) override;
+private:
 
-    std::string ReadXMLStringAttribute(const std::string &name, const char **atts);
-    bool ReadXMLBooleanAttribute(const std::string &name, const char **atts);
 
-  private:
-    PropertyList::Pointer m_EventPropertyList;
+  PropertyList::Pointer m_EventPropertyList;
 
-    EventContainerType m_InteractionList;
-  };
+  EventContainerType m_InteractionList;
+
+
+};
 
 } // namespace mitk
 

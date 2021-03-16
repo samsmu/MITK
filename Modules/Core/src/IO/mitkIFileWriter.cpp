@@ -16,12 +16,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkIFileWriter.h"
 
-namespace mitk
+namespace mitk {
+
+IFileWriter::~IFileWriter()
 {
-  IFileWriter::~IFileWriter() {}
-  std::string IFileWriter::PROP_BASEDATA_TYPE()
-  {
-    static std::string s = "org.mitk.IFileWriter.basedatatype";
-    return s;
-  }
+}
+
+std::string IFileWriter::PROP_BASEDATA_TYPE()
+{
+  static std::string s = "org.mitk.IFileWriter.basedatatype";
+  return s;
+}
+
 }

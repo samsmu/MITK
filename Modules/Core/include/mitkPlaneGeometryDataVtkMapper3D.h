@@ -17,25 +17,24 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef MITKGEOMETRY2DDATAVTKMAPPER3D_H_HEADER_INCLUDED_C196C71F
 #define MITKGEOMETRY2DDATAVTKMAPPER3D_H_HEADER_INCLUDED_C196C71F
 
+#include <MitkCoreExports.h>
+#include "mitkVtkMapper.h"
 #include "mitkDataStorage.h"
 #include "mitkPlaneGeometryDataToSurfaceFilter.h"
-#include "mitkVtkMapper.h"
 #include "mitkWeakPointer.h"
-#include <MitkCoreExports.h>
 
-#include <vtkCleanPolyData.h>
 #include <vtkSystemIncludes.h>
+#include <vtkCleanPolyData.h>
 
 class vtkActor;
-class vtkPolyDataMapper;
+class vtkOpenGLPolyDataMapper;
 class vtkAssembly;
 class vtkFeatureEdges;
 class vtkTubeFilter;
 class vtkTransformPolyDataFilter;
 class vtkHedgeHog;
 
-namespace mitk
-{
+namespace mitk {
   class PlaneGeometryData;
   class BaseRenderer;
   class ImageVtkMapper2D;
@@ -43,14 +42,13 @@ namespace mitk
 
   class PlaneGeometryDataVtkMapper3D;
   /** \deprecatedSince{2014_10} This class is deprecated. Please use PlaneGeometryDataVTKMapper3D instead. */
-  DEPRECATED(typedef PlaneGeometryDataVtkMapper3D Geometry2DDataVtkMapper3D);
+  DEPRECATED( typedef PlaneGeometryDataVtkMapper3D Geometry2DDataVtkMapper3D);
 
   /**
   *  \brief Vtk-based mapper to display a PlaneGeometry in a 3D window
   *  \ingroup Mapper
   *
-  *  Uses a PlaneGeometryDataToSurfaceFilter object to create a vtkPolyData representation of a given PlaneGeometry
-  * instance.
+  *  Uses a PlaneGeometryDataToSurfaceFilter object to create a vtkPolyData representation of a given PlaneGeometry instance.
   *  PlaneGeometry may either contain a common flat plane or a curved plane (ThinPlateSplineCurvedGeometry).
   *
   *  The vtkPolyData object is then decorated by a colored tube on the edges and by image textures if possible
@@ -60,32 +58,24 @@ namespace mitk
   *
   *   - \b "draw edges": (Bool) Toggle display of the tubed frame
   *   - \b "color": (ColorProperty) Color of the tubed frame.
-  *   - \b "xresolution": (FloatProperty) Resolution (=number of tiles) in x direction. Only relevant for
-  * ThinPlateSplineCurvedGeometry
-  *   - \b "yresolution": (FloatProperty) Resolution (=number of tiles) in y direction. Only relevant for
-  * ThinPlateSplineCurvedGeometry
-  *   - \b "draw normals 3D": (BoolProperty) If true, a vtkHedgeHog is used to display normals for the generated surface
-  * object. Useful to distinguish front and back of a plane. Hedgehogs are colored according to "front color" and "back
-  * color"
-  *   - \b "color two sides": (BoolProperty) If true, front and back side of the plane are colored differently ("front
-  * color" and "back color")
+  *   - \b "xresolution": (FloatProperty) Resolution (=number of tiles) in x direction. Only relevant for ThinPlateSplineCurvedGeometry
+  *   - \b "yresolution": (FloatProperty) Resolution (=number of tiles) in y direction. Only relevant for ThinPlateSplineCurvedGeometry
+  *   - \b "draw normals 3D": (BoolProperty) If true, a vtkHedgeHog is used to display normals for the generated surface object. Useful to distinguish front and back of a plane. Hedgehogs are colored according to "front color" and "back color"
+  *   - \b "color two sides": (BoolProperty) If true, front and back side of the plane are colored differently ("front color" and "back color")
   *   - \b "invert normals": (BoolProperty) Inverts front/back for display.
   *   - \b "front color": (ColorProperty) Color for front side of the plane
   *   - \b "back color": (ColorProperty) Color for back side of the plane
-  *   - \b "material.representation": (BoolProperty) Choose the representation to draw the mesh in (Surface, Wireframe,
-  * Point Cloud)
+  *   - \b "material.representation": (BoolProperty) Choose the representation to draw the mesh in (Surface, Wireframe, Point Cloud)
   *   - \b "surfacegeometry": TODO: Add documentation
   *   - \b "LookupTable": (LookupTableProperty) Set the lookuptable to render with.
   *
-  *  Note: The following properties are set for each image individually, and thus, also influence the rendering of this
-  * mapper:
+  *  Note: The following properties are set for each image individually, and thus, also influence the rendering of this mapper:
   *
+  *   - \b "Crooshair.Render 3D": (BoolProperty) Turn on/off rendering in 3D
   *   - \b "texture interpolation": (BoolProperty) Turn on/off the texture interpolation of each image
   *   - \b "use color": (BoolProperty) Decide whether we want to use the color property or a lookuptable.
-  *   - \b "binary": (BoolProperty) Binary image handling: Color the value=1.0 with the color property and make the
-  * background (value=0.0) of the image translucent.
-  *   - \b "layer": (IntProperty) Controls what image is considered "on top" of another. In the case that two should
-  * inhabit the same space, higher layer occludes lower layer.
+  *   - \b "binary": (BoolProperty) Binary image handling: Color the value=1.0 with the color property and make the background (value=0.0) of the image translucent.
+  *   - \b "layer": (IntProperty) Controls what image is considered "on top" of another. In the case that two should inhabit the same space, higher layer occludes lower layer.
   *   - \b "opacity": (FloatProperty) Set the opacity for each rendered image.
   *   - \b "color": (FloatProperty) Set the color for each rendered image.
   *
@@ -100,15 +90,16 @@ namespace mitk
   public:
     mitkClassMacro(PlaneGeometryDataVtkMapper3D, VtkMapper);
 
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+    itkFactorylessNewMacro(Self)
+      itkCloneMacro(Self)
 
       /**
       * Overloaded since the displayed color-frame of the image mustn't be
       * transformed after generation of poly data, but before (vertex coordinates
       * only)
       */
-      vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) override;
-    void UpdateVtkTransform(mitk::BaseRenderer *renderer) override;
+      virtual vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) override;
+    virtual void UpdateVtkTransform(mitk::BaseRenderer *renderer) override;
 
     /**
     *  \brief Get the PlaneGeometryData to map
@@ -122,20 +113,21 @@ namespace mitk
     * the possibility to use this mapper for other data storages (not only
     * the default data storage).
     */
-    virtual void SetDataStorageForTexture(mitk::DataStorage *storage);
+    virtual void SetDataStorageForTexture(mitk::DataStorage* storage);
 
   protected:
-    typedef std::multimap<int, vtkActor *> LayerSortedActorList;
+
+    typedef std::multimap< int, vtkActor * > LayerSortedActorList;
 
     PlaneGeometryDataVtkMapper3D();
 
-    ~PlaneGeometryDataVtkMapper3D() override;
+    virtual ~PlaneGeometryDataVtkMapper3D();
 
-    void GenerateDataForRenderer(BaseRenderer *renderer) override;
+    virtual void GenerateDataForRenderer(BaseRenderer* renderer) override;
 
-    void ProcessNode(DataNode *node, BaseRenderer *renderer, Surface *surface, LayerSortedActorList &layerSortedActors);
+    void ProcessNode( DataNode * node, BaseRenderer* renderer, Surface * surface, LayerSortedActorList &layerSortedActors );
 
-    void ImageMapperDeletedCallback(itk::Object *caller, const itk::EventObject &event);
+    void ImageMapperDeletedCallback( itk::Object *caller, const itk::EventObject &event );
 
     /** \brief general PropAssembly to hold the entire scene */
     vtkAssembly *m_Prop3DAssembly;
@@ -159,31 +151,31 @@ namespace mitk
     vtkTubeFilter *m_EdgeTuber;
 
     /** \brief Mapper for the tube-shaped frame  */
-    vtkPolyDataMapper *m_EdgeMapper;
+    vtkOpenGLPolyDataMapper *m_EdgeMapper;
 
     /** \brief Actor for the tube-shaped frame */
     vtkActor *m_EdgeActor;
 
     /** \brief Mapper for black plane background */
-    vtkPolyDataMapper *m_BackgroundMapper;
+    vtkOpenGLPolyDataMapper *m_BackgroundMapper;
 
     /** \brief Actor for black plane background */
     vtkActor *m_BackgroundActor;
 
     /** \brief Transforms the suface before applying the glyph filter */
-    vtkTransformPolyDataFilter *m_NormalsTransformer;
+    vtkTransformPolyDataFilter* m_NormalsTransformer;
 
     /** \brief Mapper for normals representation (thin lines) */
-    vtkPolyDataMapper *m_FrontNormalsMapper;
-    vtkPolyDataMapper *m_BackNormalsMapper;
+    vtkOpenGLPolyDataMapper* m_FrontNormalsMapper;
+    vtkOpenGLPolyDataMapper* m_BackNormalsMapper;
 
     /** \brief  Generates lines for surface normals */
-    vtkHedgeHog *m_FrontHedgeHog;
-    vtkHedgeHog *m_BackHedgeHog;
+    vtkHedgeHog* m_FrontHedgeHog;
+    vtkHedgeHog* m_BackHedgeHog;
 
     /** \brief Actor to hold the normals arrows */
-    vtkActor *m_FrontNormalsActor;
-    vtkActor *m_BackNormalsActor;
+    vtkActor* m_FrontNormalsActor;
+    vtkActor* m_BackNormalsActor;
 
     /** Cleans the polyline in order to avoid phantom boundaries */
     vtkCleanPolyData *m_Cleaner;
@@ -197,13 +189,13 @@ namespace mitk
     class MITKCORE_EXPORT ActorInfo
     {
     public:
-      vtkActor *m_Actor;
+      vtkActor * m_Actor;
       // we do not need a smart-pointer, because we delete our
       // connection, when the referenced mapper is destroyed
-      itk::Object *m_Sender;
+      itk::Object* m_Sender;
       unsigned long m_ObserverID;
 
-      void Initialize(vtkActor *actor, itk::Object *sender, itk::Command *command);
+      void Initialize(vtkActor* actor, itk::Object* sender, itk::Command* command);
 
       ActorInfo();
       ~ActorInfo();
@@ -212,11 +204,11 @@ namespace mitk
     /** \brief List holding the vtkActor to map the image into 3D for each
     * ImageMapper
     */
-    typedef std::map<ImageVtkMapper2D *, ActorInfo> ActorList;
+    typedef std::map< ImageVtkMapper2D *, ActorInfo > ActorList;
     ActorList m_ImageActors;
 
     // responsiblity to remove the observer upon its destruction
-    typedef itk::MemberCommand<PlaneGeometryDataVtkMapper3D> MemberCommandType;
+    typedef itk::MemberCommand< PlaneGeometryDataVtkMapper3D > MemberCommandType;
     MemberCommandType::Pointer m_ImageMapperDeletedCommand;
   };
 } // namespace mitk

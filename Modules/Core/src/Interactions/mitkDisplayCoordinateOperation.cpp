@@ -14,13 +14,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #include "mitkDisplayCoordinateOperation.h"
 
+
 mitk::DisplayCoordinateOperation::DisplayCoordinateOperation(mitk::OperationType operationType,
-                                                             mitk::BaseRenderer *renderer,
-                                                             const mitk::Point2D &startDisplayCoordinate,
-                                                             const mitk::Point2D &lastDisplayCoordinate,
-                                                             const mitk::Point2D &currentDisplayCoordinate)
+        mitk::BaseRenderer* renderer,
+        const mitk::Point2D& startDisplayCoordinate,
+        const mitk::Point2D& lastDisplayCoordinate,
+        const mitk::Point2D& currentDisplayCoordinate
+)
   : mitk::Operation(operationType),
     m_Renderer(renderer),
     m_StartDisplayCoordinate(startDisplayCoordinate),
@@ -30,11 +33,12 @@ mitk::DisplayCoordinateOperation::DisplayCoordinateOperation(mitk::OperationType
 }
 
 mitk::DisplayCoordinateOperation::DisplayCoordinateOperation(mitk::OperationType operationType,
-                                                             mitk::BaseRenderer *renderer,
-                                                             const mitk::Point2D &startDisplayCoordinate,
-                                                             const mitk::Point2D &lastDisplayCoordinate,
-                                                             const mitk::Point2D &currentDisplayCoordinate,
-                                                             const mitk::Point2D &startCoordinateInMM)
+        mitk::BaseRenderer* renderer,
+        const mitk::Point2D& startDisplayCoordinate,
+        const mitk::Point2D& lastDisplayCoordinate,
+        const mitk::Point2D& currentDisplayCoordinate,
+        const mitk::Point2D& startCoordinateInMM
+)
   : mitk::Operation(operationType),
     m_Renderer(renderer),
     m_StartDisplayCoordinate(startDisplayCoordinate),
@@ -44,26 +48,27 @@ mitk::DisplayCoordinateOperation::DisplayCoordinateOperation(mitk::OperationType
 {
 }
 
+
 mitk::DisplayCoordinateOperation::~DisplayCoordinateOperation()
 {
 }
 
-mitk::BaseRenderer *mitk::DisplayCoordinateOperation::GetRenderer()
+mitk::BaseRenderer* mitk::DisplayCoordinateOperation::GetRenderer()
 {
-  return m_Renderer.Lock();
+    return m_Renderer;
 }
 
 mitk::Vector2D mitk::DisplayCoordinateOperation::GetLastToCurrentDisplayVector()
 {
-  return m_CurrentDisplayCoordinate - m_LastDisplayCoordinate;
+    return m_CurrentDisplayCoordinate-m_LastDisplayCoordinate;
 }
 
 mitk::Vector2D mitk::DisplayCoordinateOperation::GetStartToCurrentDisplayVector()
 {
-  return m_CurrentDisplayCoordinate - m_StartDisplayCoordinate;
+    return m_CurrentDisplayCoordinate-m_StartDisplayCoordinate;
 }
 
 mitk::Vector2D mitk::DisplayCoordinateOperation::GetStartToLastDisplayVector()
 {
-  return m_LastDisplayCoordinate - m_StartDisplayCoordinate;
+    return m_LastDisplayCoordinate-m_StartDisplayCoordinate;
 }

@@ -18,49 +18,50 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef VTKMAPPER_H_HEADER_INCLUDED_C1C5453B
 #define VTKMAPPER_H_HEADER_INCLUDED_C1C5453B
 
+#include <MitkCoreExports.h>
+#include "mitkMapper.h"
 #include "mitkBaseRenderer.h"
 #include "mitkDataNode.h"
-#include "mitkLocalStorageHandler.h"
-#include "mitkMapper.h"
 #include "mitkVtkPropRenderer.h"
-#include <MitkCoreExports.h>
+#include "mitkLocalStorageHandler.h"
 #include <mitkCoreServices.h>
 
+#include <vtkProp3D.h>
 #include <vtkActor.h>
+#include <vtkProperty.h>
 #include <vtkLinearTransform.h>
 #include <vtkMapper.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProp3D.h>
-#include <vtkProp3DCollection.h>
 #include <vtkPropAssembly.h>
-#include <vtkProperty.h>
+#include <vtkOpenGLPolyDataMapper.h>
+#include <vtkProp3DCollection.h>
 
 class vtkProp;
 class vtkProp3D;
 class vtkActor;
 
-namespace mitk
+namespace mitk {
+
+/** \brief Base class of all Vtk Mappers in order to display primitives
+* by exploiting Vtk functionality.
+*
+* Rendering of opaque, translucent or volumetric geometry and overlays
+* is done in consecutive render passes.
+*
+* \ingroup Mapper
+*/
+class MITKCORE_EXPORT VtkMapper : public Mapper
 {
-  /** \brief Base class of all Vtk Mappers in order to display primitives
-  * by exploiting Vtk functionality.
-  *
-  * Rendering of opaque, translucent or volumetric geometry and overlays
-  * is done in consecutive render passes.
-  *
-  * \ingroup Mapper
-  */
-  class MITKCORE_EXPORT VtkMapper : public Mapper
-  {
   public:
-    mitkClassMacro(VtkMapper, Mapper);
+    mitkClassMacro(VtkMapper,Mapper);
 
-    virtual vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) = 0;
+    virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer) = 0;
 
-    /**
-    * \brief Returns whether this is an vtk-based mapper
-    * \deprecatedSince{2013_03} All mappers of superclass VTKMapper are vtk based, use a dynamic_cast instead
-    */
-    DEPRECATED(virtual bool IsVtkBased() const override);
+     /**
+     * \brief Returns whether this is an vtk-based mapper
+     * \deprecatedSince{2013_03} All mappers of superclass VTKMapper are vtk based, use a dynamic_cast instead
+     */
+    DEPRECATED( virtual bool IsVtkBased() const override );
+
 
     /** \brief Determines which geometry should be rendered
     * (opaque, translucent, volumetric, overlay)
@@ -68,26 +69,26 @@ namespace mitk
     *
     * Called by mitk::VtkPropRenderer::Render
     */
-    void MitkRender(mitk::BaseRenderer *renderer, mitk::VtkPropRenderer::RenderType type) override;
+    void MitkRender(mitk::BaseRenderer* renderer, mitk::VtkPropRenderer::RenderType type, vtkInformation* info = nullptr) override;
 
     /** \brief Checks visibility and renders the overlay */
-    virtual void MitkRenderOverlay(BaseRenderer *renderer);
+    virtual void MitkRenderOverlay(BaseRenderer* renderer);
 
     /** \brief Checks visibility and renders untransparent geometry */
-    virtual void MitkRenderOpaqueGeometry(BaseRenderer *renderer);
+    virtual void MitkRenderOpaqueGeometry(BaseRenderer* renderer);
 
     /** \brief Checks visiblity and renders transparent geometry */
-    virtual void MitkRenderTranslucentGeometry(BaseRenderer *renderer);
+    virtual void MitkRenderTranslucentGeometry(BaseRenderer* renderer);
 
     /** \brief Checks visibility and renders volumes */
-    virtual void MitkRenderVolumetricGeometry(BaseRenderer *renderer);
+    virtual void MitkRenderVolumetricGeometry(BaseRenderer* renderer);
 
     /** \brief Returns true if this mapper owns the specified vtkProp for
     * the given BaseRenderer.
     *
     * Note: returns false by default; should be implemented for VTK-based
     * Mapper subclasses. */
-    virtual bool HasVtkProp(const vtkProp *prop, BaseRenderer *renderer);
+    virtual bool HasVtkProp( const vtkProp *prop, BaseRenderer *renderer );
 
     /** \brief Set the vtkTransform of the m_Prop3D for
     * the current time step of \a renderer
@@ -105,24 +106,23 @@ namespace mitk
 
     /**
     * \brief Apply color and opacity properties read from the PropertyList
-    * \deprecatedSince{2013_03} Use ApplyColorAndOpacityProperties(mitk::BaseRenderer* renderer, vtkActor * actor)
-    * instead
+    * \deprecatedSince{2013_03} Use ApplyColorAndOpacityProperties(mitk::BaseRenderer* renderer, vtkActor * actor) instead
     */
-    DEPRECATED(inline virtual void ApplyProperties(vtkActor *actor, mitk::BaseRenderer *renderer))
+    DEPRECATED(inline virtual void ApplyProperties(vtkActor* actor, mitk::BaseRenderer* renderer))
     {
       ApplyColorAndOpacityProperties(renderer, actor);
     }
 
     /**
-    * \deprecatedSince{2018_04}
+    * \deprecatedSince{2017_08}
     */
-    DEPRECATED(void ApplyShaderProperties(mitk::BaseRenderer *)){}
+    DEPRECATED(void ApplyShaderProperties( mitk::BaseRenderer* )){};
 
     /**
     * \brief Apply color and opacity properties read from the PropertyList.
     * Called by mapper subclasses.
     */
-    void ApplyColorAndOpacityProperties(mitk::BaseRenderer *renderer, vtkActor *actor) override;
+    virtual void ApplyColorAndOpacityProperties(mitk::BaseRenderer* renderer, vtkActor * actor) override;
 
     /**
     * \brief  Release vtk-based graphics resources that are being consumed by this mapper.
@@ -131,25 +131,45 @@ namespace mitk
     * determine which graphic resources to release.  The local storage is accessible
     * by the parameter renderer. Should be overwritten in subclasses.
     */
-    virtual void ReleaseGraphicsResources(mitk::BaseRenderer * /*renderer*/) {}
-
-    class LocalStorage : public mitk::Mapper::BaseLocalStorage
+    virtual void ReleaseGraphicsResources(mitk::BaseRenderer* /*renderer*/)
     {
+    }
+
+    class VtkMapperLocalStorage : public mitk::Mapper::BaseLocalStorage
+    {
+    public:
+
+      itk::TimeStamp m_ModifiedTimeStamp;
+
+      VtkMapperLocalStorage()
+      {
+      }
+
+      ~VtkMapperLocalStorage()
+      {
+
+      }
+
     };
 
+    mitk::LocalStorageHandler<VtkMapperLocalStorage> m_VtkMapperLSH;
+
   protected:
+
     /** constructor */
     VtkMapper();
 
     /** virtual destructor in order to derive from this class */
-    ~VtkMapper() override;
+    virtual ~VtkMapper();
 
   private:
+
     /** copy constructor */
-    VtkMapper(const VtkMapper &);
+    VtkMapper( const VtkMapper &);
 
     /** assignment operator */
-    VtkMapper &operator=(const VtkMapper &);
-  };
+    VtkMapper & operator=(const VtkMapper &);
+
+};
 } // namespace mitk
 #endif /* VTKMAPPER_H_HEADER_INCLUDED_C1C5453B */

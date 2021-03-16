@@ -14,12 +14,13 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef MITKPointSetVtkMAPPER3D_H_HEADER_INCLUDED_C1907273
 #define MITKPointSetVtkMAPPER3D_H_HEADER_INCLUDED_C1907273
 
-#include "mitkBaseRenderer.h"
-#include "mitkVtkMapper.h"
 #include <MitkCoreExports.h>
+#include "mitkVtkMapper.h"
+#include "mitkBaseRenderer.h"
 #include <vtkSmartPointer.h>
 
 class vtkActor;
@@ -28,11 +29,11 @@ class vtkPropAssembly;
 class vtkAppendPolyData;
 class vtkPolyData;
 class vtkTubeFilter;
-class vtkPolyDataMapper;
+class vtkOpenGLPolyDataMapper;
 class vtkTransformPolyDataFilter;
 
-namespace mitk
-{
+namespace mitk {
+
   class PointSet;
 
   /**
@@ -96,36 +97,41 @@ namespace mitk
   public:
     mitkClassMacro(PointSetVtkMapper3D, VtkMapper);
 
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+    itkFactorylessNewMacro(Self)
+    itkCloneMacro(Self)
 
-      virtual const mitk::PointSet *GetInput();
+    virtual const mitk::PointSet* GetInput();
 
-    // overwritten from VtkMapper3D to be able to return a
-    // m_PointsAssembly which is much faster than a vtkAssembly
-    vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) override;
-    void UpdateVtkTransform(mitk::BaseRenderer *renderer) override;
+    //overwritten from VtkMapper3D to be able to return a
+    //m_PointsAssembly which is much faster than a vtkAssembly
+    virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer) override;
+    virtual void UpdateVtkTransform(mitk::BaseRenderer* renderer) override;
 
-    static void SetDefaultProperties(mitk::DataNode *node, mitk::BaseRenderer *renderer = nullptr, bool overwrite = false);
+
+    static void SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer = NULL, bool overwrite = false);
 
     /*
     * \deprecatedSince{2013_12} Use ReleaseGraphicsResources(mitk::BaseRenderer* renderer) instead
     */
     DEPRECATED(void ReleaseGraphicsResources(vtkWindow *renWin));
 
-    void ReleaseGraphicsResources(mitk::BaseRenderer *renderer) override;
+    void ReleaseGraphicsResources(mitk::BaseRenderer* renderer) override;
 
     LocalStorageHandler<BaseLocalStorage> m_LSH;
 
   protected:
     PointSetVtkMapper3D();
 
-    ~PointSetVtkMapper3D() override;
+    virtual ~PointSetVtkMapper3D();
 
-    void GenerateDataForRenderer(mitk::BaseRenderer *renderer) override;
-    void ResetMapper(BaseRenderer *renderer) override;
-    virtual void ApplyAllProperties(mitk::BaseRenderer *renderer, vtkActor *actor);
-    virtual void CreateContour(vtkPoints *points, vtkCellArray *connections);
+    void CreateEdgeObjectsBetweenPoints(itk::Point<float> point1, itk::Point<float> point2);
+
+    virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer) override;
+    virtual void ResetMapper( BaseRenderer* renderer ) override;
+    virtual void ApplyAllProperties(mitk::BaseRenderer* renderer, vtkActor* actor);
+    virtual void CreateContour(vtkPoints* points, vtkCellArray* connections);
     virtual void CreateVTKRenderObjects();
+    virtual void VertexRendering();
 
     /// All point positions, already in world coordinates
     vtkSmartPointer<vtkPoints> m_WorldPositions;
@@ -133,6 +139,7 @@ namespace mitk
     vtkSmartPointer<vtkCellArray> m_PointConnections;
 
     vtkSmartPointer<vtkAppendPolyData> m_vtkSelectedPointList;
+    vtkSmartPointer<vtkAppendPolyData> m_vtkSelectedAreaPointList;
     vtkSmartPointer<vtkAppendPolyData> m_vtkUnselectedPointList;
 
     vtkSmartPointer<vtkPoints> m_VtkPoints;
@@ -140,27 +147,37 @@ namespace mitk
 
     vtkSmartPointer<vtkTransformPolyDataFilter> m_VtkPointsTransformer;
 
-    vtkSmartPointer<vtkPolyDataMapper> m_VtkSelectedPolyDataMapper;
-    vtkSmartPointer<vtkPolyDataMapper> m_VtkUnselectedPolyDataMapper;
+    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_VtkSelectedPolyDataMapper;
+    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_VtkSelectedAreaPolyDataMapper;
+    vtkSmartPointer<vtkOpenGLPolyDataMapper> m_VtkUnselectedPolyDataMapper;
 
     vtkSmartPointer<vtkActor> m_SelectedActor;
+    vtkSmartPointer<vtkActor> m_SelectedAreaActor;
     vtkSmartPointer<vtkActor> m_UnselectedActor;
     vtkSmartPointer<vtkActor> m_ContourActor;
 
     vtkSmartPointer<vtkPropAssembly> m_PointsAssembly;
 
-    // help for contour between points
+    //help for contour between points
     vtkSmartPointer<vtkAppendPolyData> m_vtkTextList;
 
-    // variables to be able to log, how many inputs have been added to PolyDatas
+    //variables to be able to log, how many inputs have been added to PolyDatas
     unsigned int m_NumberOfSelectedAdded;
+    unsigned int m_NumberOfSelectedAreaAdded;
     unsigned int m_NumberOfUnselectedAdded;
+    
 
-    // variables to check if an update of the vtk objects is needed
+    //variables to check if an update of the vtk objects is needed
     ScalarType m_PointSize;
     ScalarType m_ContourRadius;
+
+    bool m_VertexRendering;
+
+    bool m_ShowEdge;
   };
+
 
 } // namespace mitk
 
 #endif /* MITKPointSetVtkMAPPER3D_H_HEADER_INCLUDED_C1907273 */
+

@@ -14,18 +14,19 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef MITKWEAKPOINTERPROPERTY_H_HEADER_INCLUDED_C126B791
 #define MITKWEAKPOINTERPROPERTY_H_HEADER_INCLUDED_C126B791
 
-#include "itkWeakPointer.h"
-#include "mitkBaseProperty.h"
 #include <MitkCoreExports.h>
+#include "mitkBaseProperty.h"
+#include "itkWeakPointer.h"
 
-namespace mitk
-{
+namespace mitk {
+
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4522)
+# pragma warning(push)
+# pragma warning(disable: 4522)
 #endif
 
   //##Documentation
@@ -37,43 +38,47 @@ namespace mitk
   public:
     mitkClassMacro(WeakPointerProperty, BaseProperty);
 
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self) mitkNewMacro1Param(WeakPointerProperty, itk::Object *);
+    itkFactorylessNewMacro(Self)
+    itkCloneMacro(Self)
+    mitkNewMacro1Param(WeakPointerProperty, itk::Object*);
 
-    ~WeakPointerProperty() override;
+    virtual ~WeakPointerProperty();
 
     typedef itk::WeakPointer<itk::Object> ValueType;
 
     ValueType GetWeakPointer() const;
     ValueType GetValue() const;
 
-    void SetWeakPointer(itk::Object *pointer);
-    void SetValue(const ValueType &value);
+    void SetWeakPointer(itk::Object* pointer);
+    void SetValue(const ValueType& value);
 
-    std::string GetValueAsString() const override;
+    virtual std::string GetValueAsString() const override;
 
     using BaseProperty::operator=;
 
   protected:
     itk::WeakPointer<itk::Object> m_WeakPointer;
 
-    WeakPointerProperty(const WeakPointerProperty &);
+    WeakPointerProperty(const WeakPointerProperty&);
 
-    WeakPointerProperty(itk::Object *pointer = nullptr);
+    WeakPointerProperty(itk::Object* pointer = nullptr);
 
   private:
     // purposely not implemented
-    WeakPointerProperty &operator=(const WeakPointerProperty &);
+    WeakPointerProperty& operator=(const WeakPointerProperty&);
 
     itk::LightObject::Pointer InternalClone() const override;
 
-    bool IsEqual(const BaseProperty &property) const override;
-    bool Assign(const BaseProperty &property) override;
+    virtual bool IsEqual(const BaseProperty& property) const override;
+    virtual bool Assign(const BaseProperty& property) override;
   };
 
 #ifdef _MSC_VER
-#pragma warning(pop)
+# pragma warning(pop)
 #endif
 
 } // namespace mitk
+
+
 
 #endif /* MITKWEAKPOINTERPROPERTY_H_HEADER_INCLUDED_C126B791 */

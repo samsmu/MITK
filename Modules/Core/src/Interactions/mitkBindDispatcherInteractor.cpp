@@ -16,19 +16,20 @@
 
 #include "mitkBindDispatcherInteractor.h"
 #include "mitkMessage.h"
-#include <cstring>
+#include <string.h>
 
 // us
 #include "usGetModuleContext.h"
 #include "usModule.h"
 #include "usModuleRegistry.h"
 
-mitk::BindDispatcherInteractor::BindDispatcherInteractor(const std::string &rendererName) : m_DataStorage(nullptr)
+mitk::BindDispatcherInteractor::BindDispatcherInteractor( const std::string& rendererName ) :
+    m_DataStorage(NULL)
 {
-  us::ModuleContext *context = us::ModuleRegistry::GetModule(1)->GetModuleContext();
-  if (context == nullptr)
+  us::ModuleContext* context = us::ModuleRegistry::GetModule(1)->GetModuleContext();
+  if (context == NULL)
   {
-    MITK_ERROR << "BindDispatcherInteractor() - Context could not be obtained.";
+    MITK_ERROR<< "BindDispatcherInteractor() - Context could not be obtained.";
     return;
   }
 
@@ -39,13 +40,19 @@ void mitk::BindDispatcherInteractor::SetDataStorage(mitk::DataStorage::Pointer d
 {
   // Set/Change Datastorage. This registers BDI to listen for events of DataStorage, to be informed when
   // a DataNode with a Interactor is added/modified/removed.
-
   if (dataStorage != m_DataStorage)
   {
     // clean up events from previous datastorage
     UnRegisterDataStorageEvents();
     m_DataStorage = dataStorage;
     RegisterDataStorageEvents();
+
+    // Register existing interactors
+    auto nodes = m_DataStorage->GetAll();
+    for (auto node : *nodes) 
+    {
+      RegisterInteractor(node);
+    }
   }
 }
 
@@ -57,30 +64,31 @@ mitk::BindDispatcherInteractor::~BindDispatcherInteractor()
   }
 }
 
-void mitk::BindDispatcherInteractor::RegisterInteractor(const mitk::DataNode *dataNode)
+void mitk::BindDispatcherInteractor::RegisterInteractor(const mitk::DataNode* dataNode)
 {
   if (m_Dispatcher.IsNotNull())
   {
     m_Dispatcher->AddDataInteractor(dataNode);
   }
+
 }
 
 void mitk::BindDispatcherInteractor::RegisterDataStorageEvents()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->AddNodeEvent.AddListener(MessageDelegate1<BindDispatcherInteractor, const DataNode *>(
-      this, &BindDispatcherInteractor::RegisterInteractor));
+    m_DataStorage->AddNodeEvent.AddListener(
+        MessageDelegate1<BindDispatcherInteractor, const DataNode*>(this, &BindDispatcherInteractor::RegisterInteractor));
 
-    m_DataStorage->RemoveNodeEvent.AddListener(MessageDelegate1<BindDispatcherInteractor, const DataNode *>(
-      this, &BindDispatcherInteractor::UnRegisterInteractor));
+    m_DataStorage->RemoveNodeEvent.AddListener(
+        MessageDelegate1<BindDispatcherInteractor, const DataNode*>(this, &BindDispatcherInteractor::UnRegisterInteractor));
 
-    m_DataStorage->InteractorChangedNodeEvent.AddListener(MessageDelegate1<BindDispatcherInteractor, const DataNode *>(
-      this, &BindDispatcherInteractor::RegisterInteractor));
+    m_DataStorage->InteractorChangedNodeEvent.AddListener(
+        MessageDelegate1<BindDispatcherInteractor, const DataNode*>(this, &BindDispatcherInteractor::RegisterInteractor));
   }
 }
 
-void mitk::BindDispatcherInteractor::UnRegisterInteractor(const DataNode *dataNode)
+void mitk::BindDispatcherInteractor::UnRegisterInteractor(const DataNode* dataNode)
 {
   if (m_Dispatcher.IsNotNull())
   {
@@ -102,12 +110,11 @@ void mitk::BindDispatcherInteractor::UnRegisterDataStorageEvents()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->AddNodeEvent.RemoveListener(MessageDelegate1<BindDispatcherInteractor, const DataNode *>(
-      this, &BindDispatcherInteractor::RegisterInteractor));
-    m_DataStorage->RemoveNodeEvent.RemoveListener(MessageDelegate1<BindDispatcherInteractor, const DataNode *>(
-      this, &BindDispatcherInteractor::UnRegisterInteractor));
+    m_DataStorage->AddNodeEvent.RemoveListener(
+        MessageDelegate1<BindDispatcherInteractor, const DataNode*>(this, &BindDispatcherInteractor::RegisterInteractor));
+    m_DataStorage->RemoveNodeEvent.RemoveListener(
+        MessageDelegate1<BindDispatcherInteractor, const DataNode*>(this, &BindDispatcherInteractor::UnRegisterInteractor));
     m_DataStorage->InteractorChangedNodeEvent.RemoveListener(
-      MessageDelegate1<BindDispatcherInteractor, const DataNode *>(this,
-                                                                   &BindDispatcherInteractor::RegisterInteractor));
+        MessageDelegate1<BindDispatcherInteractor, const DataNode*>(this, &BindDispatcherInteractor::RegisterInteractor));
   }
 }

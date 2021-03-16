@@ -17,37 +17,38 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkCoreActivator.h"
 
 // File IO
-#include <mitkGeometryDataReaderService.h>
-#include <mitkGeometryDataWriterService.h>
-#include <mitkIOMimeTypes.h>
 #include <mitkIOUtil.h>
-#include <mitkImageVtkLegacyIO.h>
-#include <mitkImageVtkXmlIO.h>
+#include <mitkIOMimeTypes.h>
 #include <mitkItkImageIO.h>
 #include <mitkMimeTypeProvider.h>
 #include <mitkPointSetReaderService.h>
 #include <mitkPointSetWriterService.h>
+#include <mitkGeometryDataReaderService.h>
+#include <mitkGeometryDataWriterService.h>
 #include <mitkRawImageFileReader.h>
 #include <mitkSurfaceStlIO.h>
 #include <mitkSurfaceVtkLegacyIO.h>
 #include <mitkSurfaceVtkXmlIO.h>
+#include <mitkImageVtkXmlIO.h>
+#include <mitkImageVtkLegacyIO.h>
 
-#include "mitkLegacyFileWriterService.h"
 #include <mitkFileWriter.h>
+#include "mitkLegacyFileWriterService.h"
+#include "mitkDicomSeriesReaderService.h"
 
-#include <itkGDCMImageIO.h>
 #include <itkNiftiImageIO.h>
+#include <itkGDCMImageIO.h>
 
 // Micro Services
 #include <usGetModuleContext.h>
-#include <usModule.h>
+#include <usModuleInitialization.h>
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
+#include <usModuleSettings.h>
 #include <usModuleEvent.h>
-#include <usModuleInitialization.h>
+#include <usModule.h>
 #include <usModuleResource.h>
 #include <usModuleResourceStream.h>
-#include <usModuleSettings.h>
 #include <usServiceTracker.h>
 
 // ITK "injects" static initialization code for IO factories
@@ -58,26 +59,26 @@ See LICENSE.txt or http://www.mitk.org for details.
 // method), we include the ITK header here.
 #include <itkImageIOFactoryRegisterManager.h>
 
-void HandleMicroServicesMessages(us::MsgType type, const char *msg)
+void HandleMicroServicesMessages(us::MsgType type, const char* msg)
 {
   switch (type)
   {
-    case us::DebugMsg:
-      MITK_DEBUG << msg;
-      break;
-    case us::InfoMsg:
-      MITK_INFO << msg;
-      break;
-    case us::WarningMsg:
-      MITK_WARN << msg;
-      break;
-    case us::ErrorMsg:
-      MITK_ERROR << msg;
-      break;
+  case us::DebugMsg:
+    MITK_DEBUG << msg;
+    break;
+  case us::InfoMsg:
+    MITK_INFO << msg;
+    break;
+  case us::WarningMsg:
+    MITK_WARN << msg;
+    break;
+  case us::ErrorMsg:
+    MITK_ERROR << msg;
+    break;
   }
 }
 
-void AddMitkAutoLoadPaths(const std::string &programPath)
+void AddMitkAutoLoadPaths(const std::string& programPath)
 {
   us::ModuleSettings::AddAutoLoadPath(programPath);
 #ifdef __APPLE__
@@ -85,7 +86,7 @@ void AddMitkAutoLoadPaths(const std::string &programPath)
   // for build trees.
   std::string additionalPath = programPath;
   bool addPath = true;
-  for (int i = 0; i < 3; ++i)
+  for(int i = 0; i < 3; ++i)
   {
     std::size_t index = additionalPath.find_last_of('/');
     if (index != std::string::npos)
@@ -108,24 +109,26 @@ void AddMitkAutoLoadPaths(const std::string &programPath)
 class FixedNiftiImageIO : public itk::NiftiImageIO
 {
 public:
+
   /** Standard class typedefs. */
-  typedef FixedNiftiImageIO Self;
-  typedef itk::NiftiImageIO Superclass;
-  typedef itk::SmartPointer<Self> Pointer;
+  typedef FixedNiftiImageIO         Self;
+  typedef itk::NiftiImageIO         Superclass;
+  typedef itk::SmartPointer< Self > Pointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self)
 
-    /** Run-time type information (and related methods). */
-    itkTypeMacro(FixedNiftiImageIO, Superclass)
+  /** Run-time type information (and related methods). */
+  itkTypeMacro(FixedNiftiImageIO, Superclass)
 
-      bool SupportsDimension(unsigned long dim) override
+  virtual bool SupportsDimension(unsigned long dim) override
   {
     return dim > 1 && dim < 5;
   }
+
 };
 
-void MitkCoreActivator::Load(us::ModuleContext *context)
+void MitkCoreActivator::Load(us::ModuleContext* context)
 {
   // Handle messages from CppMicroServices
   us::installMsgHandler(HandleMicroServicesMessages);
@@ -144,8 +147,8 @@ void MitkCoreActivator::Load(us::ModuleContext *context)
     AddMitkAutoLoadPaths(programPath);
   }
 
-  // m_RenderingManager = mitk::RenderingManager::New();
-  // context->RegisterService<mitk::RenderingManager>(renderingManager.GetPointer());
+  //m_RenderingManager = mitk::RenderingManager::New();
+  //context->RegisterService<mitk::RenderingManager>(renderingManager.GetPointer());
   m_PlanePositionManager.reset(new mitk::PlanePositionManagerService);
   context->RegisterService<mitk::PlanePositionManagerService>(m_PlanePositionManager.get());
 
@@ -164,9 +167,6 @@ void MitkCoreActivator::Load(us::ModuleContext *context)
   m_PropertyPersistence.reset(new mitk::PropertyPersistence);
   context->RegisterService<mitk::IPropertyPersistence>(m_PropertyPersistence.get());
 
-  m_PropertyRelations.reset(new mitk::PropertyRelations);
-  context->RegisterService<mitk::IPropertyRelations>(m_PropertyRelations.get());
-
   m_MimeTypeProvider.reset(new mitk::MimeTypeProvider);
   m_MimeTypeProvider->Start();
   m_MimeTypeProviderReg = context->RegisterService<mitk::IMimeTypeProvider>(m_MimeTypeProvider.get());
@@ -180,6 +180,7 @@ void MitkCoreActivator::Load(us::ModuleContext *context)
   m_FileWriters.push_back(new mitk::PointSetWriterService());
   m_FileReaders.push_back(new mitk::GeometryDataReaderService());
   m_FileWriters.push_back(new mitk::GeometryDataWriterService());
+  m_FileReaders.push_back(new mitk::DicomSeriesReaderService());
   m_FileReaders.push_back(new mitk::RawImageFileReaderService());
 
   /*
@@ -194,24 +195,24 @@ void MitkCoreActivator::Load(us::ModuleContext *context)
   this->RegisterLegacyWriter();
 }
 
-void MitkCoreActivator::Unload(us::ModuleContext *)
+void MitkCoreActivator::Unload(us::ModuleContext* )
 {
-  for (auto &elem : m_FileReaders)
+  for(auto & elem : m_FileReaders)
   {
     delete elem;
   }
 
-  for (auto &elem : m_FileWriters)
+  for(auto & elem : m_FileWriters)
   {
     delete elem;
   }
 
-  for (auto &elem : m_FileIOs)
+  for(auto & elem : m_FileIOs)
   {
     delete elem;
   }
 
-  for (auto &elem : m_LegacyWriters)
+  for(auto & elem : m_LegacyWriters)
   {
     delete elem;
   }
@@ -228,10 +229,8 @@ void MitkCoreActivator::Unload(us::ModuleContext *)
   m_MimeTypeProviderReg.Unregister();
   m_MimeTypeProvider->Stop();
 
-  for (std::vector<mitk::CustomMimeType *>::const_iterator mimeTypeIter = m_DefaultMimeTypes.begin(),
-                                                           iterEnd = m_DefaultMimeTypes.end();
-       mimeTypeIter != iterEnd;
-       ++mimeTypeIter)
+  for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = m_DefaultMimeTypes.begin(),
+       iterEnd = m_DefaultMimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
   {
     delete *mimeTypeIter;
   }
@@ -241,10 +240,9 @@ void MitkCoreActivator::RegisterDefaultMimeTypes()
 {
   // Register some default mime-types
 
-  std::vector<mitk::CustomMimeType *> mimeTypes = mitk::IOMimeTypes::Get();
-  for (std::vector<mitk::CustomMimeType *>::const_iterator mimeTypeIter = mimeTypes.begin(), iterEnd = mimeTypes.end();
-       mimeTypeIter != iterEnd;
-       ++mimeTypeIter)
+  std::vector<mitk::CustomMimeType*> mimeTypes = mitk::IOMimeTypes::Get();
+  for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = mimeTypes.begin(),
+       iterEnd = mimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
   {
     m_DefaultMimeTypes.push_back(*mimeTypeIter);
     m_Context->RegisterService(m_DefaultMimeTypes.back());
@@ -253,19 +251,19 @@ void MitkCoreActivator::RegisterDefaultMimeTypes()
 
 void MitkCoreActivator::RegisterItkReaderWriter()
 {
-  std::list<itk::LightObject::Pointer> allobjects = itk::ObjectFactoryBase::CreateAllInstance("itkImageIOBase");
+  std::list<itk::LightObject::Pointer> allobjects =
+    itk::ObjectFactoryBase::CreateAllInstance("itkImageIOBase");
 
-  for (auto &allobject : allobjects)
+  for (auto & allobject : allobjects)
   {
-    auto *io = dynamic_cast<itk::ImageIOBase *>(allobject.GetPointer());
+    itk::ImageIOBase* io = dynamic_cast<itk::ImageIOBase*>(allobject.GetPointer());
 
     // NiftiImageIO does not provide a correct "SupportsDimension()" methods
     // and the supported read/write extensions are not ordered correctly
-    if (dynamic_cast<itk::NiftiImageIO *>(io))
-      continue;
+    if (dynamic_cast<itk::NiftiImageIO*>(io)) continue;
 
     // Use a custom mime-type for GDCMImageIO below
-    if (dynamic_cast<itk::GDCMImageIO *>(allobject.GetPointer()))
+    if (dynamic_cast<itk::GDCMImageIO*>(allobject.GetPointer()))
     {
       // MITK provides its own DICOM reader (which internally uses GDCMImageIO).
       continue;
@@ -277,12 +275,14 @@ void MitkCoreActivator::RegisterItkReaderWriter()
     }
     else
     {
-      MITK_WARN << "Error ImageIO factory did not return an ImageIOBase: " << (allobject)->GetNameOfClass();
+      MITK_WARN << "Error ImageIO factory did not return an ImageIOBase: "
+                << ( allobject )->GetNameOfClass();
     }
   }
 
   FixedNiftiImageIO::Pointer itkNiftiIO = FixedNiftiImageIO::New();
-  mitk::ItkImageIO *niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 0);
+  mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(),
+                                                   itkNiftiIO.GetPointer(), 0);
   m_FileIOs.push_back(niftiIO);
 }
 
@@ -300,18 +300,21 @@ void MitkCoreActivator::RegisterLegacyWriter()
 {
   std::list<itk::LightObject::Pointer> allobjects = itk::ObjectFactoryBase::CreateAllInstance("IOWriter");
 
-  for (auto i = allobjects.begin(); i != allobjects.end(); ++i)
+  for( std::list<itk::LightObject::Pointer>::iterator i = allobjects.begin();
+       i != allobjects.end(); ++i)
   {
-    mitk::FileWriter::Pointer io = dynamic_cast<mitk::FileWriter *>(i->GetPointer());
-    if (io)
+    mitk::FileWriter::Pointer io = dynamic_cast<mitk::FileWriter*>(i->GetPointer());
+    if(io)
     {
       std::string description = std::string("Legacy ") + io->GetNameOfClass() + " Writer";
-      mitk::IFileWriter *writer = new mitk::LegacyFileWriterService(io, description);
+      mitk::IFileWriter* writer = new mitk::LegacyFileWriterService(io, description);
       m_LegacyWriters.push_back(writer);
     }
     else
     {
-      MITK_ERROR << "Error IOWriter override is not of type mitk::FileWriter: " << (*i)->GetNameOfClass() << std::endl;
+      MITK_ERROR << "Error IOWriter override is not of type mitk::FileWriter: "
+                 << (*i)->GetNameOfClass()
+                 << std::endl;
     }
   }
 }

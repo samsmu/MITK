@@ -16,6 +16,7 @@
 
 #include "mitkInteractionEventObserver.h"
 
+
 mitk::InteractionEventObserver::InteractionEventObserver() : m_IsEnabled(true)
 {
 }

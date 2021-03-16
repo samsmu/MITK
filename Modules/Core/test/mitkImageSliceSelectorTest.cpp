@@ -14,68 +14,69 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <mitkIOUtil.h>
+
 #include <mitkImage.h>
+#include <mitkIOUtil.h>
 #include <mitkImageSliceSelector.h>
 
 #include <fstream>
-int mitkImageSliceSelectorTest(int argc, char *argv[])
+int mitkImageSliceSelectorTest(int argc, char* argv[])
 {
   int slice_nr = 1;
   std::cout << "Loading file: ";
-  if (argc == 0)
+  if(argc==0)
   {
-    std::cout << "no file specified [FAILED]" << std::endl;
+    std::cout<<"no file specified [FAILED]"<<std::endl;
     return EXIT_FAILURE;
   }
 
   mitk::Image::Pointer image;
   try
   {
-    image = mitk::IOUtil::Load<mitk::Image>(argv[1]);
+    image = mitk::IOUtil::LoadImage(argv[1]);
   }
-  catch (const mitk::Exception &)
+  catch ( const mitk::Exception& )
   {
-    std::cout << "file not an image - test will not be applied [PASSED]" << std::endl;
-    std::cout << "[TEST DONE]" << std::endl;
+    std::cout<<"file not an image - test will not be applied [PASSED]"<<std::endl;
+    std::cout<<"[TEST DONE]"<<std::endl;
     return EXIT_SUCCESS;
   }
-  catch (itk::ExceptionObject &ex)
+  catch ( itk::ExceptionObject & ex )
   {
     std::cout << "Exception: " << ex << "[FAILED]" << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (image->GetDimension(2) < 2)
+  if(image->GetDimension(2)<2)
     slice_nr = 0;
 
-  // Take a slice
+  //Take a slice
   mitk::ImageSliceSelector::Pointer slice = mitk::ImageSliceSelector::New();
   slice->SetInput(image);
   slice->SetSliceNr(slice_nr);
   slice->Update();
 
   std::cout << "Testing IsInitialized(): ";
-  if (slice->GetOutput()->IsInitialized() == false)
+  if(slice->GetOutput()->IsInitialized()==false)
   {
-    std::cout << "[FAILED]" << std::endl;
+    std::cout<<"[FAILED]"<<std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "[PASSED]" << std::endl;
+  std::cout<<"[PASSED]"<<std::endl;
 
-  std::cout << "Testing IsSliceSet(): ";
-  if (slice->GetOutput()->IsSliceSet(0) == false)
+  std::cout << "Testing IsVolumeSet(): ";
+  if(slice->GetOutput()->IsVolumeSet(0)==false)
   {
-    std::cout << "[FAILED]" << std::endl;
+    std::cout<<"[FAILED]"<<std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "[PASSED]" << std::endl;
+  std::cout<<"[PASSED]"<<std::endl;
 
   /* deactivated because IpPic is not available any more (see bug 16662)
   if(itksys::SystemTools::LowerCase(itksys::SystemTools::GetFilenameExtension(argv[1])).find(".pic")!=std::string::npos)
   {
     std::cout << "Testing whether the slice is identical with a slice loaded by mitkIpPicGetSlice:";
-    mitkIpPicDescriptor *picslice = mitkIpPicGetSlice(argv[1], nullptr, (image->GetDimension(2)-1-slice_nr)+1);
+    mitkIpPicDescriptor *picslice = mitkIpPicGetSlice(argv[1], NULL, (image->GetDimension(2)-1-slice_nr)+1);
     int i, size = _mitkIpPicSize(picslice);
     char * p1 = (char*)slice->GetPic()->data;
     char * p2 = (char*)picslice->data;
@@ -132,7 +133,7 @@ int mitkImageSliceSelectorTest(int argc, char *argv[])
     }
     std::cout<<"Part 1b [PASSED] ";
   }
-  catch (const  itk::ExceptionObject &err)
+  catch ( itk::ExceptionObject &err)
   {
     std::cout<<"Part 1(with expected exception) ... seems to be not ITK 2.0.0 [PASSED]"<<std::endl;
     std::cout<<err<<std::endl;
@@ -144,68 +145,68 @@ int mitkImageSliceSelectorTest(int argc, char *argv[])
   {
     slice->UpdateLargestPossibleRegion();
   }
-  catch (const itk::ExceptionObject &)
+  catch ( itk::ExceptionObject )
   {
-    std::cout << "Part 2 [FAILED]" << std::endl;
+    std::cout<<"Part 2 [FAILED]"<<std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "Part 2 [PASSED]" << std::endl;
+  std::cout<<"Part 2 [PASSED]"<<std::endl;
 
   std::cout << "Testing IsInitialized(): ";
-  if (slice->GetOutput()->IsInitialized() == false)
+  if(slice->GetOutput()->IsInitialized()==false)
   {
-    std::cout << "[FAILED]" << std::endl;
+    std::cout<<"[FAILED]"<<std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "[PASSED]" << std::endl;
+  std::cout<<"[PASSED]"<<std::endl;
 
-  std::cout << "Testing IsSliceSet(): ";
-  if (slice->GetOutput()->IsSliceSet(0) == false)
+  std::cout << "Testing IsVolumeSet(): ";
+  if(slice->GetOutput()->IsVolumeSet(0)==false)
   {
-    std::cout << "[FAILED]" << std::endl;
+    std::cout<<"[FAILED]"<<std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "[PASSED]" << std::endl;
+  std::cout<<"[PASSED]"<<std::endl;
 
-  if (image->GetDimension(3) > 1)
+  if(image->GetDimension(3) > 1)
   {
-    int time = image->GetDimension(3) - 1;
+    int time=image->GetDimension(3)-1;
 
     std::cout << "Testing 3D+t: Setting time to " << time << ": ";
     slice->SetTimeNr(time);
-    if (slice->GetTimeNr() != time)
+    if(slice->GetTimeNr()!=time)
     {
-      std::cout << "[FAILED]" << std::endl;
+      std::cout<<"[FAILED]"<<std::endl;
       return EXIT_FAILURE;
     }
-    std::cout << "[PASSED]" << std::endl;
+    std::cout<<"[PASSED]"<<std::endl;
 
     std::cout << "Testing 3D+t: Updating slice: ";
     slice->Update();
-    if (slice->GetOutput()->IsInitialized() == false)
+    if(slice->GetOutput()->IsInitialized()==false)
     {
-      std::cout << "[FAILED]" << std::endl;
+      std::cout<<"[FAILED]"<<std::endl;
       return EXIT_FAILURE;
     }
-    std::cout << "[PASSED]" << std::endl;
+    std::cout<<"[PASSED]"<<std::endl;
 
-    std::cout << "Testing 3D+t: IsSliceSet(): ";
-    if (slice->GetOutput()->IsSliceSet(0) == false)
+    std::cout << "Testing 3D+t: IsVolumeSet(): ";
+    if(slice->GetOutput()->IsVolumeSet(0)==false)
     {
-      std::cout << "[FAILED]" << std::endl;
+      std::cout<<"[FAILED]"<<std::endl;
       return EXIT_FAILURE;
     }
-    std::cout << "[PASSED]" << std::endl;
+    std::cout<<"[PASSED]"<<std::endl;
 
     std::cout << "Testing 3D+t: First slice in reader available: ";
-    if (image->IsSliceSet(0, time) == false)
+    if(image->IsVolumeSet(time)==false)
     {
-      std::cout << "[FAILED]" << std::endl;
+      std::cout<<"[FAILED]"<<std::endl;
       return EXIT_FAILURE;
     }
-    std::cout << "[PASSED]" << std::endl;
+    std::cout<<"[PASSED]"<<std::endl;
   }
 
-  std::cout << "[TEST DONE]" << std::endl;
+  std::cout<<"[TEST DONE]"<<std::endl;
   return EXIT_SUCCESS;
 }

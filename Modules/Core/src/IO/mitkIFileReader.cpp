@@ -14,9 +14,13 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #include "mitkIFileReader.h"
 
-namespace mitk
+namespace mitk {
+
+IFileReader::~IFileReader()
 {
-  IFileReader::~IFileReader() {}
+}
+
 }

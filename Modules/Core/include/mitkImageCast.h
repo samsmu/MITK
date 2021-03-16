@@ -14,6 +14,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef MITKIMAGECAST_H_HEADER_INCLUDED
 #define MITKIMAGECAST_H_HEADER_INCLUDED
 
@@ -22,40 +23,38 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <itkImage.h>
 #include <itkVectorImage.h>
+#include <itkVectorIndexSelectionCastImageFilter.h>
 
 namespace mitk
 {
+
 #ifndef DOXYGEN_SKIP
-  template <typename TPixel, unsigned int VImageDimension, class ItkOutputImageType>
-  void _CastToItkImage2Access(const itk::Image<TPixel, VImageDimension> *itkInputImage,
-                              itk::SmartPointer<ItkOutputImageType> &itkOutputImage);
+  template < typename TPixel, unsigned int VImageDimension, class ItkOutputImageType >
+  void _CastToItkImage2Access(const itk::Image<TPixel, VImageDimension>* itkInputImage, itk::SmartPointer<ItkOutputImageType>& itkOutputImage);
 
-  template <typename TPixel, unsigned int VImageDimension, class ItkOutputImageType>
-  void _CastToItkImage2Access(const itk::VectorImage<TPixel, VImageDimension> *itkInputImage,
-                              itk::SmartPointer<ItkOutputImageType> &itkOutputImage);
-#endif // DOXYGEN_SKIP
+  template < typename TPixel, unsigned int VImageDimension, class ItkOutputImageType >
+  void _CastToItkImage2Access(const itk::VectorImage<TPixel, VImageDimension>* itkInputImage, itk::SmartPointer<ItkOutputImageType>& itkOutputImage);
+#endif //DOXYGEN_SKIP
 
-  /**
-   * @brief Cast an mitk::Image to an itk::Image with a specific type.
-   *
-   * This method casts the pixel types and copies the image memory if necessary. If
-   * the requested pixel type is equal to the pixel type of the MITK image, the
-   * memory is just referenced.
-   *
-   * Usually, you want the ITK image to reference the same image data as the MITK image
-   * without any casting. In this case use mitk::ImageToItkImage, which generate less
-   * code and is more efficient.
-   *
-   * @param mitkImage The MITK image to be cast to an ITK image
-   * @param itkOutputImage You don't have to initialize the itk::Image<..>::Pointer.
-   *
-   * @sa mitk::ImageToItkImage
-   *
-   * @ingroup Adaptor
-   */
-  template <typename ItkOutputImageType>
-  extern void MITKCORE_EXPORT CastToItkImage(const mitk::Image *mitkImage,
-                                             itk::SmartPointer<ItkOutputImageType> &itkOutputImage);
+ /**
+  * @brief Cast an mitk::Image to an itk::Image with a specific type.
+  *
+  * This method casts the pixel types and copies the image memory if necessary. If
+  * the requested pixel type is equal to the pixel type of the MITK image, the
+  * memory is just referenced.
+  *
+  * Usually, you want the ITK image to reference the same image data as the MITK image
+  * without any casting. In this case use mitk::ImageToItkImage, which generate less
+  * code and is more efficient.
+  *
+  * @param mitkImage The MITK image to be cast to an ITK image
+  * @param itkOutputImage You don't have to initialize the itk::Image<..>::Pointer.
+  *
+  * @sa mitk::ImageToItkImage
+  *
+  * @ingroup Adaptor
+  */
+ template <typename ItkOutputImageType> extern void MITKCORE_EXPORT CastToItkImage(const mitk::Image * mitkImage, itk::SmartPointer<ItkOutputImageType>& itkOutputImage);
 
   /**
    * @brief Cast an mitk::Image to an itk::VectorImage with a specific type.
@@ -64,8 +63,25 @@ namespace mitk
    * @ingroup Adaptor
    */
   template <typename TPixelType, unsigned int VImageDimension>
-  extern void MITKCORE_EXPORT CastToItkImage(
-    const mitk::Image *mitkImage, itk::SmartPointer<itk::VectorImage<TPixelType, VImageDimension>> &itkOutputImage);
+  extern void MITKCORE_EXPORT CastToItkImage(const mitk::Image * mitkImage, itk::SmartPointer<itk::VectorImage<TPixelType,VImageDimension> >& itkOutputImage);
+
+  template <typename TPixelType, unsigned int VImageDimension>
+  void CastToItkImageSingleComponent(const mitk::Image* mitkImage, itk::SmartPointer<itk::Image<TPixelType, VImageDimension> >& itkOutputImage, int component)
+  {
+    if (mitkImage->GetPixelType().GetNumberOfComponents() == 1) {
+      CastToItkImage(mitkImage, itkOutputImage);
+    } else {
+      typename itk::VectorImage<TPixelType, VImageDimension>::Pointer temp = itk::VectorImage<TPixelType, VImageDimension>::New();
+      CastToItkImage(mitkImage, temp);
+
+      using ComponentFilterType = itk::VectorIndexSelectionCastImageFilter<itk::VectorImage<TPixelType, VImageDimension>, itk::Image<TPixelType, VImageDimension>>;
+      typename ComponentFilterType::Pointer componentFilter = ComponentFilterType::New();
+      componentFilter->SetIndex(component);
+      componentFilter->SetInput(temp);
+      componentFilter->Update();
+      itkOutputImage = componentFilter->GetOutput();
+    }
+  }
 
   /**
    * @brief Cast an itk::Image (with a specific type) to an mitk::Image.
@@ -75,8 +91,7 @@ namespace mitk
    * \sa mitkITKImageImport
    */
   template <typename ItkOutputImageType>
-  void CastToMitkImage(const itk::SmartPointer<ItkOutputImageType> &itkimage,
-                       itk::SmartPointer<mitk::Image> &mitkoutputimage)
+  void CastToMitkImage(const itk::SmartPointer<ItkOutputImageType>& itkimage, itk::SmartPointer<mitk::Image>& mitkoutputimage)
   {
     CastToMitkImage(itkimage.GetPointer(), mitkoutputimage);
   }
@@ -89,14 +104,14 @@ namespace mitk
    * \sa mitkITKImageImport
    */
   template <typename ItkOutputImageType>
-  void CastToMitkImage(const ItkOutputImageType *itkimage, itk::SmartPointer<mitk::Image> &mitkoutputimage)
+  void CastToMitkImage(const ItkOutputImageType* itkimage, itk::SmartPointer<mitk::Image>& mitkoutputimage)
   {
-    if (mitkoutputimage.IsNull())
+    if(mitkoutputimage.IsNull())
     {
       mitkoutputimage = mitk::Image::New();
     }
     mitkoutputimage->InitializeByItk(itkimage);
-    mitkoutputimage->SetChannel(itkimage->GetBufferPointer());
+    mitkoutputimage->SetVolume(itkimage->GetBufferPointer());
   }
 }
 

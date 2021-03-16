@@ -16,14 +16,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <string>
 
-#include "mitkTestFixture.h"
 #include "mitkTestingMacros.h"
+#include "mitkTestFixture.h"
 
 #include "mitkMatrix.h"
+
 
 class mitkMatrixTypeConversionTestSuite : public mitk::TestFixture
 
 {
+
   CPPUNIT_TEST_SUITE(mitkMatrixTypeConversionTestSuite);
 
   MITK_TEST(Mitk2Pod);
@@ -32,8 +34,10 @@ class mitkMatrixTypeConversionTestSuite : public mitk::TestFixture
   CPPUNIT_TEST_SUITE_END();
 
 private:
-  mitk::Matrix3D mitkMatrix3D;
-  mitk::ScalarType podMatrix3D[3][3];
+
+  mitk::Matrix3D   mitkMatrix3D;
+  mitk::ScalarType  podMatrix3D[3][3];
+
 
   /**
    * @brief Convenience method to test if one matrix has been assigned successfully to the other.
@@ -44,7 +48,7 @@ private:
    * @param m2    The matrix m2 of the assignment m1 = m2
    */
   template <typename T1, typename T2>
-  void TestForEquality(const T1 &m1, const T2 &m2)
+  void TestForEquality(const T1& m1, const T2& m2)
   {
     for (unsigned i = 0; i < 3; i++)
     {
@@ -53,23 +57,30 @@ private:
         std::stringstream ss;
         ss << "element [" << i << "][" << j << "] equal for mitkMatrix and podMatrix";
 
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(ss.str(), true, (m1[i][j] == m2[i][j]));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(ss.str(), true,
+            (m1[i][j]==m2[i][j]));
       }
     }
   }
 
+
 public:
+
   void setUp(void) override
   {
     for (unsigned i = 0; i < 3; i++)
       for (unsigned j = 0; j < 3; j++)
       {
         mitkMatrix3D[i][j] = i + j;
-        podMatrix3D[i][j] = (mitk::ScalarType)(9 - (i + j));
+        podMatrix3D[i][j]  = (mitk::ScalarType) (9 - (i + j));
       }
   }
 
-  void tearDown(void) override {}
+  void tearDown(void) override
+  {
+
+  }
+
   void Mitk2Pod(void)
   {
     mitkMatrix3D.ToArray(podMatrix3D);
@@ -83,6 +94,7 @@ public:
 
     TestForEquality(podMatrix3D, mitkMatrix3D);
   }
+
 };
 
 MITK_TEST_SUITE_REGISTRATION(mitkMatrixTypeConversion)

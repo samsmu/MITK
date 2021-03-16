@@ -17,82 +17,84 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef MITKVTKABSTRACTTRANSFORM_H_HEADER_INCLUDED_C1C68A2C
 #define MITKVTKABSTRACTTRANSFORM_H_HEADER_INCLUDED_C1C68A2C
 
-#include "itkTransform.h"
 #include <MitkCoreExports.h>
+#include "itkTransform.h"
 
 class vtkAbstractTransform;
 
-namespace itk
+namespace itk {
+
+//##Documentation
+//## @brief Adapter from vtkAbstractTransform to itk::Transform<TScalarType, 3, 3>
+//## @ingroup Geometry
+template <class TScalarType>
+class VtkAbstractTransform : public itk::Transform<TScalarType, 3, 3>
 {
+public:
+  typedef VtkAbstractTransform  Self;
+  typedef Transform< TScalarType, 3, 3 >  Superclass;
+  typedef SmartPointer<Self>        Pointer;
+  typedef SmartPointer<const Self>  ConstPointer;
+  typedef typename Superclass::OutputPointType OutputPointType;
+  typedef typename Superclass::OutputVectorType OutputVectorType;
+  typedef typename Superclass::OutputVnlVectorType OutputVnlVectorType;
+  typedef typename Superclass::OutputCovariantVectorType OutputCovariantVectorType;
+  typedef typename Superclass::InputPointType InputPointType;
+  typedef typename Superclass::InputVectorType InputVectorType;
+  typedef typename Superclass::InputVnlVectorType InputVnlVectorType;
+  typedef typename Superclass::InputCovariantVectorType InputCovariantVectorType;
+  typedef typename Superclass::ParametersType ParametersType;
+  typedef typename Superclass::JacobianType JacobianType;
+
+
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+
   //##Documentation
-  //## @brief Adapter from vtkAbstractTransform to itk::Transform<TScalarType, 3, 3>
-  //## @ingroup Geometry
-  template <class TScalarType>
-  class VtkAbstractTransform : public itk::Transform<TScalarType, 3, 3>
-  {
-  public:
-    typedef VtkAbstractTransform Self;
-    typedef Transform<TScalarType, 3, 3> Superclass;
-    typedef SmartPointer<Self> Pointer;
-    typedef SmartPointer<const Self> ConstPointer;
-    typedef typename Superclass::OutputPointType OutputPointType;
-    typedef typename Superclass::OutputVectorType OutputVectorType;
-    typedef typename Superclass::OutputVnlVectorType OutputVnlVectorType;
-    typedef typename Superclass::OutputCovariantVectorType OutputCovariantVectorType;
-    typedef typename Superclass::InputPointType InputPointType;
-    typedef typename Superclass::InputVectorType InputVectorType;
-    typedef typename Superclass::InputVnlVectorType InputVnlVectorType;
-    typedef typename Superclass::InputCovariantVectorType InputCovariantVectorType;
-    typedef typename Superclass::ParametersType ParametersType;
-    typedef typename Superclass::JacobianType JacobianType;
+  //## @brief Get the vtkAbstractTransform (stored in m_VtkAbstractTransform)
+  virtual vtkAbstractTransform* GetVtkAbstractTransform() const;
+  //##Documentation
+  //## @brief Get the inverse vtkAbstractTransform (stored in m_InverseVtkAbstractTransform)
+  virtual vtkAbstractTransform* GetInverseVtkAbstractTransform() const;
 
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+  //##Documentation
+  //## @brief Set the vtkAbstractTransform (stored in m_VtkAbstractTransform)
+  virtual void SetVtkAbstractTransform(vtkAbstractTransform* aVtkAbstractTransform);
 
-      //##Documentation
-      //## @brief Get the vtkAbstractTransform (stored in m_VtkAbstractTransform)
-      virtual vtkAbstractTransform *GetVtkAbstractTransform() const;
-    //##Documentation
-    //## @brief Get the inverse vtkAbstractTransform (stored in m_InverseVtkAbstractTransform)
-    virtual vtkAbstractTransform *GetInverseVtkAbstractTransform() const;
+  using Superclass::TransformVector;
+  using Superclass::TransformCovariantVector;
 
-    //##Documentation
-    //## @brief Set the vtkAbstractTransform (stored in m_VtkAbstractTransform)
-    virtual void SetVtkAbstractTransform(vtkAbstractTransform *aVtkAbstractTransform);
+  virtual OutputPointType TransformPoint(const InputPointType  & ) const override;
+  virtual OutputVectorType TransformVector(const InputVectorType &) const override;
+  virtual OutputVnlVectorType TransformVector(const InputVnlVectorType &) const override;
+  virtual OutputCovariantVectorType TransformCovariantVector(const InputCovariantVectorType &) const override;
 
-    using Superclass::TransformVector;
-    using Superclass::TransformCovariantVector;
+  virtual InputPointType BackTransform(const OutputPointType  &point ) const;
+  virtual InputVectorType BackTransform(const OutputVectorType &vector) const;
+  virtual InputVnlVectorType BackTransform(const OutputVnlVectorType &vector) const;
+  virtual InputCovariantVectorType BackTransform(const OutputCovariantVectorType &vector) const;
 
-    OutputPointType TransformPoint(const InputPointType &) const override;
-    OutputVectorType TransformVector(const InputVectorType &) const override;
-    OutputVnlVectorType TransformVector(const InputVnlVectorType &) const override;
-    OutputCovariantVectorType TransformCovariantVector(const InputCovariantVectorType &) const override;
+  virtual void SetParameters(const ParametersType&) override;
+  virtual void SetFixedParameters(const ParametersType&) override;
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType&, JacobianType&) const override;
+  virtual void ComputeJacobianWithRespectToPosition(const InputPointType&, JacobianType&) const override;
 
-    virtual InputPointType BackTransform(const OutputPointType &point) const;
-    virtual InputVectorType BackTransform(const OutputVectorType &vector) const;
-    virtual InputVnlVectorType BackTransform(const OutputVnlVectorType &vector) const;
-    virtual InputCovariantVectorType BackTransform(const OutputCovariantVectorType &vector) const;
+  virtual unsigned long GetMTime() const override;
 
-    void SetParameters(const ParametersType &) override;
-    void SetFixedParameters(const ParametersType &) override;
-    void ComputeJacobianWithRespectToParameters(const InputPointType &, JacobianType &) const override;
-    void ComputeJacobianWithRespectToPosition(const InputPointType &, JacobianType &) const override;
+protected:
+  VtkAbstractTransform();
+  virtual ~VtkAbstractTransform();
 
-    unsigned long GetMTime() const override;
+  //##Documentation
+  //## @brief Instance of the vtkAbstractTransform
+  vtkAbstractTransform* m_VtkAbstractTransform;
 
-  protected:
-    VtkAbstractTransform();
-    ~VtkAbstractTransform() override;
+  //##Documentation
+  //## @brief Instance of the vtkAbstractTransform
+  vtkAbstractTransform* m_InverseVtkAbstractTransform;
 
-    //##Documentation
-    //## @brief Instance of the vtkAbstractTransform
-    vtkAbstractTransform *m_VtkAbstractTransform;
-
-    //##Documentation
-    //## @brief Instance of the vtkAbstractTransform
-    vtkAbstractTransform *m_InverseVtkAbstractTransform;
-
-    mutable unsigned long m_LastVtkAbstractTransformTimeStamp;
-  };
+  mutable unsigned long m_LastVtkAbstractTransformTimeStamp;
+};
 
 } // namespace itk
 

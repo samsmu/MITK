@@ -14,25 +14,25 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <iomanip>
 #include <sstream>
+#include <iomanip>
 
 #include "mitkGeometry3D.h"
 
-#include "mitkApplyTransformMatrixOperation.h"
-#include "mitkInteractionConst.h"
-#include "mitkMatrixConvert.h"
-#include "mitkPointOperation.h"
-#include "mitkRestorePlanePositionOperation.h"
 #include "mitkRotationOperation.h"
-#include <vtkMatrix4x4.h>
+#include "mitkRestorePlanePositionOperation.h"
+#include "mitkApplyTransformMatrixOperation.h"
+#include "mitkPointOperation.h"
+#include "mitkInteractionConst.h"
 #include <vtkMatrixToLinearTransform.h>
+#include <vtkMatrix4x4.h>
+#include "mitkMatrixConvert.h"
 
 // Standard constructor for the New() macro. Sets the geometry to 3 dimensions
-mitk::Geometry3D::Geometry3D() : BaseGeometry()
+mitk::Geometry3D::Geometry3D() :  BaseGeometry()
 {
 }
-mitk::Geometry3D::Geometry3D(const Geometry3D &other) : BaseGeometry(other)
+mitk::Geometry3D::Geometry3D(const Geometry3D& other) : BaseGeometry(other)
 {
 }
 

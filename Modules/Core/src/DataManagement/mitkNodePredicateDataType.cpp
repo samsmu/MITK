@@ -16,13 +16,15 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkNodePredicateDataType.h"
 
-#include "mitkBaseData.h"
 #include "mitkDataNode.h"
+#include "mitkBaseData.h"
 
-mitk::NodePredicateDataType::NodePredicateDataType(const char *datatype) : NodePredicateBase()
+mitk::NodePredicateDataType::NodePredicateDataType(const char* datatype)
+: NodePredicateBase()
 {
   if (datatype == nullptr)
     throw std::invalid_argument("NodePredicateDataType: invalid datatype");
+
 
   m_ValidDataType = datatype;
 }
@@ -31,15 +33,17 @@ mitk::NodePredicateDataType::~NodePredicateDataType()
 {
 }
 
-bool mitk::NodePredicateDataType::CheckNode(const mitk::DataNode *node) const
+
+bool mitk::NodePredicateDataType::CheckNode(const mitk::DataNode* node) const
 {
   if (node == nullptr)
     throw std::invalid_argument("NodePredicateDataType: invalid node");
 
-  mitk::BaseData *data = node->GetData();
+
+  mitk::BaseData* data = node->GetData();
 
   if (data == nullptr)
-    return false; // or should we check if m_ValidDataType == "nullptr" so that nodes without data can be requested?
+    return false;  // or should we check if m_ValidDataType == "NULL" so that nodes without data can be requested?
 
-  return (m_ValidDataType.compare(data->GetNameOfClass()) == 0); // return true if data type matches
+  return ( m_ValidDataType.compare(data->GetNameOfClass()) == 0); // return true if data type matches
 }

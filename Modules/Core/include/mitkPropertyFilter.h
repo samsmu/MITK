@@ -17,17 +17,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef mitkPropertyFilter_h
 #define mitkPropertyFilter_h
 
-#include <MitkCoreExports.h>
-#include <map>
 #include <mitkBaseProperty.h>
+#include <map>
 #include <string>
+#include <MitkCoreExports.h>
 
 namespace mitk
 {
   /** \brief Consists of blacklist and whitelist entries.
     *
-    * Blacklist filtering is less restrictive than whitelist filtering since you can filter out individual property
-   * names.
+    * Blacklist filtering is less restrictive than whitelist filtering since you can filter out individual property names.
     * If whitelist entries were added, all other property names are filtered out.
     * In addition, whitelist entries are reduced by blacklist entries.
     */
@@ -45,23 +44,22 @@ namespace mitk
     PropertyFilter();
     ~PropertyFilter();
 
-    PropertyFilter(const PropertyFilter &other);
-    PropertyFilter &operator=(PropertyFilter other);
+    PropertyFilter(const PropertyFilter& other);
+    PropertyFilter& operator=(PropertyFilter other);
 
     /** \brief Add a filter entry for a specific property.
       *
       * \param[in] propertyName Name of the property.
       * \param[in] list Type of the filter entry.
       */
-    void AddEntry(const std::string &propertyName, List list);
+    void AddEntry(const std::string& propertyName, List list);
 
     /** \brief Apply the filter to a property list.
       *
       * \param[in] propertyMap Property list to which the filter is applied.
       * \return Filtered property list.
       */
-    std::map<std::string, BaseProperty::Pointer> Apply(
-      const std::map<std::string, BaseProperty::Pointer> &propertyMap) const;
+    std::map<std::string, BaseProperty::Pointer> Apply(const std::map<std::string, BaseProperty::Pointer>& propertyMap) const;
 
     /** \brief Check if filter has specific entry.
       *
@@ -69,7 +67,7 @@ namespace mitk
       * \param[in] list Type of the filter entry.
       * \return True if property filter has specified entry, false otherwise.
       */
-    bool HasEntry(const std::string &propertyName, List list) const;
+    bool HasEntry(const std::string& propertyName, List list) const;
 
     /** \brief Check if filter is empty.
       *
@@ -88,11 +86,11 @@ namespace mitk
       * \param[in] propertyName Name of property.
       * \param[in] list Filter list from which the entry is removed.
       */
-    void RemoveEntry(const std::string &propertyName, List list);
+    void RemoveEntry(const std::string& propertyName, List list);
 
   private:
     class Impl;
-    Impl *m_Impl;
+    Impl* m_Impl;
   };
 }
 

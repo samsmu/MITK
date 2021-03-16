@@ -17,15 +17,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkProgressBar.h"
 #include "mitkCallbackFromGUIThread.h"
 #include "mitkProgressBarImplementation.h"
-#include <itkCommand.h>
 #include <itkObjectFactory.h>
 #include <itkOutputWindow.h>
+#include <itkCommand.h>
 
 #include <algorithm>
 
 namespace mitk
 {
-  ProgressBar *ProgressBar::m_Instance = nullptr;
+
+  ProgressBar* ProgressBar::m_Instance = nullptr;
 
   /**
    * Sets the current amount of progress to current progress + steps.
@@ -33,13 +34,13 @@ namespace mitk
    */
   void ProgressBar::Progress(unsigned int steps)
   {
-    if (!m_Implementations.empty())
+    if ( !m_Implementations.empty() )
     {
       ProgressBarImplementationsListIterator iter;
-      for (iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++)
+      for ( iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++ )
       {
         // update progress for all ProgressBarImplementations
-        if ((*iter) != nullptr)
+        if ( (*iter) != nullptr )
         {
           (*iter)->Progress(steps);
         }
@@ -52,13 +53,13 @@ namespace mitk
    */
   void ProgressBar::Reset()
   {
-    if (!m_Implementations.empty())
+    if ( !m_Implementations.empty() )
     {
       ProgressBarImplementationsListIterator iter;
-      for (iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++)
+      for ( iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++ )
       {
         // set steps to do for all ProgressBarImplementations
-        if ((*iter) != nullptr)
+        if ( (*iter) != nullptr )
         {
           (*iter)->Reset();
         }
@@ -71,13 +72,13 @@ namespace mitk
    */
   void ProgressBar::AddStepsToDo(unsigned int steps)
   {
-    if (!m_Implementations.empty())
+    if ( !m_Implementations.empty() )
     {
       ProgressBarImplementationsListIterator iter;
-      for (iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++)
+      for ( iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++ )
       {
         // set steps to do for all ProgressBarImplementations
-        if ((*iter) != nullptr)
+        if ( (*iter) != nullptr )
         {
           (*iter)->AddStepsToDo(steps);
         }
@@ -90,13 +91,13 @@ namespace mitk
    */
   void ProgressBar::SetPercentageVisible(bool visible)
   {
-    if (!m_Implementations.empty())
+    if ( !m_Implementations.empty() )
     {
       ProgressBarImplementationsListIterator iter;
-      for (iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++)
+      for ( iter = m_Implementations.begin(); iter != m_Implementations.end(); iter++ )
       {
         // set percentage visible for all ProgressBarImplementations
-        if ((*iter) != nullptr)
+        if ( (*iter) != nullptr )
         {
           (*iter)->SetPercentageVisible(visible);
         }
@@ -107,7 +108,7 @@ namespace mitk
   /**
    * Get the instance of this ProgressBar
    */
-  ProgressBar *ProgressBar::GetInstance()
+  ProgressBar* ProgressBar::GetInstance()
   {
     if (m_Instance == nullptr)
     {
@@ -120,23 +121,43 @@ namespace mitk
   /**
    * Set an instance of this; application must do this!See Header!
    */
-  void ProgressBar::RegisterImplementationInstance(ProgressBarImplementation *implementation)
+  void ProgressBar::RegisterImplementationInstance(ProgressBarImplementation* implementation)
   {
-    if (std::find(m_Implementations.begin(), m_Implementations.end(), implementation) == m_Implementations.end())
+    if ( std::find( m_Implementations.begin(), m_Implementations.end(), implementation ) == m_Implementations.end() )
     {
-      m_Implementations.push_back(implementation);
+      m_Implementations.push_back( implementation );
     }
   }
 
-  void ProgressBar::UnregisterImplementationInstance(ProgressBarImplementation *implementation)
+  void ProgressBar::UnregisterImplementationInstance(ProgressBarImplementation* implementation)
   {
-    auto iter = std::find(m_Implementations.begin(), m_Implementations.end(), implementation);
-    if (iter != m_Implementations.end())
+    auto iter = std::find( m_Implementations.begin(), m_Implementations.end(), implementation );
+    if ( iter != m_Implementations.end() )
     {
-      m_Implementations.erase(iter);
+      m_Implementations.erase( iter );
     }
   }
 
-  ProgressBar::ProgressBar() {}
-  ProgressBar::~ProgressBar() {}
-} // end namespace mitk
+  bool ProgressBar::IsProgressBarActive() const
+  {
+    for (auto impl : m_Implementations) 
+    {
+      if (impl->active())
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  ProgressBar::ProgressBar()
+  {
+  }
+
+  ProgressBar::~ProgressBar()
+  {
+  }
+
+}//end namespace mitk
+

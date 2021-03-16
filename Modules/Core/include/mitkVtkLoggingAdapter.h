@@ -14,6 +14,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef VtkLoggingAdapter_H_HEADER_INCLUDED
 #define VtkLoggingAdapter_H_HEADER_INCLUDED
 
@@ -21,35 +22,37 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkOutputWindow.h>
 #include <vtkSmartPointer.h>
 
-namespace mitk
+namespace mitk {
+
+/**
+ * @brief Adapter that overwrites the standard vtk logging output window and sends the logging messages to the MITK logging instead.
+ * @ingroup IO
+ */
+class MITKCORE_EXPORT VtkLoggingAdapter : public vtkOutputWindow
 {
-  /**
-   * @brief Adapter that overwrites the standard vtk logging output window and sends the logging messages to the MITK
-   * logging instead.
-   * @ingroup IO
-   */
-  class MITKCORE_EXPORT VtkLoggingAdapter : public vtkOutputWindow
-  {
-  public:
-    static VtkLoggingAdapter *New();
+public:
 
-    /** @brief Initializes the logging adapter. Vtk logging
-      *        messages are redirected to MITK logging afterwards.
-      */
-    static void Initialize();
+  static VtkLoggingAdapter* New();
 
-    void DisplayText(const char *t) override;
+  /** @brief Initializes the logging adapter. Vtk logging
+    *        messages are redirected to MITK logging afterwards.
+    */
+  static void Initialize();
 
-    void DisplayErrorText(const char *t) override;
+  virtual void DisplayText(const char* t) override;
 
-    void DisplayWarningText(const char *t) override;
+  virtual void DisplayErrorText(const char *t) override;
 
-    void DisplayGenericWarningText(const char *t) override;
+  virtual void DisplayWarningText(const char *t) override;
 
-    void DisplayDebugText(const char *t) override;
+  virtual void DisplayGenericWarningText(const char *t) override;
 
-  protected:
-  };
+  virtual void DisplayDebugText(const char *t) override;
+
+
+protected:
+
+};
 
 } // namespace mitk
 

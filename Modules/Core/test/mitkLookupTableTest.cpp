@@ -16,9 +16,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkLookupTable.h>
 
+#include <mitkTestFixture.h>
 #include "mitkTestingMacros.h"
 #include <mitkNumericTypes.h>
-#include <mitkTestFixture.h>
 
 #include <iostream>
 #include <vtkColorTransferFunction.h>
@@ -39,6 +39,7 @@ private:
   mitk::LookupTable::Pointer m_LookupTable;
 
 public:
+
   void TestCreateLookupTable()
   {
     // let's create an object of our class
@@ -48,7 +49,7 @@ public:
     CPPUNIT_ASSERT_MESSAGE("Testing instantiation", myLookupTable.IsNotNull());
   }
 
-  void TestSetVtkLookupTable()
+  void TestSetVtkLookupTable ()
   {
     mitk::LookupTable::Pointer myLookupTable = mitk::LookupTable::New();
 
@@ -63,7 +64,7 @@ public:
     // check if the same lookuptable is returned
     vtkLookupTable *lut2 = myLookupTable->GetVtkLookupTable();
 
-    CPPUNIT_ASSERT_MESSAGE("Input and output table are not equal", lut == lut2);
+    CPPUNIT_ASSERT_MESSAGE("Input and output table are not equal",lut == lut2);
 
     lut->Delete();
   }
@@ -95,7 +96,7 @@ public:
     lut->Delete();
   }
 
-  void TestCreateColorTransferFunction()
+  void TestCreateColorTransferFunction ()
   {
     mitk::LookupTable::Pointer myLookupTable = mitk::LookupTable::New();
 
@@ -118,13 +119,14 @@ public:
       colorTransferFunction->GetIndexedColor(i, rgbaFunction);
       CPPUNIT_ASSERT_MESSAGE("Wrong color of transfer function",
                              mitk::Equal(rgbaTable[0], rgbaFunction[0], 0.000001, true) &&
-                               mitk::Equal(rgbaTable[1], rgbaFunction[1], 0.000001, true) &&
-                               mitk::Equal(rgbaTable[2], rgbaFunction[2], 0.000001, true));
+                             mitk::Equal(rgbaTable[1], rgbaFunction[1], 0.000001, true) &&
+                             mitk::Equal(rgbaTable[2], rgbaFunction[2], 0.000001, true)
+                             );
     }
     lut->Delete();
   }
 
-  void TestCreateOpacityTransferFunction()
+  void TestCreateOpacityTransferFunction ()
   {
     mitk::LookupTable::Pointer myLookupTable = mitk::LookupTable::New();
 
@@ -144,13 +146,15 @@ public:
     for (int i = 0; i < funcSize; ++i)
     {
       lut->GetIndexedColor(i, rgba);
-      CPPUNIT_ASSERT_MESSAGE("Wrong opacity of transfer function", mitk::Equal(table[i], rgba[3], 0.000001, true));
+      CPPUNIT_ASSERT_MESSAGE("Wrong opacity of transfer function",
+                             mitk::Equal(table[i], rgba[3], 0.000001, true)
+                             );
     }
     lut->Delete();
-    delete[] table;
+    delete [] table;
   }
 
-  void TestCreateGradientTransferFunction()
+  void TestCreateGradientTransferFunction ()
   {
     mitk::LookupTable::Pointer myLookupTable = mitk::LookupTable::New();
 
@@ -158,6 +162,7 @@ public:
     vtkLookupTable *lut = vtkLookupTable::New();
     lut->SetAlphaRange(0, 0.73);
     lut->Build();
+
 
     myLookupTable->SetVtkLookupTable(lut);
     vtkSmartPointer<vtkPiecewiseFunction> gradientTransferFunction = myLookupTable->CreateGradientTransferFunction();
@@ -170,10 +175,13 @@ public:
     for (int i = 0; i < funcSize; ++i)
     {
       lut->GetIndexedColor(i, rgba);
-      CPPUNIT_ASSERT_MESSAGE("Wrong opacity of transfer function", mitk::Equal(table[i], rgba[3], 0.000001, true));
+      CPPUNIT_ASSERT_MESSAGE("Wrong opacity of transfer function",
+                             mitk::Equal(table[i], rgba[3], 0.000001, true)
+                             );
     }
     lut->Delete();
-    delete[] table;
+    delete [] table;
   }
 };
 MITK_TEST_SUITE_REGISTRATION(mitkLookupTable)
+

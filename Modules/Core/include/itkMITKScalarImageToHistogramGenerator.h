@@ -17,73 +17,81 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef __itkMITKScalarImageToHistogramGenerator_h
 #define __itkMITKScalarImageToHistogramGenerator_h
 
+
 #include <itkImageToListSampleAdaptor.h>
-#include <itkObject.h>
 #include <itkSampleToHistogramFilter.h>
+#include <itkObject.h>
 
-namespace itk
+
+namespace itk {
+namespace Statistics {
+
+template <class TImageType, class TMeasurementType = typename TImageType::PixelType>
+class MITKScalarImageToHistogramGenerator : public Object
 {
-  namespace Statistics
-  {
-    template <class TImageType, class TMeasurementType = typename TImageType::PixelType>
-    class MITKScalarImageToHistogramGenerator : public Object
-    {
-    public:
-      /** Standard typedefs */
-      typedef MITKScalarImageToHistogramGenerator Self;
-      typedef Object Superclass;
-      typedef SmartPointer<Self> Pointer;
-      typedef SmartPointer<const Self> ConstPointer;
+public:
+  /** Standard typedefs */
+  typedef MITKScalarImageToHistogramGenerator  Self;
+  typedef Object                               Superclass;
+  typedef SmartPointer<Self>                   Pointer;
+  typedef SmartPointer<const Self>             ConstPointer;
 
-      /** Run-time type information (and related methods). */
-      itkTypeMacro(MITKScalarImageToHistogramGenerator, Object);
+  /** Run-time type information (and related methods). */
+  itkTypeMacro(MITKScalarImageToHistogramGenerator, Object);
 
-      /** standard New() method support */
-      itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+  /** standard New() method support */
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
 
-        typedef TImageType ImageType;
-      typedef itk::Statistics::ImageToListSampleAdaptor<ImageType> AdaptorType;
-      typedef typename AdaptorType::Pointer AdaptorPointer;
-      typedef typename ImageType::PixelType PixelType;
+  typedef TImageType ImageType;
+  typedef itk::Statistics::ImageToListSampleAdaptor<ImageType> AdaptorType;
+  typedef typename AdaptorType::Pointer AdaptorPointer;
+  typedef typename ImageType::PixelType PixelType;
 
-      typedef itk::Statistics::Histogram<TMeasurementType, itk::Statistics::DenseFrequencyContainer2> HistogramType;
-      typedef itk::Statistics::SampleToHistogramFilter<AdaptorType, HistogramType> GeneratorType;
+  typedef itk::Statistics::Histogram<TMeasurementType, itk::Statistics::DenseFrequencyContainer2> HistogramType;
+  typedef itk::Statistics::SampleToHistogramFilter<AdaptorType, HistogramType> GeneratorType;
 
-      typedef typename GeneratorType::Pointer GeneratorPointer;
+  typedef typename GeneratorType::Pointer GeneratorPointer;
 
-      typedef typename HistogramType::Pointer HistogramPointer;
-      typedef typename HistogramType::ConstPointer HistogramConstPointer;
+  typedef typename HistogramType::Pointer HistogramPointer;
+  typedef typename HistogramType::ConstPointer HistogramConstPointer;
 
-    public:
-      /** Triggers the Computation of the histogram */
-      void Compute(void);
+public:
 
-      /** Connects the input image for which the histogram is going to be computed */
-      void SetInput(const ImageType *);
+  /** Triggers the Computation of the histogram */
+  void Compute( void );
 
-      /** Return the histogram. o
-       \warning This output is only valid after the Compute() method has been invoked
-       \sa Compute */
-      const HistogramType *GetOutput() const;
+  /** Connects the input image for which the histogram is going to be computed */
+  void SetInput( const ImageType * );
 
-      /** Set number of histogram bins */
-      void SetNumberOfBins(unsigned int numberOfBins);
+  /** Return the histogram. o
+   \warning This output is only valid after the Compute() method has been invoked
+   \sa Compute */
+  const HistogramType * GetOutput() const;
 
-      /** Set marginal scale value to be passed to the histogram generator */
-      void SetMarginalScale(double marginalScale);
+  /** Set number of histogram bins */
+  void SetNumberOfBins( unsigned int numberOfBins );
 
-    protected:
-      MITKScalarImageToHistogramGenerator();
-      ~MITKScalarImageToHistogramGenerator() override{};
-      void PrintSelf(std::ostream &os, Indent indent) const override;
+  /** Set marginal scale value to be passed to the histogram generator */
+  void SetMarginalScale( double marginalScale );
 
-    private:
-      AdaptorPointer m_ImageToListAdaptor;
 
-      GeneratorPointer m_HistogramGenerator;
-    };
+protected:
+  MITKScalarImageToHistogramGenerator();
+  virtual ~MITKScalarImageToHistogramGenerator() {};
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
-  } // end of namespace Statistics
+
+private:
+
+  AdaptorPointer      m_ImageToListAdaptor;
+
+  GeneratorPointer    m_HistogramGenerator;
+
+};
+
+
+} // end of namespace Statistics
 } // end of namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION

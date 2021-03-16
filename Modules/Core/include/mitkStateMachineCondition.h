@@ -51,7 +51,8 @@ namespace mitk
   class StateMachineCondition
   {
   public:
-    StateMachineCondition(const std::string &, const bool inverted);
+
+    StateMachineCondition( const std::string&, const bool inverted );
     ~StateMachineCondition();
 
     /**
@@ -71,6 +72,7 @@ namespace mitk
     * \brief Bool-flag that defines if this condition is to be inverted.
     */
     bool m_Inverted;
+
   };
 
 } // namespace mitk

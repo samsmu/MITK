@@ -15,9 +15,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 #include "mitkSurfaceToImageFilter.h"
-#include "mitkImageWriteAccessor.h"
+#include "mitkImageAccessLock.h"
+#include "mitkImageVtkAccessor.h"
 #include "mitkTimeHelper.h"
-#include <mitkImageReadAccessor.h>
 
 #include <vtkImageData.h>
 #include <vtkImageStencil.h>
@@ -26,11 +26,14 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkPolyDataNormals.h>
 #include <vtkPolyDataToImageStencil.h>
 #include <vtkSmartPointer.h>
-#include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkTransform.h>
+
 
 mitk::SurfaceToImageFilter::SurfaceToImageFilter()
-  : m_MakeOutputBinary(false), m_UShortBinaryPixelType(false), m_BackgroundValue(-10000), m_Tolerance(0.0)
+: m_MakeOutputBinary( false ),
+  m_UShortBinaryPixelType( false ),
+  m_BackgroundValue( -10000 )
 {
 }
 
@@ -40,32 +43,33 @@ mitk::SurfaceToImageFilter::~SurfaceToImageFilter()
 
 void mitk::SurfaceToImageFilter::GenerateInputRequestedRegion()
 {
-  mitk::Image *output = this->GetOutput();
-  if ((output->IsInitialized() == false))
+  mitk::Image* output = this->GetOutput();
+  if((output->IsInitialized()==false) )
     return;
 
-  GenerateTimeInInputRegion(output, const_cast<mitk::Image *>(this->GetImage()));
+  GenerateTimeInInputRegion(output, const_cast< mitk::Image * > ( this->GetImage() ));
 }
 
 void mitk::SurfaceToImageFilter::GenerateOutputInformation()
 {
-  mitk::Image *inputImage = (mitk::Image *)this->GetImage();
+  mitk::Image *inputImage = (mitk::Image*)this->GetImage();
   mitk::Image::Pointer output = this->GetOutput();
 
-  itkDebugMacro(<< "GenerateOutputInformation()");
+  itkDebugMacro(<<"GenerateOutputInformation()");
 
-  if ((inputImage == nullptr) || (inputImage->IsInitialized() == false) || (inputImage->GetTimeGeometry() == nullptr))
-    return;
+  if((inputImage == nullptr) ||
+     (inputImage->IsInitialized() == false) ||
+     (inputImage->GetTimeGeometry() == nullptr)) return;
 
   if (m_MakeOutputBinary)
   {
     if (m_UShortBinaryPixelType)
     {
-      output->Initialize(mitk::MakeScalarPixelType<unsigned short>(), *inputImage->GetTimeGeometry());
+      output->Initialize(mitk::MakeScalarPixelType<unsigned short>() , *inputImage->GetTimeGeometry());
     }
     else
     {
-      output->Initialize(mitk::MakeScalarPixelType<unsigned char>(), *inputImage->GetTimeGeometry());
+      output->Initialize(mitk::MakeScalarPixelType<unsigned char>() , *inputImage->GetTimeGeometry());
     }
   }
   else
@@ -81,28 +85,28 @@ void mitk::SurfaceToImageFilter::GenerateData()
   mitk::Image::ConstPointer inputImage = this->GetImage();
   mitk::Image::Pointer output = this->GetOutput();
 
-  if (inputImage.IsNull())
+  if(inputImage.IsNull())
     return;
 
-  if (output->IsInitialized() == false)
+  if(output->IsInitialized()==false )
     return;
 
   mitk::Image::RegionType outputRegion = output->GetRequestedRegion();
 
-  int tstart = outputRegion.GetIndex(3);
-  int tmax = tstart + outputRegion.GetSize(3);
+  int tstart=outputRegion.GetIndex(3);
+  int tmax=tstart+outputRegion.GetSize(3);
 
-  if (tmax > 0)
+  if ( tmax > 0)
   {
     int t;
-    for (t = tstart; t < tmax; ++t)
+    for(t=tstart;t<tmax;++t)
     {
-      Stencil3DImage(t);
+        Stencil3DImage( t );
     }
   }
   else
   {
-    Stencil3DImage(0);
+    Stencil3DImage( 0 );
   }
 }
 
@@ -116,17 +120,17 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
   {
     if (m_UShortBinaryPixelType)
     {
-      binaryImage->Initialize(mitk::MakeScalarPixelType<unsigned short>(), *this->GetImage()->GetTimeGeometry(), 1, 1);
+      binaryImage->Initialize(mitk::MakeScalarPixelType<unsigned short>(), *this->GetImage()->GetTimeGeometry(),1,1);
       size = sizeof(unsigned short);
     }
     else
     {
-      binaryImage->Initialize(mitk::MakeScalarPixelType<unsigned char>(), *this->GetImage()->GetTimeGeometry(), 1, 1);
+      binaryImage->Initialize(mitk::MakeScalarPixelType<unsigned char>(), *this->GetImage()->GetTimeGeometry(),1,1);
     }
   }
   else
   {
-    binaryImage->Initialize(this->GetImage()->GetPixelType(), *this->GetImage()->GetTimeGeometry(), 1, 1);
+    binaryImage->Initialize(this->GetImage()->GetPixelType(), *this->GetImage()->GetTimeGeometry(),1,1);
     size = this->GetImage()->GetPixelType().GetSize();
   }
 
@@ -135,8 +139,11 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
     size *= binaryImage->GetDimension(i);
   }
 
-  mitk::ImageWriteAccessor accessor(binaryImage);
-  memset(accessor.GetData(), 1, size);
+  mitk::ImageRegionAccessor accessor(binaryImage);
+  {
+    mitk::ImageAccessLock accessLock(&accessor, true);
+    memset(accessLock.getAccessor()->getPixel(0), 1, size);
+  }
 
   const mitk::TimeGeometry *surfaceTimeGeometry = GetInput()->GetTimeGeometry();
   const mitk::TimeGeometry *imageTimeGeometry = GetImage()->GetTimeGeometry();
@@ -145,23 +152,23 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
   mitk::TimePointType matchingTimePoint = imageTimeGeometry->TimeStepToTimePoint(time);
   mitk::TimeStepType surfaceTimeStep = surfaceTimeGeometry->TimePointToTimeStep(matchingTimePoint);
 
-  vtkPolyData *polydata = ((mitk::Surface *)GetInput())->GetVtkPolyData(surfaceTimeStep);
-  if (polydata)
+  vtkPolyData * polydata = ( (mitk::Surface*)GetInput() )->GetVtkPolyData( surfaceTimeStep );
+  if(polydata)
   {
     vtkSmartPointer<vtkTransformPolyDataFilter> move = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     move->SetInputData(polydata);
     move->ReleaseDataFlagOn();
 
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-    BaseGeometry *geometry = surfaceTimeGeometry->GetGeometryForTimeStep(surfaceTimeStep);
-    if (!geometry)
+    BaseGeometry* geometry = surfaceTimeGeometry->GetGeometryForTimeStep( surfaceTimeStep );
+    if(!geometry)
     {
       geometry = GetInput()->GetGeometry();
     }
     transform->PostMultiply();
     transform->Concatenate(geometry->GetVtkTransform()->GetMatrix());
     // take image geometry into account. vtk-Image information will be changed to unit spacing and zero origin below.
-    BaseGeometry *imageGeometry = imageTimeGeometry->GetGeometryForTimeStep(time);
+    BaseGeometry* imageGeometry = imageTimeGeometry->GetGeometryForTimeStep(time);
     transform->Concatenate(imageGeometry->GetVtkTransform()->GetLinearInverse());
     move->SetTransform(transform);
 
@@ -175,13 +182,16 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
     normalsFilter->SetInputConnection(move->GetOutputPort());
 
     vtkSmartPointer<vtkPolyDataToImageStencil> surfaceConverter = vtkSmartPointer<vtkPolyDataToImageStencil>::New();
-    surfaceConverter->SetTolerance(m_Tolerance);
+    surfaceConverter->SetTolerance( 0.0 );
     surfaceConverter->ReleaseDataFlagOn();
 
-    surfaceConverter->SetInputConnection(normalsFilter->GetOutputPort());
+    surfaceConverter->SetInputConnection( normalsFilter->GetOutputPort() );
 
-    vtkImageData *image = m_MakeOutputBinary ? binaryImage->GetVtkImageData() :
-                                               const_cast<mitk::Image *>(this->GetImage())->GetVtkImageData(time);
+    // error: operands to ?: have different types ‘mitk::Image::Pointer {aka itk::SmartPointer<mitk::Image>}’ and ‘mitk::Image*’
+    Image::Pointer targetImage = m_MakeOutputBinary ? binaryImage : Image::Pointer(const_cast<mitk::Image *>(this->GetImage()));
+    ImageVtkAccessor accessor(targetImage);
+    ImageAccessLock lock(&accessor, true);
+    vtkImageData *image = m_MakeOutputBinary ? accessor.getVtkImageData() : accessor.getVtkImageData(time);
 
     // fill the image with foreground voxels:
     unsigned char inval = 1;
@@ -201,15 +211,18 @@ void mitk::SurfaceToImageFilter::Stencil3DImage(int time)
     stencil->SetBackgroundValue(m_MakeOutputBinary ? 0 : m_BackgroundValue);
     stencil->Update();
 
-    output->SetVolume(stencil->GetOutput()->GetScalarPointer(), time);
+    output->SetVolume( stencil->GetOutput()->GetScalarPointer(), time );
     MITK_INFO << "stencil ref count: " << stencil->GetReferenceCount() << std::endl;
   }
   else
   {
-    memset(accessor.GetData(), 0, size);
-    output->SetVolume(accessor.GetData(), time);
+    mitk::ImageAccessLock accessLock(&accessor, true);
+    memset(accessLock.getAccessor()->getPixel(0), 0, size);
+    output->SetVolume(accessLock.getAccessor()->getPixel(0),time);
   }
+
 }
+
 
 const mitk::Surface *mitk::SurfaceToImageFilter::GetInput(void)
 {
@@ -218,21 +231,23 @@ const mitk::Surface *mitk::SurfaceToImageFilter::GetInput(void)
     return nullptr;
   }
 
-  return static_cast<const mitk::Surface *>(this->ProcessObject::GetInput(0));
+  return static_cast<const mitk::Surface * >
+    ( this->ProcessObject::GetInput(0) );
 }
 
 void mitk::SurfaceToImageFilter::SetInput(const mitk::Surface *input)
 {
   // Process object is not const-correct so the const_cast is required here
-  this->ProcessObject::SetNthInput(0, const_cast<mitk::Surface *>(input));
+  this->ProcessObject::SetNthInput(0,
+    const_cast< mitk::Surface * >( input ) );
 }
 
 void mitk::SurfaceToImageFilter::SetImage(const mitk::Image *source)
 {
-  this->ProcessObject::SetNthInput(1, const_cast<mitk::Image *>(source));
+  this->ProcessObject::SetNthInput( 1, const_cast< mitk::Image * >( source ) );
 }
 
 const mitk::Image *mitk::SurfaceToImageFilter::GetImage(void)
 {
-  return static_cast<const mitk::Image *>(this->ProcessObject::GetInput(1));
+  return static_cast< const mitk::Image * >(this->ProcessObject::GetInput(1));
 }

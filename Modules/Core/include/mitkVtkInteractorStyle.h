@@ -35,27 +35,30 @@ See LICENSE.txt or http://www.mitk.org for details.
 class MITKCORE_EXPORT mitkVtkInteractorStyle : public vtkInteractorStyleUser
 {
 public:
+
   // default VTK c'tor
   static mitkVtkInteractorStyle *New();
-  vtkTypeMacro(mitkVtkInteractorStyle, vtkInteractorStyleUser);
+  vtkTypeMacro(mitkVtkInteractorStyle,vtkInteractorStyleUser);
 
   /**
   * \brief Called when scrolling forwards with the mouse-wheel.
   */
-  void OnMouseWheelForward() override;
+  virtual void OnMouseWheelForward() override;
 
   /**
   * \brief Called when scrolling backwards with the mouse-wheel.
   */
-  void OnMouseWheelBackward() override;
+  virtual void OnMouseWheelBackward() override;
 
 protected:
+
   mitkVtkInteractorStyle();
-  ~mitkVtkInteractorStyle() override;
+  ~mitkVtkInteractorStyle();
+
 
 private:
-  mitkVtkInteractorStyle(const mitkVtkInteractorStyle &); // Not implemented.
-  void operator=(const mitkVtkInteractorStyle &);         // Not implemented.
+  mitkVtkInteractorStyle(const mitkVtkInteractorStyle&);  // Not implemented.
+  void operator=(const mitkVtkInteractorStyle&);  // Not implemented.
 };
 
 #endif

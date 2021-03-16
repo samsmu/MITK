@@ -14,20 +14,23 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#ifndef MITKDATASTORAGE_H
-#define MITKDATASTORAGE_H
+
+#ifndef MITKDATASTORAGE_H_HEADER_INCLUDED_
+#define MITKDATASTORAGE_H_HEADER_INCLUDED_
+
+#include <functional>
 
 #include "itkObject.h"
-#include "itkSimpleFastMutexLock.h"
+#include <MitkCoreExports.h>
+#include "mitkMessage.h"
 #include "itkVectorContainer.h"
 #include "mitkDataNode.h"
 #include "mitkGeometry3D.h"
-#include "mitkMessage.h"
-#include <MitkCoreExports.h>
+#include "itkSimpleFastMutexLock.h"
 #include <map>
 
-namespace mitk
-{
+namespace mitk {
+
   class NodePredicateBase;
   class DataNode;
   class BaseRenderer;
@@ -50,10 +53,8 @@ namespace mitk
     mitkClassMacroItkParent(DataStorage, itk::Object);
 
     //##Documentation
-    //## @brief A Container of objects that is used as a result set of GetSubset() query operations (Set of
-    //SmartPointers
-    // to DataNodes).
-    typedef itk::VectorContainer<unsigned int, DataNode::Pointer> SetOfObjects;
+    //## @brief A Container of objects that is used as a result set of GetSubset() query operations (Set of SmartPointers to DataNodes).
+    typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer> SetOfObjects;
 
     //##Documentation
     //## @brief Adds a DataNode containing a data object to its internal storage
@@ -63,29 +64,30 @@ namespace mitk
     //## of source objects, that were used to create this object. The new object will have
     //## a 'was created from' relation to its source objects.
     //## the addition of a new object will fire the notification mechanism.
-    //## If the node parameter is nullptr or if the DataNode has already been added,
+    //## If the node parameter is NULL or if the DataNode has already been added,
     //## an exception will be thrown.
-    virtual void Add(DataNode *node, const DataStorage::SetOfObjects *parents = nullptr) = 0;
+    virtual void Add(mitk::DataNode* node, const mitk::DataStorage::SetOfObjects* parents = nullptr) = 0;
 
     //##Documentation
     //## @brief Convenience method to add a node that has one parent
     //##
-    void Add(DataNode *node, DataNode *parent);
+    void Add(mitk::DataNode* node, mitk::DataNode* parent);
 
     //##Documentation
     //## @brief Removes node from the DataStorage
     //##
-    virtual void Remove(const DataNode *node) = 0;
+    virtual void Remove(const mitk::DataNode* node) = 0;
 
     //##Documentation
     //## @brief Checks if a node exists in the DataStorage
     //##
-    virtual bool Exists(const DataNode *node) const = 0;
+    virtual bool Exists(mitk::DataNode::ConstPointer node) const = 0;
+    virtual bool Exists(const mitk::DataNode* node) const = 0;
 
     //##Documentation
     //## @brief Removes a set of nodes from the DataStorage
     //##
-    void Remove(const DataStorage::SetOfObjects *nodes);
+    void Remove(const mitk::DataStorage::SetOfObjects* nodes);
 
     //##Documentation
     //## @brief returns a set of data objects that meet the given condition(s)
@@ -102,14 +104,12 @@ namespace mitk
     //## (see definition of NodePredicateBase for details).
     //## The method returns a set of SmartPointers to the DataNodes that fulfill the
     //## conditions. A set of all objects can be retrieved with the GetAll() method;
-    SetOfObjects::ConstPointer GetSubset(const NodePredicateBase *condition) const;
+    SetOfObjects::ConstPointer GetSubset(const NodePredicateBase* condition) const;
 
     //##Documentation
     //## @brief returns a set of source objects for a given node that meet the given condition(s).
     //##
-    virtual SetOfObjects::ConstPointer GetSources(const DataNode *node,
-                                                  const NodePredicateBase *condition = nullptr,
-                                                  bool onlyDirectSources = true) const = 0;
+    virtual SetOfObjects::ConstPointer GetSources(const mitk::DataNode* node, const NodePredicateBase* condition = nullptr, bool onlyDirectSources = true) const = 0;
 
     //##Documentation
     //## @brief returns a set of derived objects for a given node.
@@ -121,9 +121,7 @@ namespace mitk
     //## derived from derivations of node are returned too.
     //## The derived objects can be filtered with a predicate object as described in the GetSubset()
     //## method by providing a predicate as the condition parameter.
-    virtual SetOfObjects::ConstPointer GetDerivations(const DataNode *node,
-                                                      const NodePredicateBase *condition = nullptr,
-                                                      bool onlyDirectDerivations = true) const = 0;
+    virtual SetOfObjects::ConstPointer GetDerivations(const mitk::DataNode* node, const NodePredicateBase* condition = nullptr, bool onlyDirectDerivations = true) const = 0;
 
     //##Documentation
     //## @brief returns a set of all data objects that are stored in the data storage
@@ -133,63 +131,63 @@ namespace mitk
     //##Documentation
     //## @brief Convenience method to get the first node that matches the predicate condition
     //##
-    DataNode *GetNode(const NodePredicateBase *condition = nullptr) const;
+    mitk::DataNode* GetNode(const NodePredicateBase* condition = nullptr) const;
+
 
     //##Documentation
     //## @brief Convenience method to get the first node with a given name
     //##
-    DataNode *GetNamedNode(const char *name) const;
+    mitk::DataNode* GetNamedNode(const char* name) const;
 
     //##Documentation
     //## @brief Convenience method to get the first node with a given name
     //##
-    DataNode *GetNamedNode(const std::string name) const { return this->GetNamedNode(name.c_str()); }
+    mitk::DataNode* GetNamedNode(const std::string name) const
+    {
+      return this->GetNamedNode(name.c_str());
+    }
+
     //##Documentation
     //## @brief Convenience method to get the first node with a given name that is derived from sourceNode
     //##
-    DataNode *GetNamedDerivedNode(const char *name,
-                                  const DataNode *sourceNode,
-                                  bool onlyDirectDerivations = true) const;
+    mitk::DataNode* GetNamedDerivedNode(const char* name, const mitk::DataNode* sourceNode, bool onlyDirectDerivations = true) const;
 
     //##Documentation
     //## @brief Convenience method to get the first data object of a given data type with a given name
     //##
     template <class DataType>
-    DataType *GetNamedObject(const char *name) const
+    DataType* GetNamedObject(const char* name) const
     {
       if (name == nullptr)
-        return nullptr;
-      DataNode *n = this->GetNamedNode(name);
+        return NULL;
+      mitk::DataNode* n = this->GetNamedNode(name);
       if (n == nullptr)
-        return nullptr;
+        return NULL;
       else
-        return dynamic_cast<DataType *>(n->GetData());
+        return dynamic_cast<DataType*>(n->GetData());
     }
     //##Documentation
     //## @brief Convenience method to get the first data object of a given data type with a given name
     //##
     template <class DataType>
-    DataType *GetNamedObject(const std::string name) const
+    DataType* GetNamedObject(const std::string name) const
     {
       return this->GetNamedObject<DataType>(name.c_str());
     }
 
     //##Documentation
-    //## @brief Convenience method to get the first data object of a given data type with a given name that is derived
-    // from a specific node
+    //## @brief Convenience method to get the first data object of a given data type with a given name that is derived from a specific node
     //##
     template <class DataType>
-    DataType *GetNamedDerivedObject(const char *name,
-                                    const DataNode *sourceNode,
-                                    bool onlyDirectDerivations = true) const
+    DataType* GetNamedDerivedObject(const char* name, const mitk::DataNode* sourceNode, bool onlyDirectDerivations = true) const
     {
       if (name == nullptr)
-        return nullptr;
-      DataNode *n = this->GetNamedDerivedNode(name, sourceNode, onlyDirectDerivations);
+        return NULL;
+      mitk::DataNode* n = this->GetNamedDerivedNode(name, sourceNode, onlyDirectDerivations);
       if (n == nullptr)
-        return nullptr;
+        return NULL;
       else
-        return dynamic_cast<DataType *>(n->GetData());
+        return dynamic_cast<DataType*>(n->GetData());
     }
 
     //##Documentation
@@ -201,87 +199,75 @@ namespace mitk
     mutable itk::SimpleFastMutexLock m_MutexOne;
 
     /* Public Events */
-    typedef Message1<const DataNode*> DataStorageEvent;
+    class DataStorageEvent : public Message1<const mitk::DataNode*>
+    {
+    protected:
+      virtual void Execute(typename MessageBaseType::AbstractDelegateType* listener, const mitk::DataNode* node) const override;
+    };
+
     //##Documentation
     //## @brief AddEvent is emitted whenever a new node has been added to the DataStorage.
     //##
-    //## Observers should register to this event by calling myDataStorage->AddNodeEvent.AddListener(myObject,
-    // MyObject::MyMethod).
+    //## Observers should register to this event by calling myDataStorage->AddNodeEvent.AddListener(myObject, MyObject::MyMethod).
     //## After registering, myObject->MyMethod() will be called every time a new node has been added to the DataStorage.
-    //## Observers should unregister by calling myDataStorage->AddNodeEvent.RemoveListener(myObject,
-    //MyObject::MyMethod).
-    //## Note: AddEvents are _not_ emitted if a node is added to DataStorage by adding it to the the underlying
-    //DataTree!
+    //## Observers should unregister by calling myDataStorage->AddNodeEvent.RemoveListener(myObject, MyObject::MyMethod).
+    //## Note: AddEvents are _not_ emitted if a node is added to DataStorage by adding it to the the underlying DataTree!
 
-    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef
-    // for
+    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef for
     // a Message1 object which is thread safe
     DataStorageEvent AddNodeEvent;
 
     //##Documentation
     //## @brief RemoveEvent is emitted directly before a node is removed from the DataStorage.
     //##
-    //## Observers should register to this event by calling myDataStorage->RemoveNodeEvent.AddListener(myObject,
-    // MyObject::MyMethod).
+    //## Observers should register to this event by calling myDataStorage->RemoveNodeEvent.AddListener(myObject, MyObject::MyMethod).
     //## After registering, myObject->MyMethod() will be called every time a new node has been added to the DataStorage.
-    //## Observers should unregister by calling myDataStorage->RemoveNodeEvent.RemoveListener(myObject,
-    // MyObject::MyMethod).
-    //## Note: RemoveEvents are also emitted if a node was removed from the DataStorage by deleting it from the
-    //underlying
-    // DataTree
+    //## Observers should unregister by calling myDataStorage->RemoveNodeEvent.RemoveListener(myObject, MyObject::MyMethod).
+    //## Note: RemoveEvents are also emitted if a node was removed from the DataStorage by deleting it from the underlying DataTree
 
-    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef
-    // for
+    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef for
     // a Message1 object which is thread safe
     DataStorageEvent RemoveNodeEvent;
 
     //##Documentation
     //## @brief ChangedEvent is emitted directly after a node was changed.
     //##
-    //## Observers should register to this event by calling myDataStorage->ChangedNodeEvent.AddListener(myObject,
-    // MyObject::MyMethod).
+    //## Observers should register to this event by calling myDataStorage->ChangedNodeEvent.AddListener(myObject, MyObject::MyMethod).
     //## After registering, myObject->MyMethod() will be called every time a new node has been changed.
-    //## Observers should unregister by calling myDataStorage->ChangedNodeEvent.RemoveListener(myObject,
-    // MyObject::MyMethod).
+    //## Observers should unregister by calling myDataStorage->ChangedNodeEvent.RemoveListener(myObject, MyObject::MyMethod).
     //## Internally the DataStorage listens to itk::ModifiedEvents on the nodes and forwards them
     //## to the listeners of this event.
 
-    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef
-    // for
+    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef for
     // a Message1 object which is thread safe
     DataStorageEvent ChangedNodeEvent;
 
     //##Documentation
     //## @brief DeleteNodeEvent is emitted directly before a node is deleted.
     //##
-    //## Observers should register to this event by calling myDataStorage->DeleteNodeEvent.AddListener(myObject,
-    // MyObject::MyMethod).
+    //## Observers should register to this event by calling myDataStorage->DeleteNodeEvent.AddListener(myObject, MyObject::MyMethod).
     //## After registering, myObject->MyMethod() will be called when a node is deleted.
-    //## Observers should unregister by calling myDataStorage->DeleteNodeEvent.RemoveListener(myObject,
-    // MyObject::MyMethod).
+    //## Observers should unregister by calling myDataStorage->DeleteNodeEvent.RemoveListener(myObject, MyObject::MyMethod).
     //## Internally the DataStorage listens to itk::DeleteEvents on the nodes and forwards them
     //## to the listeners of this event.
 
-    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef
-    // for
+    // member variable is not needed to be locked in multi threaded scenarios since the DataStorageEvent is a typedef for
     // a Message1 object which is thread safe
     DataStorageEvent DeleteNodeEvent;
 
     DataStorageEvent InteractorChangedNodeEvent;
 
+
     //##Documentation
     //## @brief Compute the axis-parallel bounding geometry of the input objects
     //##
-    //## Throws std::invalid_argument exception if input is nullptr
+    //## Throws std::invalid_argument exception if input is NULL
     //## @param input set of objects of the DataStorage to be included in the bounding geometry
     //## @param boolPropertyKey if a BoolProperty with this boolPropertyKey exists for a node (for @a renderer)
     //## and is set to @a false, the node is ignored for the bounding-box calculation.
     //## @param renderer see @a boolPropertyKey
     //## @param boolPropertyKey2 a second condition that is applied additionally to @a boolPropertyKey
-    TimeGeometry::ConstPointer ComputeBoundingGeometry3D(const SetOfObjects *input,
-                                                         const char *boolPropertyKey = nullptr,
-                                                         const BaseRenderer *renderer = nullptr,
-                                                         const char *boolPropertyKey2 = nullptr) const;
+    mitk::TimeGeometry::Pointer ComputeBoundingGeometry3D( const SetOfObjects* input, const char* boolPropertyKey = nullptr, const mitk::BaseRenderer* renderer = nullptr, const char* boolPropertyKey2 = nullptr) const;
 
     //##Documentation
     //## @brief Compute the axis-parallel bounding geometry of the data tree
@@ -292,9 +278,7 @@ namespace mitk
     //## and is set to @a false, the node is ignored for the bounding-box calculation.
     //## @param renderer see @a boolPropertyKey
     //## @param boolPropertyKey2 a second condition that is applied additionally to @a boolPropertyKey
-    TimeGeometry::ConstPointer ComputeBoundingGeometry3D(const char *boolPropertyKey = nullptr,
-                                                         const BaseRenderer *renderer = nullptr,
-                                                         const char *boolPropertyKey2 = nullptr) const;
+    mitk::TimeGeometry::Pointer ComputeBoundingGeometry3D( const char* boolPropertyKey = nullptr, const mitk::BaseRenderer* renderer = nullptr, const char* boolPropertyKey2 = nullptr) const;
 
     //##Documentation
     //## @brief Compute the axis-parallel bounding geometry of all visible parts of the
@@ -305,19 +289,16 @@ namespace mitk
     //## @param renderer the reference to the renderer
     //## @param boolPropertyKey if a BoolProperty with this boolPropertyKey exists for a node (for @a renderer)
     //## and is set to @a false, the node is ignored for the bounding-box calculation.
-    TimeGeometry::ConstPointer ComputeVisibleBoundingGeometry3D(const BaseRenderer *renderer = nullptr,
-                                                                const char *boolPropertyKey = nullptr);
+    mitk::TimeGeometry::Pointer ComputeVisibleBoundingGeometry3D( const mitk::BaseRenderer* renderer = nullptr, const char* boolPropertyKey = nullptr);
 
     //##Documentation
     //## @brief Compute the bounding box of data tree structure
     //## it -> an iterator to a data tree structure
     //## @param boolPropertyKey if a BoolProperty with this boolPropertyKey exists for a node (for @a renderer)
-    //## and is set to @a false, the node is ignored for the bounding-box calculation.
+     //## and is set to @a false, the node is ignored for the bounding-box calculation.
     //## @param renderer see @a boolPropertyKey
     //## @param boolPropertyKey2 a second condition that is applied additionally to @a boolPropertyKey
-    BoundingBox::Pointer ComputeBoundingBox(const char *boolPropertyKey = nullptr,
-                                            const BaseRenderer *renderer = nullptr,
-                                            const char *boolPropertyKey2 = nullptr);
+    mitk::BoundingBox::Pointer ComputeBoundingBox( const char* boolPropertyKey = nullptr, const mitk::BaseRenderer* renderer = nullptr, const char* boolPropertyKey2 = nullptr);
 
     //##Documentation
     //## \brief Compute the bounding box of all visible parts of the data tree structure, for general
@@ -328,10 +309,9 @@ namespace mitk
     //## @param renderer the reference to the renderer
     //## @param boolPropertyKey if a BoolProperty with this boolPropertyKey exists for a node (for @a renderer)
     //## and is set to @a false, the node is ignored for the bounding-box calculation.
-    BoundingBox::Pointer ComputeVisibleBoundingBox(const BaseRenderer *renderer = nullptr,
-                                                   const char *boolPropertyKey = nullptr)
+    mitk::BoundingBox::Pointer ComputeVisibleBoundingBox( const mitk::BaseRenderer* renderer = nullptr, const char* boolPropertyKey = nullptr)
     {
-      return ComputeBoundingBox("visible", renderer, boolPropertyKey);
+      return ComputeBoundingBox( "visible", renderer, boolPropertyKey);
     }
 
     //##Documentation
@@ -344,13 +324,11 @@ namespace mitk
     //## and is set to @a false, the node is ignored for the time-bounds calculation.
     //## @param renderer see @a boolPropertyKey
     //## @param boolPropertyKey2 a second condition that is applied additionally to @a boolPropertyKey
-    TimeBounds ComputeTimeBounds(const char *boolPropertyKey,
-                                 const BaseRenderer *renderer,
-                                 const char *boolPropertyKey2);
+    mitk::TimeBounds ComputeTimeBounds( const char* boolPropertyKey, const mitk::BaseRenderer* renderer, const char* boolPropertyKey2);
 
     //##Documentation
     //## @brief Compute the time-bounds of all visible parts of the data tree structure, for general
-    //## rendering or renderer specific visibility property checking
+     //## rendering or renderer specific visibility property checking
     //##
     //## The methods returns only [-infinity, +infinity], if all data-objects have an infinite live-span. Otherwise,
     //## all data-objects with infinite live-span are ignored.
@@ -359,9 +337,9 @@ namespace mitk
     //## @param boolPropertyKey if a BoolProperty with this boolPropertyKey exists for a node (for @a renderer)
     //## and is set to @a false, the node is ignored for the time-bounds calculation.
     //## @param renderer see @a boolPropertyKey
-    TimeBounds ComputeTimeBounds(const BaseRenderer *renderer, const char *boolPropertyKey)
+    mitk::TimeBounds ComputeTimeBounds( const mitk::BaseRenderer* renderer, const char* boolPropertyKey)
     {
-      return ComputeTimeBounds("visible", renderer, boolPropertyKey);
+      return ComputeTimeBounds( "visible", renderer, boolPropertyKey);
     }
 
     //##Documentation
@@ -373,47 +351,51 @@ namespace mitk
     //## DataNode is modified. This might be undesired when setting
     //## many properties on a datanode and you do not want anyone to
     //## react.
-    void BlockNodeModifiedEvents(bool block);
+    void BlockNodeModifiedEvents( bool block );
 
   protected:
     //##Documentation
     //## @brief  EmitAddNodeEvent emits the AddNodeEvent
     //##
     //## This method should be called by subclasses to emit the AddNodeEvent
-    void EmitAddNodeEvent(const DataNode *node);
+    void EmitAddNodeEvent(const mitk::DataNode* node);
 
     //##Documentation
     //## @brief  EmitRemoveNodeEvent emits the RemoveNodeEvent
     //##
     //## This method should be called by subclasses to emit the RemoveNodeEvent
-    void EmitRemoveNodeEvent(const DataNode *node);
+    void EmitRemoveNodeEvent(const mitk::DataNode* node);
 
-    void OnNodeInteractorChanged(itk::Object *caller, const itk::EventObject &event);
+    void OnNodeInteractorChanged( itk::Object *caller, const itk::EventObject &event );
+
 
     //##Documentation
     //## @brief  OnNodeModified listens to modified events of DataNodes.
     //##
     //## The node is hidden behind the caller parameter, which has to be casted first.
     //## If the cast succeeds the ChangedNodeEvent is emitted with this node.
-    void OnNodeModifiedOrDeleted(const itk::Object *caller, const itk::EventObject &event);
+    void OnNodeModifiedOrDeleted( const itk::Object *caller, const itk::EventObject &event );
 
     //##Documentation
     //## @brief  Adds a Modified-Listener to the given Node.
-    void AddListeners(const DataNode *_Node);
+    void AddListeners(const mitk::DataNode* _Node);
 
     //##Documentation
     //## @brief  Removes a Modified-Listener from the given Node.
-    void RemoveListeners(const DataNode *_Node);
+    void RemoveListeners(const mitk::DataNode* _Node);
+
+
 
     //##Documentation
     //## @brief  Saves Modified-Observer Tags for each node in order to remove the event listeners again.
-    std::map<const DataNode *, unsigned long> m_NodeModifiedObserverTags;
+    std::map<const mitk::DataNode*, unsigned long> m_NodeModifiedObserverTags;
 
-    std::map<const DataNode *, unsigned long> m_NodeInteractorChangedObserverTags;
+    std::map<const mitk::DataNode*, unsigned long> m_NodeInteractorChangedObserverTags;
+
 
     //##Documentation
     //## @brief  Saves Delete-Observer Tags for each node in order to remove the event listeners again.
-    std::map<const DataNode *, unsigned long> m_NodeDeleteObserverTags;
+    std::map<const mitk::DataNode*, unsigned long> m_NodeDeleteObserverTags;
 
     //##Documentation
     //## @brief If this class changes nodes itself, set this to TRUE in order
@@ -425,24 +407,16 @@ namespace mitk
     DataStorage();
     //##Documentation
     //## @brief Standard Destructor
-    ~DataStorage() override;
+    virtual ~DataStorage();
 
     //##Documentation
     //## @brief Filters a SetOfObjects by the condition. If no condition is provided, the original set is returned
-    SetOfObjects::ConstPointer FilterSetOfObjects(const SetOfObjects *set, const NodePredicateBase *condition) const;
+    SetOfObjects::ConstPointer FilterSetOfObjects(const SetOfObjects* set, const NodePredicateBase* condition) const;
 
     //##Documentation
     //## @brief Prints the contents of the DataStorage to os. Do not call directly, call ->Print() instead
-    void PrintSelf(std::ostream &os, itk::Indent indent) const override;
+    virtual void PrintSelf(std::ostream& os, itk::Indent indent) const override;
   };
-
-  //##Documentation
-  //## @brief returns the topmost visible node of a given list of nodes.
-  //##
-  MITKCORE_EXPORT DataNode::Pointer FindTopmostVisibleNode(const DataStorage::SetOfObjects* nodes,
-                                                           const Point3D worldposition,
-                                                           const TimePointType timePoint,
-                                                           const BaseRenderer* baseRender);
 } // namespace mitk
 
-#endif // MITKDATASTORAGE_H
+#endif /* MITKDATASTORAGE_H_HEADER_INCLUDED_ */

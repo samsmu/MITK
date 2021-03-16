@@ -25,40 +25,42 @@ class TiXmlElement;
 
 namespace mitk
 {
-  /**
-   * @internal
-   *
-   * @brief reads xml representations of mitk::PointSets from a file
-   *
-   * Reader for xml files containing one or multiple xml represenations of
-   * mitk::PointSet. If multiple mitk::PointSet objects are stored in one file,
-   * these are assigned to multiple BaseData objects.
-   *
-   * The reader is able to read the old 3D Pointsets without the "specification" and "timeseries" tags and the new 4D
-   * Pointsets.
-   *
-   * @ingroup IO
-   */
-  class PointSetReaderService : public AbstractFileReader
-  {
-  public:
-    PointSetReaderService();
-    ~PointSetReaderService() override;
 
-    using AbstractFileReader::Read;
-    std::vector<itk::SmartPointer<BaseData>> Read() override;
+/**
+ * @internal
+ *
+ * @brief reads xml representations of mitk::PointSets from a file
+ *
+ * Reader for xml files containing one or multiple xml represenations of
+ * mitk::PointSet. If multiple mitk::PointSet objects are stored in one file,
+ * these are assigned to multiple BaseData objects.
+ *
+ * The reader is able to read the old 3D Pointsets without the "specification" and "timeseries" tags and the new 4D Pointsets.
+ *
+ * @ingroup IO
+ */
+class PointSetReaderService: public AbstractFileReader
+{
+public:
 
-  private:
-    PointSetReaderService(const PointSetReaderService &other);
+  PointSetReaderService();
+  virtual ~PointSetReaderService();
 
-    mitk::BaseGeometry::Pointer ReadGeometry(TiXmlElement *parentElement);
+  using AbstractFileReader::Read;
+  virtual std::vector< itk::SmartPointer<BaseData> > Read() override;
 
-    mitk::PointSet::Pointer ReadPoints(mitk::PointSet::Pointer newPointSet,
-                                       TiXmlElement *currentTimeSeries,
-                                       unsigned int currentTimeStep);
+private:
 
-    PointSetReaderService *Clone() const override;
-  };
+  PointSetReaderService(const PointSetReaderService& other);
+
+  mitk::BaseGeometry::Pointer ReadGeometry(TiXmlElement* parentElement);
+
+  mitk::PointSet::Pointer ReadPoints(mitk::PointSet::Pointer newPointSet,
+                                    TiXmlElement* currentTimeSeries, unsigned int currentTimeStep);
+
+  virtual PointSetReaderService* Clone() const override;
+};
+
 }
 
 #endif

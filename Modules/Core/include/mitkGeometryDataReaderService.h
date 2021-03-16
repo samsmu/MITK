@@ -25,40 +25,44 @@ class TiXmlElement;
 
 namespace mitk
 {
+
+/**
+ * @internal
+ *
+ * @brief reads XML representations of mitk::GeometryData from a file/stream.
+ *
+ * To be used via IOUtil.
+ *
+ * Reader for XML files containing one or multiple XML represenations of
+ * mitk::GeometryData. If multiple mitk::GeometryData objects are stored in one file,
+ * these are assigned to multiple BaseData objects.
+ *
+ * @sa Geometry3DToXML
+ *
+ * @ingroup IO
+ */
+class GeometryDataReaderService: public AbstractFileReader
+{
+public:
+
+  GeometryDataReaderService();
+  virtual ~GeometryDataReaderService();
+
+  using AbstractFileReader::Read;
+  virtual std::vector< itk::SmartPointer<BaseData> > Read() override;
+
   /**
-   * @internal
-   *
-   * @brief reads XML representations of mitk::GeometryData from a file/stream.
-   *
-   * To be used via IOUtil.
-   *
-   * Reader for XML files containing one or multiple XML represenations of
-   * mitk::GeometryData. If multiple mitk::GeometryData objects are stored in one file,
-   * these are assigned to multiple BaseData objects.
-   *
-   * @sa Geometry3DToXML
-   *
-   * @ingroup IO
+   * @brief Provides the MIME type for reader and writer.
    */
-  class GeometryDataReaderService : public AbstractFileReader
-  {
-  public:
-    GeometryDataReaderService();
-    ~GeometryDataReaderService() override;
+  static CustomMimeType GEOMETRY_DATA_MIMETYPE();
 
-    using AbstractFileReader::Read;
-    std::vector<itk::SmartPointer<BaseData>> Read() override;
+private:
 
-    /**
-     * @brief Provides the MIME type for reader and writer.
-     */
-    static CustomMimeType GEOMETRY_DATA_MIMETYPE();
+  GeometryDataReaderService(const GeometryDataReaderService& other);
 
-  private:
-    GeometryDataReaderService(const GeometryDataReaderService &other);
+  virtual GeometryDataReaderService* Clone() const override;
+};
 
-    GeometryDataReaderService *Clone() const override;
-  };
 }
 
 #endif

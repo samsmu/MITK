@@ -17,14 +17,14 @@
 #include "mitkSinglePointDataInteractor.h"
 #include "mitkMouseMoveEvent.h"
 
-#include "mitkInteractionConst.h" // TODO: refactor file
-#include "mitkInternalEvent.h"
 #include "mitkOperationEvent.h"
-#include "mitkRenderingManager.h"
 #include <mitkPointOperation.h>
+#include "mitkInteractionConst.h" // TODO: refactor file
+#include "mitkRenderingManager.h"
+#include "mitkInternalEvent.h"
 //
-#include "mitkBaseRenderer.h"
 #include "mitkDispatcher.h"
+#include "mitkBaseRenderer.h"
 
 #include "mitkUndoController.h"
 
@@ -35,22 +35,23 @@ mitk::SinglePointDataInteractor::SinglePointDataInteractor()
 
 mitk::SinglePointDataInteractor::~SinglePointDataInteractor()
 {
+
 }
 
-void mitk::SinglePointDataInteractor::AddPoint(StateMachineAction * /*stateMachineAction*/,
-                                               InteractionEvent *interactionEvent)
+void mitk::SinglePointDataInteractor::AddPoint(StateMachineAction* /*stateMachineAction*/, InteractionEvent* interactionEvent)
 {
   unsigned int timeStep = interactionEvent->GetSender()->GetTimeStep(GetDataNode()->GetData());
   ScalarType timeInMs = interactionEvent->GetSender()->GetTime();
 
   // To add a point the minimal information is the position, this method accepts all InteractionsPositionEvents
-  auto *positionEvent = dynamic_cast<InteractionPositionEvent *>(interactionEvent);
-  if (positionEvent != nullptr)
+  InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
+  if (positionEvent != NULL)
   {
-    PointOperation *doOp;
-    PointOperation *undoOp;
 
-    if (m_PointSet->IndexExists(0, timeStep))
+    PointOperation* doOp;
+    PointOperation* undoOp;
+
+    if (m_PointSet->IndexExists(0,timeStep))
     {
       PointSet::PointType pt = m_PointSet->GetPoint(0, timeStep);
       Point3D itkPoint;
@@ -58,32 +59,34 @@ void mitk::SinglePointDataInteractor::AddPoint(StateMachineAction * /*stateMachi
       itkPoint[1] = pt[1];
       itkPoint[2] = pt[2];
 
-      doOp = new mitk::PointOperation(OpMOVE, timeInMs, positionEvent->GetPositionInWorld(), 0);
-      undoOp = new mitk::PointOperation(OpMOVE, timeInMs, itkPoint, 0);
+      doOp = new mitk::PointOperation(OpMOVE,timeInMs,positionEvent->GetPlanePositionInWorld(), 0);
+      undoOp = new mitk::PointOperation(OpMOVE,timeInMs,itkPoint, 0);
     }
     else
     {
-      doOp = new mitk::PointOperation(OpINSERT, timeInMs, positionEvent->GetPositionInWorld(), 0);
-      undoOp = new mitk::PointOperation(OpREMOVE, timeInMs, positionEvent->GetPositionInWorld(), 0);
+      doOp = new mitk::PointOperation(OpINSERT,timeInMs,positionEvent->GetPlanePositionInWorld(), 0);
+      undoOp = new mitk::PointOperation(OpREMOVE,timeInMs,positionEvent->GetPlanePositionInWorld(), 0);
     }
 
-    if (m_UndoEnabled)
+
+    if ( m_UndoEnabled )
     {
-      OperationEvent *operationEvent = new OperationEvent(m_PointSet, doOp, undoOp, "Move point");
+      OperationEvent *operationEvent =  new OperationEvent(m_PointSet, doOp, undoOp, "Move point", GetDataNode());
       OperationEvent::IncCurrObjectEventId();
 
       m_UndoController->SetOperationEvent(operationEvent);
     }
-    // execute the Operation
+    //execute the Operation
     m_PointSet->ExecuteOperation(doOp);
 
-    if (!m_UndoEnabled)
+    if ( !m_UndoEnabled )
       delete doOp;
 
     // Request update
     interactionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
   }
 }
+
 
 /*
  * Check whether the DataNode contains a pointset, if not create one and add it.
@@ -92,8 +95,8 @@ void mitk::SinglePointDataInteractor::DataNodeChanged()
 {
   if (GetDataNode() != nullptr)
   {
-    auto *points = dynamic_cast<PointSet *>(GetDataNode()->GetData());
-    if (points == nullptr)
+    PointSet* points = dynamic_cast<PointSet*>(GetDataNode()->GetData());
+    if (points == NULL)
     {
       m_PointSet = PointSet::New();
       GetDataNode()->SetData(m_PointSet);

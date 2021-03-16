@@ -21,94 +21,101 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 namespace mitk
 {
+
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4522)
+# pragma warning(push)
+# pragma warning(disable: 4522)
 #endif
 
+/**
+ * Encapsulates the enumeration vtkInterpolation. Valid values are
+ * (VTK constant/Id/string representation):
+ * VTK_FLAT/0/Flat, VTK_GOURAUD/1/Gouraud, VTK_PHONG/2/Phong
+ * Default is the Gouraud interpolation
+ */
+class MITKCORE_EXPORT VtkInterpolationProperty : public EnumerationProperty
+{
+public:
+
+  mitkClassMacro( VtkInterpolationProperty, EnumerationProperty );
+
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+
+  mitkNewMacro1Param(VtkInterpolationProperty, const IdType&);
+
+  mitkNewMacro1Param(VtkInterpolationProperty, const std::string&);
+
   /**
-   * Encapsulates the enumeration vtkInterpolation. Valid values are
-   * (VTK constant/Id/string representation):
-   * VTK_FLAT/0/Flat, VTK_GOURAUD/1/Gouraud, VTK_PHONG/2/Phong
-   * Default is the Gouraud interpolation
+   * Returns the current interpolation value as defined by VTK constants.
+   * @returns the current interpolation as VTK constant.
    */
-  class MITKCORE_EXPORT VtkInterpolationProperty : public EnumerationProperty
-  {
-  public:
-    mitkClassMacro(VtkInterpolationProperty, EnumerationProperty);
+  virtual int GetVtkInterpolation();
 
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+  /**
+   * Sets the interpolation type to VTK_FLAT.
+   */
+  virtual void SetInterpolationToFlat();
 
-      mitkNewMacro1Param(VtkInterpolationProperty, const IdType &);
+  /**
+   * Sets the interpolation type to VTK_WIREFRAME.
+   */
+  virtual void SetInterpolationToGouraud();
 
-    mitkNewMacro1Param(VtkInterpolationProperty, const std::string &);
+  /**
+   * Sets the interpolation type to VTK_SURFACE.
+   */
+  virtual void SetInterpolationToPhong();
 
-    /**
-     * Returns the current interpolation value as defined by VTK constants.
-     * @returns the current interpolation as VTK constant.
-     */
-    virtual int GetVtkInterpolation();
+  using BaseProperty::operator=;
 
-    /**
-     * Sets the interpolation type to VTK_FLAT.
-     */
-    virtual void SetInterpolationToFlat();
+protected:
 
-    /**
-     * Sets the interpolation type to VTK_WIREFRAME.
-     */
-    virtual void SetInterpolationToGouraud();
+  /**
+   * Constructor. Sets the representation to a default value of surface(2)
+   */
+  VtkInterpolationProperty( );
 
-    /**
-     * Sets the interpolation type to VTK_SURFACE.
-     */
-    virtual void SetInterpolationToPhong();
+  /**
+   * Constructor. Sets the interpolation to the given value. If it is not
+   * valid, the interpolation is set to gouraud(1)
+   * @param value the integer representation of the interpolation
+   */
+  VtkInterpolationProperty( const IdType& value );
 
-    using BaseProperty::operator=;
+  /**
+   * Constructor. Sets the interpolation to the given value. If it is not
+   * valid, the representation is set to gouraud(1)
+   * @param value the string representation of the interpolation
+   */
+  VtkInterpolationProperty( const std::string& value );
 
-  protected:
-    /**
-     * Constructor. Sets the representation to a default value of surface(2)
-     */
-    VtkInterpolationProperty();
+  /**
+   * this function is overridden as protected, so that the user may not add
+   * additional invalid interpolation types.
+   */
+  virtual bool AddEnum( const std::string& name, const IdType& id ) override;
 
-    /**
-     * Constructor. Sets the interpolation to the given value. If it is not
-     * valid, the interpolation is set to gouraud(1)
-     * @param value the integer representation of the interpolation
-     */
-    VtkInterpolationProperty(const IdType &value);
+  /**
+   * Adds the enumeration types as defined by vtk to the list of known
+   * enumeration values.
+   */
+  virtual void AddInterpolationTypes();
 
-    /**
-     * Constructor. Sets the interpolation to the given value. If it is not
-     * valid, the representation is set to gouraud(1)
-     * @param value the string representation of the interpolation
-     */
-    VtkInterpolationProperty(const std::string &value);
+private:
 
-    /**
-     * this function is overridden as protected, so that the user may not add
-     * additional invalid interpolation types.
-     */
-    bool AddEnum(const std::string &name, const IdType &id) override;
+  // purposely not implemented
+  VtkInterpolationProperty& operator=(const VtkInterpolationProperty&);
 
-    /**
-     * Adds the enumeration types as defined by vtk to the list of known
-     * enumeration values.
-     */
-    virtual void AddInterpolationTypes();
-
-  private:
-    // purposely not implemented
-    VtkInterpolationProperty &operator=(const VtkInterpolationProperty &);
-
-    itk::LightObject::Pointer InternalClone() const override;
-  };
+  virtual itk::LightObject::Pointer InternalClone() const override;
+};
 
 #ifdef _MSC_VER
-#pragma warning(pop)
+# pragma warning(pop)
 #endif
 
 } // end of namespace mitk
 
 #endif
+
+

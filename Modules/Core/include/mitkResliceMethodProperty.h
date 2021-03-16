@@ -21,41 +21,49 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 namespace mitk
 {
+
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4522)
+# pragma warning(push)
+# pragma warning(disable: 4522)
 #endif
 
-  /**
-   * Encapsulates the thick slices method enumeration
-   */
-  class MITKCORE_EXPORT ResliceMethodProperty : public EnumerationProperty
-  {
-  public:
-    mitkClassMacro(ResliceMethodProperty, EnumerationProperty);
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self) mitkNewMacro1Param(ResliceMethodProperty, const IdType &);
-    mitkNewMacro1Param(ResliceMethodProperty, const std::string &);
+/**
+ * Encapsulates the thick slices method enumeration
+ */
+class MITKCORE_EXPORT ResliceMethodProperty : public EnumerationProperty
+{
+public:
 
-    using BaseProperty::operator=;
+  mitkClassMacro( ResliceMethodProperty, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+  mitkNewMacro1Param(ResliceMethodProperty, const IdType&);
+  mitkNewMacro1Param(ResliceMethodProperty, const std::string&);
 
-  protected:
-    ResliceMethodProperty();
-    ResliceMethodProperty(const IdType &value);
-    ResliceMethodProperty(const std::string &value);
+  using BaseProperty::operator=;
 
-    void AddThickSlicesTypes();
+protected:
 
-  private:
-    // purposely not implemented
-    ResliceMethodProperty &operator=(const ResliceMethodProperty &);
+  ResliceMethodProperty( );
+  ResliceMethodProperty( const IdType& value );
+  ResliceMethodProperty( const std::string& value );
 
-    itk::LightObject::Pointer InternalClone() const override;
-  };
+  void AddThickSlicesTypes();
+
+private:
+
+  // purposely not implemented
+  ResliceMethodProperty& operator=(const ResliceMethodProperty&);
+
+  virtual itk::LightObject::Pointer InternalClone() const override;
+};
 
 #ifdef _MSC_VER
-#pragma warning(pop)
+# pragma warning(pop)
 #endif
 
 } // end of namespace mitk
 
 #endif //_MITK_VTK_SCALARMODE_PROPERTY__H_
+
+

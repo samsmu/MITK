@@ -19,20 +19,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkNumericTypes.h"
 #include <MitkCoreExports.h>
 
-namespace mitk
-{
+namespace mitk {
   class Image;
 
   /**
   * @brief The LevelWindow class Class to store level/window values.
   *
   * Current min and max value are stored in m_LowerWindowBound and m_UpperWindowBound.
+  * The maximum and minimum of valid value range is stored in m_RangeMin and m_RangeMax.
   * m_DefaultLevel amd m_DefaultWindow store the initial Level/Window values for the image.
   * m_DefaultRangeMin and m_DefaultRangeMax store the initial minrange and maxrange for the image.
-  *
-  * The finite maximum and minimum of valid value range is stored in m_RangeMin and m_RangeMax.
-  * If deduced from an image by default the minimum or maximum of it statistics is used. If one
-  * of these values are infinite the 2nd extrimum (which is guaranteed to be finite), will be used.
   *
   * See documentation of SetAuto for information on how the level window is initialized from an image.
   *
@@ -48,8 +44,8 @@ namespace mitk
   class MITKCORE_EXPORT LevelWindow
   {
   public:
-    LevelWindow(ScalarType level = 127.5, ScalarType window = 255.0);
-    LevelWindow(const mitk::LevelWindow &levWin);
+    LevelWindow(ScalarType level=127.5, ScalarType window=255.0);
+    LevelWindow(const mitk::LevelWindow& levWin);
     virtual ~LevelWindow();
 
     /*!
@@ -151,22 +147,19 @@ namespace mitk
     /**!
     * \brief sets level/window to optimize the contrast of the given Image
     */
-    void SetAuto(const Image *image,
-                 bool tryPicTags = true,
-                 bool guessByCentralSlice = true,
-                 unsigned selectedComponent = 0);
+    void SetAuto(const Image* image, bool tryPicTags = true, bool guessByCentralSlice = true, unsigned selectedComponent=0);
 
     /**!
     * \brief sets level/window to the min/max greyvalues of the given Image
     */
-    void SetToImageRange(const Image *image);
+    void SetToImageRange(const Image* image);
 
     /**
     * If a level window is set to fixed, the set and get methods won't accept
     * modifications to the level window settings anymore. This behaviour can
     * be turned of by setting fixed to false;
     */
-    void SetFixed(bool fixed);
+    void SetFixed( bool fixed );
 
     /**
     * Returns whether the level window settings are fixed (@see SetFixed(bool)) or not
@@ -181,18 +174,18 @@ namespace mitk
     /*!
     * \brief equality operator implementation that allows to compare two level windows
     */
-    virtual bool operator==(const LevelWindow &levWin) const;
+    virtual bool operator==(const LevelWindow& levWin) const;
 
     /*!
     * \brief non equality operator implementation that allows to compare two level windows
     */
-    virtual bool operator!=(const LevelWindow &levWin) const;
+    virtual bool operator!=(const LevelWindow& levWin) const;
 
     /*!
     * \brief implementation necessary because operator made
     *  private in itk::Object
     */
-    virtual LevelWindow &operator=(const LevelWindow &levWin);
+    virtual LevelWindow& operator=(const LevelWindow& levWin);
 
     /*!
     * \brief Shows if floating values are accepted
@@ -205,6 +198,7 @@ namespace mitk
     void SetFloatingValues(bool value);
 
   protected:
+
     /*!
     * lower bound of current window
     */
@@ -249,16 +243,11 @@ namespace mitk
     /*!
     * confidence tests
     *
-    * if m_LowerWindowBound > m_UpperWindowBound, then the values for m_LowerWindowBound and m_UpperWindowBound will be
-    * exchanged
+    * if m_LowerWindowBound > m_UpperWindowBound, then the values for m_LowerWindowBound and m_UpperWindowBound will be exchanged
     *
-    * if m_LowerWindowBound < m_RangeMin, m_LowerWindowBound will be set to m_RangeMin. m_UpperWindowBound will be
-    * decreased the same as m_LowerWindowBound will be increased, but minimum value for m_UpperWindowBound is also
-    * m_RangeMin.
+    * if m_LowerWindowBound < m_RangeMin, m_LowerWindowBound will be set to m_RangeMin. m_UpperWindowBound will be decreased the same as m_LowerWindowBound will be increased, but minimum value for m_UpperWindowBound is also m_RangeMin.
     *
-    * if m_UpperWindowBound > m_RangeMax, m_UpperWindowBound will be set to m_RangeMax. m_LowerWindowBound will be
-    * increased the same as m_UpperWindowBound will be decreased, but maximum value for m_LowerWindowBound is also
-    * m_RangeMax.
+    * if m_UpperWindowBound > m_RangeMax, m_UpperWindowBound will be set to m_RangeMax. m_LowerWindowBound will be increased the same as m_UpperWindowBound will be decreased, but maximum value for m_LowerWindowBound is also m_RangeMax.
     *
     */
     inline void EnsureConsistency();

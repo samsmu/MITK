@@ -17,9 +17,10 @@
 #ifndef mitkEventInformer_h
 #define mitkEventInformer_h
 
-#include "mitkInteractionEvent.h"
 #include "mitkInteractionEventObserver.h"
+#include "mitkInteractionEvent.h"
 #include <mitkServiceInterface.h>
+
 
 namespace mitk
 {
@@ -28,7 +29,10 @@ namespace mitk
    */
   struct EventInformerService
   {
-    virtual ~EventInformerService() {}
+    virtual ~EventInformerService()
+    {
+    }
+
     virtual void RegisterObserver(InteractionEventObserver::Pointer InteractionEventObserver) = 0;
     virtual void UnRegisterObserver(InteractionEventObserver::Pointer InteractionEventObserver) = 0;
     virtual void NotifyObservers(InteractionEvent::Pointer interactionEvent) = 0;

@@ -29,32 +29,25 @@ mitk::DataInteractor::DataInteractor()
 
 mitk::DataInteractor::~DataInteractor()
 {
-  if (!m_DataNode.IsExpired())
-  {
-    auto dataNode = m_DataNode.Lock();
-
-    if (dataNode->GetDataInteractor() == this)
-      dataNode->SetDataInteractor(nullptr);
-  }
 }
 
-mitk::DataNode *mitk::DataInteractor::GetDataNode() const
+mitk::DataNode* mitk::DataInteractor::GetDataNode() const
 {
-  return m_DataNode.Lock();
+  return m_DataNode;
 }
 
-void mitk::DataInteractor::SetDataNode(DataNode *dataNode)
+void mitk::DataInteractor::SetDataNode(DataNode* dataNode)
 {
   if (dataNode == m_DataNode)
     return;
 
-  if (!m_DataNode.IsExpired())
-    m_DataNode.Lock()->SetDataInteractor(nullptr);
+  if (m_DataNode.IsNotNull())
+    m_DataNode->SetDataInteractor(nullptr);
 
   m_DataNode = dataNode;
 
   if (dataNode != nullptr)
-    m_DataNode.Lock()->SetDataInteractor(this);
+    m_DataNode->SetDataInteractor(this);
 
   this->DataNodeChanged();
 }
@@ -63,8 +56,8 @@ int mitk::DataInteractor::GetLayer() const
 {
   int layer = -1;
 
-  if (!m_DataNode.IsExpired())
-    m_DataNode.Lock()->GetIntProperty("layer", layer);
+  if (m_DataNode.IsNotNull())
+    m_DataNode->GetIntProperty("layer", layer);
 
   return layer;
 }

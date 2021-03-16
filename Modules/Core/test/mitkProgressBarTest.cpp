@@ -14,10 +14,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <mitkProgressBar.h>
-#include <mitkTestFixture.h>
-#include <mitkTestingConfig.h>
 #include <mitkTestingMacros.h>
+#include <mitkTestingConfig.h>
+#include <mitkTestFixture.h>
+#include <mitkProgressBar.h>
 
 class mitkProgressBarTestSuite : public mitk::TestFixture
 {
@@ -26,6 +26,7 @@ class mitkProgressBarTestSuite : public mitk::TestFixture
   CPPUNIT_TEST_SUITE_END();
 
 public:
+
   void TestInstantiation()
   {
     mitk::ProgressBar::Pointer pb = mitk::ProgressBar::GetInstance();

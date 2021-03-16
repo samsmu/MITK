@@ -15,6 +15,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 #include "mitkCrosshairPositionEvent.h"
 
-mitk::CrosshairPositionEvent::CrosshairPositionEvent(BaseRenderer *sender) : InteractionEvent(sender)
+
+mitk::CrosshairPositionEvent::CrosshairPositionEvent( BaseRenderer* sender)
+: InteractionEvent( sender)
 {
 }

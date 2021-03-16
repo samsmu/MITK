@@ -14,6 +14,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #include "mitkBaseProperty.h"
 
 const std::string mitk::BaseProperty::VALUE_CANNOT_BE_CONVERTED_TO_STRING = "n/a";
@@ -22,7 +23,8 @@ mitk::BaseProperty::BaseProperty()
 {
 }
 
-mitk::BaseProperty::BaseProperty(const mitk::BaseProperty &) : itk::Object()
+mitk::BaseProperty::BaseProperty(const mitk::BaseProperty&)
+  : itk::Object()
 {
 }
 
@@ -35,16 +37,15 @@ std::string mitk::BaseProperty::GetValueAsString() const
   return std::string(VALUE_CANNOT_BE_CONVERTED_TO_STRING);
 }
 
-mitk::BaseProperty &mitk::BaseProperty::operator=(const BaseProperty &rhs)
+mitk::BaseProperty& mitk::BaseProperty::operator=(const BaseProperty& rhs)
 {
   AssignProperty(rhs);
   return *this;
 }
 
-bool mitk::BaseProperty::AssignProperty(const BaseProperty &rhs)
+bool mitk::BaseProperty::AssignProperty(const BaseProperty& rhs)
 {
-  if (this == &rhs)
-    return true; // no self assignment
+  if (this == &rhs) return true; // no self assignment
 
   if (typeid(*this) == typeid(rhs) && Assign(rhs))
   {
@@ -54,7 +55,7 @@ bool mitk::BaseProperty::AssignProperty(const BaseProperty &rhs)
   return false;
 }
 
-bool mitk::BaseProperty::operator==(const BaseProperty &property) const
+bool mitk::BaseProperty::operator==(const BaseProperty& property) const
 {
   return (typeid(*this) == typeid(property) && IsEqual(property));
 }

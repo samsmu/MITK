@@ -14,11 +14,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef _mitkpointsettopointsetfilter_h
 #define _mitkpointsettopointsetfilter_h
 
-#include "mitkPointSetSource.h"
 #include <MitkCoreExports.h>
+#include "mitkPointSetSource.h"
 
 namespace mitk
 {
@@ -30,11 +31,12 @@ namespace mitk
   class MITKCORE_EXPORT PointSetToPointSetFilter : public PointSetSource
   {
   public:
-    mitkClassMacro(PointSetToPointSetFilter, PointSetSource);
+    mitkClassMacro( PointSetToPointSetFilter, PointSetSource );
 
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+    itkFactorylessNewMacro(Self)
+    itkCloneMacro(Self)
 
-      typedef mitk::PointSet InputType;
+    typedef mitk::PointSet InputType;
 
     typedef mitk::PointSet OutputType;
 
@@ -42,31 +44,33 @@ namespace mitk
 
     typedef InputType::ConstPointer InputTypeConstPointer;
 
+
     using itk::ProcessObject::SetInput;
     /**
     * Sets the input of this process object
     * @param input the input
     */
-    virtual void SetInput(const InputType *input);
+    virtual void SetInput( const InputType* input );
 
     /**
     * Sets the input n'th of this process object
     * @param idx the number associated with the given input
     */
-    virtual void SetInput(const unsigned int &idx, const InputType *input);
+    virtual void SetInput( const unsigned int& idx, const InputType* input );
 
     /**
     * @returns the input tree of the process object
     */
-    const InputType *GetInput(void);
+    const InputType * GetInput( void );
 
     /**
     * @param idx the index of the input to return
     * @returns the input object with the given index
     */
-    const InputType *GetInput(const unsigned int &idx);
+    const InputType * GetInput( const unsigned int& idx );
 
   protected:
+
     /**
     * A default constructor
     */
@@ -75,12 +79,16 @@ namespace mitk
     /**
     * The destructor
     */
-    ~PointSetToPointSetFilter() override;
+    virtual ~PointSetToPointSetFilter();
 
   private:
-    void operator=(const Self &); // purposely not implemented
-  };
 
-} // end of namespace mitk
+    void operator=( const Self& ); //purposely not implemented
+  }
+  ;
+
+} //end of namespace mitk
 
 #endif
+
+

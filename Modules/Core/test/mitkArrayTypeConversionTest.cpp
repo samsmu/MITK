@@ -14,14 +14,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include "mitkTestFixture.h"
 #include "mitkTestingMacros.h"
+#include "mitkTestFixture.h"
 
-#include "mitkArray.h"
 #include "mitkNumericConstants.h"
+#include "mitkArray.h"
+
 
 class mitkArrayTypeConversionTestSuite : public mitk::TestFixture
 {
+
   CPPUNIT_TEST_SUITE(mitkArrayTypeConversionTestSuite);
 
   MITK_TEST(EqualArray_ReturnsTrue);
@@ -33,10 +35,12 @@ class mitkArrayTypeConversionTestSuite : public mitk::TestFixture
   CPPUNIT_TEST_SUITE_END();
 
 private:
+
   mitk::ScalarType a[3];
   mitk::ScalarType b[3];
 
 public:
+
   void setUp(void) override
   {
     b[0] = a[0] = 1.0;
@@ -44,19 +48,23 @@ public:
     b[2] = a[2] = 3.13;
   }
 
-  void tearDown(void) override {}
+  void tearDown(void) override
+  {
+
+  }
+
   void EqualArray_ReturnsTrue(void)
   {
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(
-      "test if EqualArray method returns true for two equal arrays.", true, mitk::EqualArray(a, b, 3));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("test if EqualArray method returns true for two equal arrays.",
+        true, mitk::EqualArray(a, b, 3));
   }
 
   void EqualArray_ReturnsFalse(void)
   {
     b[2] += mitk::eps;
 
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(
-      "test if EqualArray method returns false for two non-equal arrays.", false, mitk::EqualArray(a, b, 3));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("test if EqualArray method returns false for two non-equal arrays.",
+        false, mitk::EqualArray(a, b, 3));
   }
 
   void FillVector3D_CorrectlyFilled(void)
@@ -65,7 +73,8 @@ public:
 
     mitk::FillVector3D(c, a[0], a[1], a[2]);
 
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("test if FillVector3D correctly fills array types.", true, mitk::EqualArray(a, c, 3));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("test if FillVector3D correctly fills array types.",
+        true, mitk::EqualArray(a, c, 3));
   }
 
   void FillVector4D_CorrectlyFilled(void)
@@ -80,8 +89,10 @@ public:
 
     mitk::FillVector4D(f, e[0], e[1], e[2], e[3]);
 
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("test if FillVector4D correctly fills array types.", true, mitk::EqualArray(e, f, 4));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("test if FillVector4D correctly fills array types.",
+        true, mitk::EqualArray(e, f, 4));
   }
+
 };
 
 MITK_TEST_SUITE_REGISTRATION(mitkArrayTypeConversion)

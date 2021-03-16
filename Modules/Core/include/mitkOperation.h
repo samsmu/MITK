@@ -14,6 +14,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef OPERATION_H_HEADER_INCLUDED_C16E7D9E
 #define OPERATION_H_HEADER_INCLUDED_C16E7D9E
 
@@ -22,47 +23,49 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkCommon.h>
 
-namespace mitk
+namespace mitk {
+typedef int OperationType ;
+
+//##Documentation
+//## @brief Base class of all Operation-classes
+//##
+//## @ingroup Undo
+class MITKCORE_EXPORT Operation
 {
-  typedef int OperationType;
+public:
+  mitkClassMacroNoParent(Operation)
 
   //##Documentation
-  //## @brief Base class of all Operation-classes
-  //##
-  //## @ingroup Undo
-  class MITKCORE_EXPORT Operation
-  {
-  public:
-    mitkClassMacroNoParent(Operation)
+  //## Constructor
+  Operation(OperationType operationType);
 
-      //##Documentation
-      //## Constructor
-      Operation(OperationType operationType);
+  virtual ~Operation();
 
-    virtual ~Operation();
-
-    OperationType GetOperationType();
+  OperationType GetOperationType();
 
   protected:
-    OperationType m_OperationType;
-  };
+  OperationType m_OperationType;
+};
 
-  class MITKCORE_EXPORT OperationEndEvent : public itk::EndEvent
-  {
-  public:
-    typedef OperationEndEvent Self;
-    typedef itk::EndEvent Superclass;
-    OperationEndEvent(Operation *operation = nullptr) : m_Operation(operation) {}
-    ~OperationEndEvent() override {}
-    const char *GetEventName() const override { return "OperationEndEvent"; }
-    bool CheckEvent(const ::itk::EventObject *e) const override { return dynamic_cast<const Self *>(e); }
-    ::itk::EventObject *MakeObject() const override { return new Self(m_Operation); }
-    Operation *GetOperation() const { return m_Operation; }
-  private:
-    Operation *m_Operation;
-    OperationEndEvent(const Self &);
-    void operator=(const Self &);
-  };
+class MITKCORE_EXPORT OperationEndEvent : public itk::EndEvent
+{
+public:
+  typedef OperationEndEvent Self;
+  typedef itk::EndEvent Superclass;
+  OperationEndEvent(Operation* operation = nullptr) :
+    m_Operation(operation) {}
+  virtual ~OperationEndEvent() {}
+  virtual const char * GetEventName() const override { return "OperationEndEvent"; }
+  virtual bool CheckEvent(const ::itk::EventObject* e) const override
+    { return dynamic_cast<const Self*>(e); }
+  virtual ::itk::EventObject* MakeObject() const override
+    { return new Self(m_Operation); }
+  Operation* GetOperation() const { return m_Operation; }
+private:
+  Operation* m_Operation;
+  OperationEndEvent(const Self&);
+  void operator=(const Self&);
+};
 
-} // namespace mitk
+}//namespace mitk
 #endif /* OPERATION_H_HEADER_INCLUDED_C16E7D9E */

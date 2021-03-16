@@ -17,38 +17,41 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkCallbackFromGUIThread.h"
 #include <mitkLogMacros.h>
 
-mitk::CallbackFromGUIThread *mitk::CallbackFromGUIThread::m_Instance = nullptr;
-mitk::CallbackFromGUIThreadImplementation *mitk::CallbackFromGUIThread::m_Implementation = nullptr;
+mitk::CallbackFromGUIThread* mitk::CallbackFromGUIThread::m_Instance = nullptr;
+mitk::CallbackFromGUIThreadImplementation* mitk::CallbackFromGUIThread::m_Implementation = nullptr;
 
-namespace mitk
+namespace mitk {
+
+CallbackFromGUIThread::CallbackFromGUIThread()
 {
-  CallbackFromGUIThread::CallbackFromGUIThread() {}
-  CallbackFromGUIThread *CallbackFromGUIThread::GetInstance()
-  {
-    if (!m_Instance)
-    {
-      m_Instance = new CallbackFromGUIThread();
-    }
+}
 
-    return m_Instance;
+CallbackFromGUIThread* CallbackFromGUIThread::GetInstance()
+{
+  if (!m_Instance)
+  {
+    m_Instance = new CallbackFromGUIThread();
   }
 
-  void CallbackFromGUIThread::RegisterImplementation(CallbackFromGUIThreadImplementation *implementation)
-  {
-    m_Implementation = implementation;
-  }
+  return m_Instance;
+}
 
-  void CallbackFromGUIThread::CallThisFromGUIThread(itk::Command *cmd, itk::EventObject *e)
+void CallbackFromGUIThread::RegisterImplementation(CallbackFromGUIThreadImplementation* implementation)
+{
+  m_Implementation = implementation;
+}
+
+void CallbackFromGUIThread::CallThisFromGUIThread(itk::Command* cmd, itk::EventObject* e)
+{
+  if (m_Implementation)
   {
-    if (m_Implementation)
-    {
-      m_Implementation->CallThisFromGUIThread(cmd, e);
-    }
-    else
-    {
-      MITK_ERROR << "in mitk::CallbackFromGUIThread::CallbackFromGUIThread(): no implementation registered."
-                 << std::endl;
-    }
+    m_Implementation->CallThisFromGUIThread(cmd, e);
   }
+  else
+  {
+    MITK_ERROR << "in mitk::CallbackFromGUIThread::CallbackFromGUIThread(): no implementation registered." << std::endl;
+  }
+}
 
 } // namespace
+

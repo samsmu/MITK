@@ -14,15 +14,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+
 #ifndef MITKNODEPREDICATEDATATYPE_H_HEADER_INCLUDED_
 #define MITKNODEPREDICATEDATATYPE_H_HEADER_INCLUDED_
 
-#include "mitkDataNode.h"
 #include "mitkNodePredicateBase.h"
+#include "mitkDataNode.h"
 #include <string>
 
-namespace mitk
-{
+namespace mitk {
+
   //##Documentation
   //## @brief Predicate that evaluates if the given DataNodes data object is of a specific data type
   //##
@@ -34,20 +35,20 @@ namespace mitk
   {
   public:
     mitkClassMacro(NodePredicateDataType, NodePredicateBase);
-    mitkNewMacro1Param(NodePredicateDataType, const char *);
+    mitkNewMacro1Param(NodePredicateDataType, const char*);
 
     //##Documentation
     //## @brief Standard Destructor
-    ~NodePredicateDataType() override;
+    virtual ~NodePredicateDataType();
 
     //##Documentation
     //## @brief Checks, if the nodes data object is of a specific data type
-    bool CheckNode(const mitk::DataNode *node) const override;
+    virtual bool CheckNode(const mitk::DataNode* node) const override;
 
   protected:
     //##Documentation
     //## @brief Protected constructor, use static instantiation functions instead
-    NodePredicateDataType(const char *datatype);
+    NodePredicateDataType(const char* datatype);
 
     std::string m_ValidDataType;
   };
@@ -67,20 +68,25 @@ namespace mitk
     mitkClassMacro(TNodePredicateDataType, NodePredicateBase);
     itkFactorylessNewMacro(TNodePredicateDataType);
 
-    ~TNodePredicateDataType() override {}
-    //##Documentation
-    //## @brief Checks, if the nodes data object is of a specific data type (casts)
-    bool CheckNode(const mitk::DataNode *node) const override
+    virtual ~TNodePredicateDataType()
     {
-      return node && node->GetData() && dynamic_cast<T *>(node->GetData());
     }
 
+    //##Documentation
+    //## @brief Checks, if the nodes data object is of a specific data type (casts)
+    virtual bool CheckNode(const mitk::DataNode* node) const override
+    {
+      return node && node->GetData() && dynamic_cast<T*>(node->GetData());
+    }
   protected:
     //##Documentation
     //## @brief Protected constructor, use static instantiation functions instead
-    TNodePredicateDataType() {}
+    TNodePredicateDataType()
+    {
+    }
   };
 
 } // namespace mitk
 
 #endif /* MITKNODEPREDICATEDATATYPE_H_HEADER_INCLUDED_ */
+

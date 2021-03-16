@@ -17,14 +17,13 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef ProportionalTimeGeometry_h
 #define ProportionalTimeGeometry_h
 
-// MITK
-#include <MitkCoreExports.h>
-#include <mitkCommon.h>
-#include <mitkGeometry3D.h>
+//MITK
 #include <mitkTimeGeometry.h>
+#include <mitkGeometry3D.h>
+#include <mitkCommon.h>
+#include <MitkCoreExports.h>
 
-namespace mitk
-{
+namespace mitk {
   /**
   * \brief Organizes geometries over proportional time steps
   *
@@ -46,17 +45,18 @@ namespace mitk
 
     ProportionalTimeGeometry();
     typedef ProportionalTimeGeometry self;
-    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+    itkFactorylessNewMacro(Self)
+    itkCloneMacro(Self)
 
-      /**
-      * \brief Returns the number of time steps.
-      *
-      * Returns the number of time steps for which
-      * geometries are saved. The number of time steps
-      * is also the upper bound of the time steps. The
-      * minimum time steps is always 0.
-      */
-      TimeStepType CountTimeSteps() const override;
+    /**
+    * \brief Returns the number of time steps.
+    *
+    * Returns the number of time steps for which
+    * geometries are saved. The number of time steps
+    * is also the upper bound of the time steps. The
+    * minimum time steps is always 0.
+    */
+    virtual TimeStepType     CountTimeSteps() const override;
     /**
     * \brief Returns the first time point for which the object is valid.
     *
@@ -64,14 +64,14 @@ namespace mitk
     * time steps available it usually goes from -max to +max. The time point
     * is given in ms.
     */
-    TimePointType GetMinimumTimePoint() const override;
+    virtual TimePointType    GetMinimumTimePoint () const override;
     /**
     * \brief Returns the last time point for which the object is valid
     *
     * Gives the last time point for which a valid geometrie is saved in
     * this time geometry. The time point is given in ms.
     */
-    TimePointType GetMaximumTimePoint() const override;
+    virtual TimePointType    GetMaximumTimePoint () const override;
 
     /**
     * \brief Returns the first time point for which the object is valid.
@@ -79,23 +79,23 @@ namespace mitk
     * Returns the first valid time point for the given TimeStep. The time point
     * is given in ms.
     */
-    TimePointType GetMinimumTimePoint(TimeStepType step) const override;
+    virtual TimePointType    GetMinimumTimePoint(TimeStepType step) const override;
     /**
     * \brief Returns the last time point for which the object is valid
     *
     * Gives the last time point for the Geometry specified by the given TimeStep. The time point is given in ms.
     */
-    TimePointType GetMaximumTimePoint(TimeStepType step) const override;
+    virtual TimePointType    GetMaximumTimePoint(TimeStepType step) const override;
 
     /**
     * \brief Get the time bounds (in ms)
     */
-    TimeBounds GetTimeBounds() const override;
+    virtual TimeBounds GetTimeBounds( ) const override;
 
     /**
     * \brief Get the time bounds for the given TimeStep (in ms)
     */
-    TimeBounds GetTimeBounds(TimeStepType step) const override;
+    virtual TimeBounds GetTimeBounds(TimeStepType step) const override;
 
     /**
     * \brief Tests if a given time point is covered by this object
@@ -103,7 +103,7 @@ namespace mitk
     * Returns true if a geometry can be returned for the given time
     * point and falls if not. The time point must be given in ms.
     */
-    bool IsValidTimePoint(TimePointType timePoint) const override;
+    virtual bool IsValidTimePoint (TimePointType timePoint) const override;
     /**
     * \brief Test for the given time step if a geometry is availible
     *
@@ -111,7 +111,7 @@ namespace mitk
     * Otherwise false is returned.
     * The time step is defined as positiv number.
     */
-    bool IsValidTimeStep(TimeStepType timeStep) const override;
+    virtual bool IsValidTimeStep  (TimeStepType timeStep) const override;
     /**
     * \brief Converts a time step to a time point
     *
@@ -121,24 +121,24 @@ namespace mitk
     * a time point is calculated that also does not point to a valid
     * geometry, but no exception is raised.
     */
-    TimePointType TimeStepToTimePoint(TimeStepType timeStep) const override;
-    /**
-  * \brief Converts a time point to the corresponding time step
-  *
-  * Converts a time point to a time step in a way that
-  * the new time step indicates the same geometry as the time point.
-  * If a negativ invalid time point is given always time step 0 is
-  * returned. If an positiv invalid time step is given an invalid
-  * time step will be returned.
-  */
-    TimeStepType TimePointToTimeStep(TimePointType timePoint) const override;
+    virtual TimePointType  TimeStepToTimePoint (TimeStepType timeStep) const override;
+        /**
+    * \brief Converts a time point to the corresponding time step
+    *
+    * Converts a time point to a time step in a way that
+    * the new time step indicates the same geometry as the time point.
+    * If a negativ invalid time point is given always time step 0 is
+    * returned. If an positiv invalid time step is given an invalid
+    * time step will be returned.
+    */
+    virtual TimeStepType   TimePointToTimeStep (TimePointType timePoint) const override;
     /**
     * \brief Returns the geometry which corresponds to the given time step
     *
     * Returns a clone of the geometry which defines the given time step. If
     * the given time step is invalid an null-pointer is returned.
     */
-    BaseGeometry::Pointer GetGeometryCloneForTimeStep(TimeStepType timeStep) const override;
+    virtual BaseGeometry::Pointer GetGeometryCloneForTimeStep( TimeStepType timeStep) const override;
 
     /**
     * \brief Returns the geometry which corresponds to the given time point
@@ -149,7 +149,7 @@ namespace mitk
     * If the returned geometry is changed this will affect the saved
     * geometry.
     */
-    BaseGeometry::Pointer GetGeometryForTimePoint(TimePointType timePoint) const override;
+    virtual BaseGeometry::Pointer GetGeometryForTimePoint ( TimePointType timePoint) const override;
     /**
     * \brief Returns the geometry which corresponds to the given time step
     *
@@ -159,17 +159,17 @@ namespace mitk
     * If the returned geometry is changed this will affect the saved
     * geometry.
     */
-    BaseGeometry::Pointer GetGeometryForTimeStep(TimeStepType timeStep) const override;
+    virtual BaseGeometry::Pointer GetGeometryForTimeStep  ( TimeStepType timeStep) const override;
 
     /**
     * \brief Tests if all necessary informations are set and the object is valid
     */
-    bool IsValid() const override;
+    virtual bool IsValid () const override;
 
     /**
     * \brief Initilizes a new object with one time steps which contains an empty geometry.
     */
-    void Initialize() override;
+    virtual void Initialize() override;
 
     /**
     * \brief Expands the time geometry to the given number of time steps.
@@ -179,14 +179,14 @@ namespace mitk
     * clones of the first time step.
     * Shrinking is not supported.
     */
-    void Expand(TimeStepType size) override;
+    virtual void Expand(TimeStepType size) override;
     /**
     * \brief Sets the geometry for the given time step
     *
     * This method does not afflict other time steps, since the geometry for
     * each time step is saved individually.
     */
-    void SetTimeStepGeometry(BaseGeometry *geometry, TimeStepType timeStep) override;
+    virtual void SetTimeStepGeometry(BaseGeometry* geometry, TimeStepType timeStep) override;
 
     /**
     * \brief Replaces the geometry instances with clones of the passed geometry.
@@ -198,43 +198,44 @@ namespace mitk
     * to change the spatial properties of a TimeGeometry and preserve the time
     * "grid".
     */
-    void ReplaceTimeStepGeometries(const BaseGeometry *geometry) override;
+    virtual void ReplaceTimeStepGeometries(const BaseGeometry* geometry);
 
     /**
     * \brief Makes a deep copy of the current object
     */
-    itk::LightObject::Pointer InternalClone() const override;
+    virtual itk::LightObject::Pointer InternalClone () const override;
 
     itkGetConstMacro(FirstTimePoint, TimePointType);
     itkSetMacro(FirstTimePoint, TimePointType);
     itkGetConstMacro(StepDuration, TimePointType);
     itkSetMacro(StepDuration, TimePointType);
 
-    //    void SetGeometryForTimeStep(TimeStepType timeStep, BaseGeometry& geometry);
-    void ClearAllGeometries();
-    //    void AddGeometry(BaseGeometry geometry);
-    void ReserveSpaceForGeometries(TimeStepType numberOfGeometries);
+//    void SetGeometryForTimeStep(TimeStepType timeStep, BaseGeometry& geometry);
+    void ClearAllGeometries ();
+//    void AddGeometry(BaseGeometry geometry);
+    void ReserveSpaceForGeometries (TimeStepType numberOfGeometries);
 
     /**
     * \brief Initializes the TimeGeometry with equally time Step geometries
     *
     * Saves a copy for each time step.
     */
-    void Initialize(const BaseGeometry *geometry, TimeStepType timeSteps);
+    void Initialize (const BaseGeometry* geometry, TimeStepType timeSteps);
     /**
     * \brief Initialize the TimeGeometry with empty BaseGeometry
     */
-    void Initialize(TimeStepType timeSteps);
+    void Initialize (TimeStepType timeSteps);
 
-    void PrintSelf(std::ostream &os, itk::Indent indent) const override;
+    virtual void PrintSelf(std::ostream& os, itk::Indent indent) const override;
 
   protected:
-    ~ProportionalTimeGeometry() override;
+    virtual ~ProportionalTimeGeometry();
 
     std::vector<BaseGeometry::Pointer> m_GeometryVector;
     TimePointType m_FirstTimePoint;
     TimePointType m_StepDuration;
   }; // end class ProportialTimeGeometry
+
 
   /**
   * @brief Equal A function comparing two ProportionalTimeGeometries for being identical.
@@ -254,10 +255,9 @@ namespace mitk
   *
   * @return True, if all comparison are true. False in any other case.
   */
-  MITKCORE_EXPORT bool Equal(const mitk::ProportionalTimeGeometry &leftHandSide,
-                             const mitk::ProportionalTimeGeometry &rightHandSide,
-                             ScalarType eps,
-                             bool verbose);
+  MITKCORE_EXPORT bool Equal(const mitk::ProportionalTimeGeometry& leftHandSide, const mitk::ProportionalTimeGeometry& rightHandSide, ScalarType eps, bool verbose);
+
+
 
 } // end namespace MITK
 #endif // ProportionalTimeGeometry_h

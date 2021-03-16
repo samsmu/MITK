@@ -19,28 +19,32 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkAbstractFileIO.h"
 
-namespace mitk
+namespace mitk {
+
+class ImageVtkLegacyIO : public mitk::AbstractFileIO
 {
-  class ImageVtkLegacyIO : public mitk::AbstractFileIO
-  {
-  public:
-    ImageVtkLegacyIO();
 
-    // -------------- AbstractFileReader -------------
+public:
 
-    using AbstractFileReader::Read;
-    std::vector<BaseData::Pointer> Read() override;
+  ImageVtkLegacyIO();
 
-    ConfidenceLevel GetReaderConfidenceLevel() const override;
+  // -------------- AbstractFileReader -------------
 
-    // -------------- AbstractFileWriter -------------
+  using AbstractFileReader::Read;
+  virtual std::vector<BaseData::Pointer> Read() override;
 
-    void Write() override;
+  virtual ConfidenceLevel GetReaderConfidenceLevel() const override;
 
-    ConfidenceLevel GetWriterConfidenceLevel() const override;
+  // -------------- AbstractFileWriter -------------
 
-  private:
-    ImageVtkLegacyIO *IOClone() const override;
-  };
+  virtual void Write() override;
+
+  virtual ConfidenceLevel GetWriterConfidenceLevel() const override;
+
+private:
+
+  ImageVtkLegacyIO* IOClone() const override;
+};
+
 }
 #endif // MITKIMAGEVTKLEGACYIO_H

@@ -40,20 +40,27 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 namespace mitk
 {
-  class MITKCORE_EXPORT ClippedSurfaceBoundsCalculator
-  {
+
+class MITKCORE_EXPORT ClippedSurfaceBoundsCalculator
+{
+
   public:
+
     typedef std::vector<mitk::Point3D> PointListType;
 
-    ClippedSurfaceBoundsCalculator(const mitk::PlaneGeometry *geometry = nullptr, mitk::Image::Pointer image = nullptr);
-    ClippedSurfaceBoundsCalculator(const mitk::BaseGeometry *geometry, mitk::Image::Pointer image);
-    ClippedSurfaceBoundsCalculator(const PointListType pointlist, mitk::Image::Pointer image);
+    ClippedSurfaceBoundsCalculator(const mitk::PlaneGeometry* geometry = nullptr,
+                                   mitk::Image::Pointer image = nullptr);
+    ClippedSurfaceBoundsCalculator(const mitk::BaseGeometry* geometry,
+                                   mitk::Image::Pointer image);
+    ClippedSurfaceBoundsCalculator(const PointListType pointlist,
+                                   mitk::Image::Pointer image);
 
     void InitializeOutput();
 
     virtual ~ClippedSurfaceBoundsCalculator();
 
-    void SetInput(const mitk::PlaneGeometry *geometry, mitk::Image *image);
+
+    void SetInput(const mitk::PlaneGeometry* geometry, mitk::Image* image);
     void SetInput(const mitk::BaseGeometry *geometry, mitk::Image *image);
     void SetInput(const PointListType pointlist, mitk::Image *image);
 
@@ -91,8 +98,8 @@ namespace mitk
     OutputType GetMinMaxSpatialDirectionZ();
 
   protected:
-    void CalculateIntersectionPoints(const mitk::PlaneGeometry *geometry);
-    void CalculateIntersectionPoints(PointListType pointList);
+    void CalculateIntersectionPoints(const mitk::PlaneGeometry* geometry);
+    void CalculateIntersectionPoints( PointListType pointList );
 
     /**
     * \brief Clips the resulting index-coordinates to make sure they do
@@ -100,13 +107,16 @@ namespace mitk
     */
     void EnforceImageBounds();
 
+
     mitk::PlaneGeometry::ConstPointer m_PlaneGeometry;
     mitk::BaseGeometry::ConstPointer m_Geometry3D;
     mitk::Image::Pointer m_Image;
     std::vector<mitk::Point3D> m_ObjectPointsInWorldCoordinates;
-    std::vector<OutputType> m_MinMaxOutput;
-  };
+    std::vector< OutputType > m_MinMaxOutput;
 
-} // namespace mitk
+};
+
+} //namespace mitk
 
 #endif
+

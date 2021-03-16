@@ -14,11 +14,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <algorithm>
-#include <regex>
-#include <utility>
-
 #include <mitkPropertyPersistence.h>
+#include <algorithm>
+#include <utility>
 
 mitk::PropertyPersistence::PropertyPersistence()
 {
@@ -28,25 +26,23 @@ mitk::PropertyPersistence::~PropertyPersistence()
 {
 }
 
-bool mitk::PropertyPersistence::AddInfo(const PropertyPersistenceInfo *info, bool overwrite)
+bool mitk::PropertyPersistence::AddInfo(const std::string& propertyName, PropertyPersistenceInfo::Pointer info, bool overwrite)
 {
-  if (!info)
+  if (propertyName.empty())
   {
     return false;
   }
 
-  if (info->GetName().empty())
+  if (info.IsNull())
   {
     return false;
   }
 
-  mitk::PropertyPersistenceInfo::MimeTypeNameType mime = info->GetMimeTypeName();
+  PropertyPersistenceInfo::MimeTypeNameType mime = info->GetMimeTypeName();
 
-  auto infoRange = m_InfoMap.equal_range(info->GetName());
+  auto infoRange = m_Infos.equal_range(propertyName);
 
-  auto predicate = [mime](const std::pair<const std::string, mitk::PropertyPersistenceInfo::ConstPointer> &x) {
-    return x.second.IsNotNull() && x.second->GetMimeTypeName() == mime;
-  };
+  auto predicate = [mime](const std::pair<const std::string, PropertyPersistenceInfo::Pointer>& x){return x.second.IsNotNull() && x.second->GetMimeTypeName() == mime; };
 
   auto finding = std::find_if(infoRange.first, infoRange.second, predicate);
 
@@ -57,199 +53,105 @@ bool mitk::PropertyPersistence::AddInfo(const PropertyPersistenceInfo *info, boo
   {
     if (exists && overwrite)
     {
-      m_InfoMap.erase(finding);
+      m_Infos.erase(finding);
     }
     result = true;
-    m_InfoMap.insert(std::make_pair(info->GetName(), info));
+    m_Infos.insert(std::make_pair(propertyName, info));
   }
 
   return result;
 }
 
-mitk::PropertyPersistence::InfoMap mitk::PropertyPersistence::SelectInfo(const InfoMap &infoMap,
-                                                                         const SelectFunctionType &selectFunction)
+mitk::PropertyPersistence::InfoMapType mitk::PropertyPersistence::GetInfos(const std::string& propertyName)
 {
-  InfoMap result;
+  auto infoRange = m_Infos.equal_range(propertyName);
 
-  for (auto pos : infoMap)
+  InfoMapType result;
+
+  for (auto pos = infoRange.first; pos != infoRange.second; ++pos)
   {
-    if (selectFunction(pos))
-    {
-      result.insert(pos);
-    }
+    result.insert(std::make_pair(pos->first, pos->second));
   }
 
   return result;
-};
+}
 
-mitk::PropertyPersistence::InfoResultType mitk::PropertyPersistence::GetInfo(const std::string &propertyName,
-                                                                             bool allowNameRegEx) const
+mitk::PropertyPersistence::InfoMapType mitk::PropertyPersistence::GetInfosByKey(const std::string& persistenceKey)
 {
-  SelectFunctionType select = [propertyName](const InfoMap::value_type &x) {
-    return x.second.IsNotNull() && !x.second->IsRegEx() && x.second->GetName() == propertyName;
-  };
+  InfoMapType result;
 
-  InfoMap selection = SelectInfo(m_InfoMap, select);
-
-  InfoResultType result;
-  for (const auto &pos : selection)
+  for (auto pos : m_Infos)
   {
-    result.push_back(pos.second->UnRegExByName(propertyName).GetPointer());
-  }
-
-  if (allowNameRegEx)
-  {
-    select = [propertyName](const InfoMap::value_type &x) {
-      if (x.second.IsNotNull() && x.second->IsRegEx())
-      {
-        std::regex ex(x.second->GetName());
-        return std::regex_match(propertyName, ex);
-      }
-      return false;
-    };
-
-    selection = SelectInfo(m_InfoMap, select);
-
-    for (const auto &pos : selection)
+    if (pos.second.IsNotNull() && pos.second->GetKey() == persistenceKey)
     {
-      result.push_back(pos.second->UnRegExByName(propertyName).GetPointer());
+      result.insert(std::make_pair(pos.first, pos.second));
     }
   }
 
   return result;
 }
 
-bool infoPredicate(const std::multimap<const std::string, mitk::PropertyPersistenceInfo::ConstPointer>::value_type &x,
-                   const std::string &propertyName,
-                   const std::string &mime)
+mitk::PropertyPersistenceInfo::Pointer mitk::PropertyPersistence::GetInfo(const std::string& propertyName, const MimeTypeNameType& mime, bool allowWildCard)
 {
-  return x.second.IsNotNull() && !x.second->IsRegEx() && x.second->GetName() == propertyName &&
-         x.second->GetMimeTypeName() == mime;
-}
+  auto infoRange = m_Infos.equal_range(propertyName);
 
-bool infoPredicateRegEx(
-  const std::multimap<const std::string, mitk::PropertyPersistenceInfo::ConstPointer>::value_type &x,
-  const std::string &propertyName,
-  const std::string &mime)
-{
-  if (x.second.IsNotNull() && x.second->IsRegEx())
+  auto predicate = [mime](const std::pair<const std::string, PropertyPersistenceInfo::Pointer>& x){return x.second.IsNotNull() && x.second->GetMimeTypeName() == mime; };
+
+  auto finding = std::find_if(infoRange.first, infoRange.second, predicate);
+
+  mitk::PropertyPersistenceInfo::Pointer result = nullptr;
+
+  if (finding == infoRange.second && allowWildCard)
   {
-    std::regex ex(x.second->GetName());
-    return std::regex_match(propertyName, ex) && x.second->GetMimeTypeName() == mime;
-  }
-  return false;
-}
+    auto predicateWild = [](const std::pair<const std::string, PropertyPersistenceInfo::Pointer>& x){return x.second.IsNotNull() && x.second->GetMimeTypeName() == PropertyPersistenceInfo::ANY_MIMETYPE_NAME(); };
 
-mitk::PropertyPersistence::InfoResultType mitk::PropertyPersistence::GetInfo(const std::string &propertyName,
-                                                                             const MimeTypeNameType &mime,
-                                                                             bool allowMimeWildCard,
-                                                                             bool allowNameRegEx) const
-{
-  SelectFunctionType select = [propertyName, mime](const InfoMap::value_type &x) {
-    return infoPredicate(x, propertyName, mime);
-  };
-
-  InfoMap selection = SelectInfo(m_InfoMap, select);
-
-  if (allowNameRegEx)
-  {
-    select = [propertyName, mime](const InfoMap::value_type &x) { return infoPredicateRegEx(x, propertyName, mime); };
-
-    InfoMap regExSelection = SelectInfo(m_InfoMap, select);
-
-    selection.insert(regExSelection.begin(), regExSelection.end());
+    finding = std::find_if(infoRange.first, infoRange.second, predicateWild);
   }
 
-  if (selection.empty() && allowMimeWildCard)
-  { // no perfect match => second run through with "any mime type"
-    select = [propertyName](const InfoMap::value_type &x) {
-      return infoPredicate(x, propertyName, PropertyPersistenceInfo::ANY_MIMETYPE_NAME());
-    };
 
-    selection = SelectInfo(m_InfoMap, select);
-
-    if (allowNameRegEx)
-    {
-      select = [propertyName](const InfoMap::value_type &x) {
-        return infoPredicateRegEx(x, propertyName, PropertyPersistenceInfo::ANY_MIMETYPE_NAME());
-      };
-
-      InfoMap regExSelection = SelectInfo(m_InfoMap, select);
-
-      selection.insert(regExSelection.begin(), regExSelection.end());
-    }
-  }
-
-  InfoResultType result;
-  for (const auto &pos : selection)
+  if (finding != infoRange.second)
   {
-    result.push_back(pos.second->UnRegExByName(propertyName).GetPointer());
+    result = finding->second;
   }
 
   return result;
 }
 
-mitk::PropertyPersistence::InfoResultType mitk::PropertyPersistence::GetInfoByKey(const std::string &persistenceKey,
-                                                                                  bool allowKeyRegEx) const
+bool mitk::PropertyPersistence::HasInfos(const std::string& propertyName)
 {
-  InfoResultType result;
-
-  for (const auto &pos : m_InfoMap)
-  {
-    if (pos.second.IsNotNull())
-    {
-      bool valid = pos.second->GetKey() == persistenceKey;
-      if (!valid && pos.second->IsRegEx() && allowKeyRegEx)
-      {
-        std::regex ex(pos.second->GetKey());
-        valid = std::regex_match(persistenceKey, ex);
-      }
-
-      if (valid)
-      {
-        result.push_back(pos.second->UnRegExByKey(persistenceKey).GetPointer());
-      }
-    }
-  }
-
-  return result;
+  return !propertyName.empty()
+    ? m_Infos.find(propertyName) != m_Infos.cend()
+    : false;
 }
 
-bool mitk::PropertyPersistence::HasInfo(const std::string &propertyName, bool allowNameRegEx) const
+void mitk::PropertyPersistence::RemoveAllInfos()
 {
-  return !this->GetInfo(propertyName, allowNameRegEx).empty();
+  m_Infos.clear();
 }
 
-void mitk::PropertyPersistence::RemoveAllInfo()
-{
-  m_InfoMap.clear();
-}
-
-void mitk::PropertyPersistence::RemoveInfo(const std::string &propertyName)
+void mitk::PropertyPersistence::RemoveInfos(const std::string& propertyName)
 {
   if (!propertyName.empty())
-  {
-    m_InfoMap.erase(propertyName);
-  }
+    m_Infos.erase(propertyName);
 }
 
-void mitk::PropertyPersistence::RemoveInfo(const std::string &propertyName, const MimeTypeNameType &mime)
+void mitk::PropertyPersistence::RemoveInfos(const std::string& propertyName, const MimeTypeNameType& mime)
 {
-  auto itr = m_InfoMap.begin();
-  while (itr != m_InfoMap.end())
+  auto itr = m_Infos.begin();
+  while (itr != m_Infos.end())
   {
     if (itr->first == propertyName && itr->second.IsNotNull() && itr->second->GetMimeTypeName() == mime)
     {
-      itr = m_InfoMap.erase(itr);
+      itr = m_Infos.erase(itr);
     }
-    else
-    {
+    else {
       ++itr;
     }
   }
 }
 
-mitk::IPropertyPersistence *mitk::CreateTestInstancePropertyPersistence()
+
+mitk::IPropertyPersistence* mitk::CreateTestInstancePropertyPersistence()
 {
   return new PropertyPersistence();
 };

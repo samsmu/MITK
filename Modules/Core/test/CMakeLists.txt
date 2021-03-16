@@ -27,6 +27,10 @@ if(TARGET ${TESTDRIVER})
                           ${MITK_DATA_DIR}/US4DCyl.nrrd
   )
 
+  mitkAddCustomModuleTest(mitkDicomSeriesReaderTest_CTImage mitkDicomSeriesReaderTest
+                          ${MITK_DATA_DIR}/TinyCTAbdomen
+                          ${MITK_DATA_DIR}/DICOMReader/Broken-Series
+  )
 
   mitkAddCustomModuleTest(mitkPointSetReaderTest mitkPointSetReaderTest
                           ${MITK_DATA_DIR}/PointSetReaderTestData.mps
@@ -123,6 +127,12 @@ if(TARGET ${TESTDRIVER})
                             -V ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/Stanford_bunnySTLDepthSorting640x480REF.png
     )
     endif()
+    if(NOT APPLE)
+      mitkAddCustomModuleTest(mitkSurfaceDepthPeelingTransparency_StanfordBunnySTL640x480 mitkSurfaceDepthPeelingTest
+                              ${MITK_DATA_DIR}/RenderingTestData/Stanford_bunny.stl
+                              -V ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/Stanford_bunnySTLDepthPeeling640x480REF.png #corresponding reference screenshot
+    )
+    endif()
 
 # BUG 18695 - tests deactivated, because win 32 bit continuous renders images slightly different. TODO!
     #Test reslice interpolation
@@ -154,8 +164,10 @@ if(TARGET ${TESTDRIVER})
     # End of binary image tests
 
     mitkAddCustomModuleTest(mitkSurfaceVtkMapper3DTest_TextureProperty mitkSurfaceVtkMapper3DTest
-                            ${MITK_DATA_DIR}/RenderingTestData/earth.jpg
-                            -V ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/texturedSphere640x480REF.png #corresponding reference screenshot
+                            ${MITK_DATA_DIR}/ToF-Data/Kinect_LiverPhantom.vtp
+                            ${MITK_DATA_DIR}/ToF-Data/Kinect_LiverPhantom_RGBImage.nrrd
+                            -V
+                            ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/texturedLiver640x480REF.png #corresponding reference screenshot
     )
 
     mitkAddCustomModuleTest(mitkImageVtkMapper2DTransferFunctionTest_Png2D-bw mitkImageVtkMapper2DTransferFunctionTest
@@ -169,6 +181,13 @@ if(TARGET ${TESTDRIVER})
     )
 
     ############################## DISABLED TESTS
+
+    #Removed due to high rendering error.
+    #mitkAddCustomModuleTest(mitkSurfaceVtkMapper3DTexturedSphereTest_Football mitkSurfaceVtkMapper3DTexturedSphereTest
+    #                        ${MITK_DATA_DIR}/RenderingTestData/texture.jpg #input texture
+    #                        -V
+    #                        ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/texturedSphere640x480REF.png corresponding reference screenshot
+    #)
 
     mitkAddCustomModuleTest(mitkImageVtkMapper2DLookupTableTest_Png2D-bw mitkImageVtkMapper2DLookupTableTest
                             ${MITK_DATA_DIR}/Png2D-bw.png
@@ -191,7 +210,7 @@ if(TARGET ${TESTDRIVER})
 
     SET_PROPERTY(TEST mitkRotatedSlice4DTest mitkImageVtkMapper2D_rgbaImage640x480 mitkImageVtkMapper2D_pic3d640x480 mitkImageVtkMapper2D_pic3dColorBlue640x480 mitkImageVtkMapper2D_pic3dLevelWindow640x480 mitkImageVtkMapper2D_pic3dSwivel640x480 mitkImageVtkMapper2DTransferFunctionTest_Png2D-bw
       # mitkImageVtkMapper2D_pic3dOpacity640x480
-      mitkSurfaceVtkMapper2DTest mitkSurfaceVtkMapper3DTest_TextureProperty mitkPointSetVtkMapper2D_Pic3DPointSetForPic3D640x480 mitkPointSetVtkMapper2D_openMeAlone640x480 mitkPointSetVtkMapper2D_openMeAloneGlyphType640x480 mitkPointSetVtkMapper2D_openMeAloneTransformed640x480
+      mitkSurfaceVtkMapper2DTest mitkSurfaceVtkMapper3DTest_TextureProperty mitkPointSetVtkMapper2D_Pic3DPointSetForPic3D640x480 mitkPointSetVtkMapper2D_openMeAlone640x480 mitkPointSetVtkMapper2D_openMeAloneGlyphType640x480 mitkPointSetVtkMapper2D_openMeAloneTransformed640x480 #mitkSurfaceVtkMapper3DTexturedSphereTest_Football
       mitkPlaneGeometryDataMapper2DTest
     PROPERTY RUN_SERIAL TRUE)
 

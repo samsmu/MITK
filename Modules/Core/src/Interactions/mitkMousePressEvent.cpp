@@ -14,18 +14,18 @@
 
  ===================================================================*/
 
-#include "mitkMousePressEvent.h"
 #include "mitkException.h"
+#include "mitkMousePressEvent.h"
 
-mitk::MousePressEvent::MousePressEvent(mitk::BaseRenderer *baseRenderer,
-                                       const mitk::Point2D &mousePosition,
-                                       MouseButtons buttonStates,
-                                       ModifierKeys modifiers,
-                                       MouseButtons eventButton)
-  : InteractionPositionEvent(baseRenderer, mousePosition),
-    m_EventButton(eventButton),
-    m_ButtonStates(buttonStates),
-    m_Modifiers(modifiers)
+mitk::MousePressEvent::MousePressEvent(mitk::BaseRenderer* baseRenderer,
+    const mitk::Point2D& mousePosition,
+    MouseButtons buttonStates,
+    ModifierKeys modifiers,
+    MouseButtons eventButton)
+: InteractionPositionEvent(baseRenderer, mousePosition)
+, m_EventButton(eventButton)
+, m_ButtonStates(buttonStates)
+, m_Modifiers( modifiers)
 {
 }
 
@@ -63,14 +63,15 @@ mitk::MousePressEvent::~MousePressEvent()
 {
 }
 
-bool mitk::MousePressEvent::IsEqual(const mitk::InteractionEvent &interactionEvent) const
+bool mitk::MousePressEvent::IsEqual(const mitk::InteractionEvent& interactionEvent) const
 {
-  const auto &mpe = static_cast<const mitk::MousePressEvent &>(interactionEvent);
-  return (this->GetEventButton() == mpe.GetEventButton() && this->GetModifiers() == mpe.GetModifiers() &&
-          this->GetButtonStates() == mpe.GetButtonStates() && Superclass::IsEqual(interactionEvent));
+  const mitk::MousePressEvent& mpe = static_cast<const mitk::MousePressEvent&>(interactionEvent);
+  return (this->GetEventButton() == mpe.GetEventButton() && this->GetModifiers() == mpe.GetModifiers()
+          && this->GetButtonStates() == mpe.GetButtonStates() &&
+          Superclass::IsEqual(interactionEvent));
 }
 
-bool mitk::MousePressEvent::IsSuperClassOf(const InteractionEvent::Pointer &baseClass) const
+bool mitk::MousePressEvent::IsSuperClassOf(const InteractionEvent::Pointer& baseClass) const
 {
-  return (dynamic_cast<MousePressEvent *>(baseClass.GetPointer()) != nullptr);
+  return (dynamic_cast<MousePressEvent*>(baseClass.GetPointer()) != NULL) ;
 }

@@ -17,94 +17,99 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef MITKFILEREADERWRITERBASE_H
 #define MITKFILEREADERWRITERBASE_H
 
-#include <mitkCustomMimeType.h>
 #include <mitkMessage.h>
+#include <mitkCustomMimeType.h>
 
 #include <usAny.h>
-#include <usModuleContext.h>
 #include <usServiceRegistration.h>
+#include <usModuleContext.h>
 
 #include <memory>
 
-namespace mitk
+namespace mitk {
+
+class FileReaderWriterBase
 {
-  class FileReaderWriterBase
-  {
-  public:
-    typedef std::map<std::string, us::Any> Options;
-    typedef mitk::MessageAbstractDelegate1<float> ProgressCallback;
+public:
 
-    FileReaderWriterBase();
-    virtual ~FileReaderWriterBase();
+  typedef std::map<std::string,us::Any> Options;
+  typedef mitk::MessageAbstractDelegate1<float> ProgressCallback;
 
-    Options GetOptions() const;
-    us::Any GetOption(const std::string &name) const;
+  FileReaderWriterBase();
+  virtual ~FileReaderWriterBase();
 
-    void SetOptions(const Options &options);
-    void SetOption(const std::string &name, const us::Any &value);
+  Options GetOptions() const;
+  us::Any GetOption(const std::string &name) const;
 
-    void SetDefaultOptions(const Options &defaultOptions);
-    Options GetDefaultOptions() const;
+  void SetOptions(const Options& options);
+  void SetOption(const std::string& name, const us::Any& value);
 
-    /**
-     * \brief Set the service ranking for this file reader.
-     *
-     * Default is zero and should only be chosen differently for a reason.
-     * The ranking is used to determine which reader to use if several
-     * equivalent readers have been found.
-     * It may be used to replace a default reader from MITK in your own project.
-     * E.g. if you want to use your own reader for nrrd files instead of the default,
-     * implement it and give it a higher ranking than zero.
-     */
-    void SetRanking(int ranking);
-    int GetRanking() const;
+  void SetDefaultOptions(const Options& defaultOptions);
+  Options GetDefaultOptions() const;
 
-    void SetMimeType(const CustomMimeType &mimeType);
-    const CustomMimeType *GetMimeType() const;
-    CustomMimeType *GetMimeType();
+  /**
+   * \brief Set the service ranking for this file reader.
+   *
+   * Default is zero and should only be chosen differently for a reason.
+   * The ranking is used to determine which reader to use if several
+   * equivalent readers have been found.
+   * It may be used to replace a default reader from MITK in your own project.
+   * E.g. if you want to use your own reader for nrrd files instead of the default,
+   * implement it and give it a higher ranking than zero.
+   */
+  void SetRanking(int ranking);
+  int GetRanking() const;
 
-    MimeType GetRegisteredMimeType() const;
+  void SetMimeType(const CustomMimeType& mimeType);
+  const CustomMimeType* GetMimeType() const;
+  CustomMimeType* GetMimeType();
 
-    void SetMimeTypePrefix(const std::string &prefix);
-    std::string GetMimeTypePrefix() const;
+  MimeType GetRegisteredMimeType() const;
 
-    void SetDescription(const std::string &description);
-    std::string GetDescription() const;
+  void SetMimeTypePrefix(const std::string& prefix);
+  std::string GetMimeTypePrefix() const;
 
-    void AddProgressCallback(const ProgressCallback &callback);
-    void RemoveProgressCallback(const ProgressCallback &callback);
+  void SetDescription(const std::string& description);
+  std::string GetDescription() const;
 
-    us::ServiceRegistration<CustomMimeType> RegisterMimeType(us::ModuleContext *context);
-    void UnregisterMimeType();
+  void AddProgressCallback(const ProgressCallback& callback);
+  void RemoveProgressCallback(const ProgressCallback& callback);
 
-  protected:
-    FileReaderWriterBase(const FileReaderWriterBase &other);
+  us::ServiceRegistration<CustomMimeType> RegisterMimeType(us::ModuleContext* context);
+  void UnregisterMimeType();
 
-    std::string m_Description;
-    int m_Ranking;
+protected:
 
-    std::string m_MimeTypePrefix;
+  FileReaderWriterBase(const FileReaderWriterBase& other);
 
-    /**
-     * \brief Options supported by this reader. Set sensible default values!
-     *
-     * Can be left emtpy if no special options are required.
-     */
-    Options m_Options;
+  std::string m_Description;
+  int m_Ranking;
 
-    Options m_DefaultOptions;
+  std::string m_MimeTypePrefix;
 
-    // us::PrototypeServiceFactory* m_PrototypeFactory;
+  /**
+   * \brief Options supported by this reader. Set sensible default values!
+   *
+   * Can be left emtpy if no special options are required.
+   */
+  Options m_Options;
 
-    Message1<float> m_ProgressMessage;
+  Options m_DefaultOptions;
 
-    std::unique_ptr<CustomMimeType> m_CustomMimeType;
-    us::ServiceRegistration<CustomMimeType> m_MimeTypeReg;
+  //us::PrototypeServiceFactory* m_PrototypeFactory;
 
-  private:
-    // purposely not implemented
-    FileReaderWriterBase &operator=(const FileReaderWriterBase &other);
-  };
+  Message1<float> m_ProgressMessage;
+
+  std::unique_ptr<CustomMimeType> m_CustomMimeType;
+  us::ServiceRegistration<CustomMimeType> m_MimeTypeReg;
+
+private:
+
+  // purposely not implemented
+  FileReaderWriterBase& operator=(const FileReaderWriterBase& other);
+
+};
+
 }
 
 #endif // MITKFILEREADERWRITERBASE_H
