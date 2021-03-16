@@ -362,7 +362,7 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
         auto tertiaryProp = dynamic_cast<mitk::IntProperty*>(static_cast<mitk::BaseProperty*>(image->GetProperty("autoplan.tertiaryAxisIndex")));
         auto mainProp = dynamic_cast<mitk::IntProperty*>(static_cast<mitk::BaseProperty*>(image->GetProperty("autoplan.mainAxisIndex")));
 
-        int axisIndices[3] = 
+        int axisIndices[3] =
         {
           secondaryProp ? secondaryProp->GetValue() : 0,
           tertiaryProp ? tertiaryProp->GetValue() : 1,
@@ -376,18 +376,17 @@ bool AnnotationOverlay::render(mitk::DataNode::Pointer node)
         }
 
         for (int i = 0; i < m_renderWindows.size(); i++)
-        {   
-            if(!baseRenderes[axisIndices[i]])
+        {
+            if (0 > axisIndices[i] || axisIndices[i] >= baseRenderes.size() || !baseRenderes[axisIndices[i]])
                 continue;
-                
             int thickslices = 0;
-            if( baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode())
+            if (baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode())
             {
                 auto geometry = baseRenderes[axisIndices[i]]->GetCurrentWorldPlaneGeometryNode();
                 geometry->GetIntProperty("reslice.thickslices.num", thickslices);
                 thickslices = thickslices == 0 ? 1 : thickslices;
             }
-            
+
             const auto pos = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetPos() + 1;
             const auto max = baseRenderes[axisIndices[i]]->GetSliceNavigationController()->GetSlice()->GetSteps();
 
