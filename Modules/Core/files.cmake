@@ -83,7 +83,7 @@ set(CPP_FILES
   DataManagement/mitkImage.cpp
   DataManagement/mitkImageDataItem.cpp
   DataManagement/mitkImageDescriptor.cpp
-  DataManagement/mitkImageReadAccessor.cpp
+  DataManagement/mitkImageRegionAccessor.cpp
   DataManagement/mitkImageStatisticsHolder.cpp
   DataManagement/mitkImageVtkAccessor.cpp
   DataManagement/mitkImageVtkReadAccessor.cpp
