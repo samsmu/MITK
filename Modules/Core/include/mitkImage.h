@@ -604,9 +604,14 @@ protected:
 
 private:
 
+  ImageDataItemPointer GetSliceData_unlocked(int s, int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
   ImageDataItemPointer GetVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
+  ImageDataItemPointer GetChannelData_unlocked(int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
+
+  ImageDataItemPointer AllocateSliceData_unlocked(int s, int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
   ImageDataItemPointer AllocateVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
-  ImageDataItemPointer GetChannelData_unlocked(int n, void *data,ImportMemoryManagementType importMemoryManagement) const;
+  ImageDataItemPointer AllocateChannelData_unlocked(int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
+  
   bool IsSliceSet_unlocked(int s, int t, int n) const;
   bool IsVolumeSet_unlocked(int t, int n) const;
   bool IsChannelSet_unlocked(int n) const;
