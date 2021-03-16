@@ -20,8 +20,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "itkImportMitkImageContainer.h"
 #include "mitkBaseProcess.h"
 #include "mitkException.h"
+#include "mitkImageReadAccessor.h"
 #include "mitkImageToItk.h"
-#include "mitkImageAccessLock.h"
+#include "mitkImageWriteAccessor.h"
 
 #include <memory>
 
@@ -113,12 +114,18 @@ void mitk::ImageToItk<TOutputImage>::GenerateData()
     helper.SetVectorLength(pixelType.GetNumberOfComponents());
   }
 
-  std::unique_ptr<mitk::ImageRegionAccessor> imageAccess;
-  imageAccess.reset(new mitk::ImageRegionAccessor(input));
-  mitk::ImageAccessLock lock(imageAccess.get(), !m_ConstInput);
+  std::unique_ptr<mitk::ImageAccessorBase> imageAccess;
+  if (m_ConstInput)
+  {
+    imageAccess.reset(new mitk::ImageReadAccessor(input, nullptr, m_Options));
+  }
+  else
+  {
+    imageAccess.reset(new mitk::ImageWriteAccessor(input, nullptr, m_Options));
+  }
 
   // hier wird momentan wohl nur der erste Channel verwendet??!!
-  if (imageAccess->getData() == nullptr)
+  if (imageAccess->GetData() == nullptr)
   {
     itkWarningMacro(<< "no image data to import in ITK image");
 
@@ -133,7 +140,7 @@ void mitk::ImageToItk<TOutputImage>::GenerateData()
 
     output->Allocate();
 
-    memcpy(output->GetBufferPointer(), imageAccess->getData(), sizeof(InternalPixelType) * noBytes);
+    memcpy(output->GetBufferPointer(), imageAccess->GetData(), sizeof(InternalPixelType) * noBytes);
   }
   else
   {

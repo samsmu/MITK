@@ -16,9 +16,8 @@
 
 #include "mitkStateMachineState.h"
 
-mitk::StateMachineState::StateMachineState(const std::string& stateName, const std::string& stateMode)
-  : m_Name(stateName)
-  , m_StateMode(stateMode)
+mitk::StateMachineState::StateMachineState(const std::string &stateName, const std::string &stateMode)
+  : m_Name(stateName), m_StateMode(stateMode)
 {
 }
 
@@ -34,7 +33,7 @@ mitk::StateMachineState::~StateMachineState()
 
 bool mitk::StateMachineState::AddTransition(StateMachineTransition::Pointer transition)
 {
-  for (TransitionVector::iterator it = m_Transitions.begin(); it != m_Transitions.end(); ++it)
+  for (auto it = m_Transitions.begin(); it != m_Transitions.end(); ++it)
   {
     if (transition.GetPointer() == (*it).GetPointer())
       return false;
@@ -43,19 +42,20 @@ bool mitk::StateMachineState::AddTransition(StateMachineTransition::Pointer tran
   return true;
 }
 
-mitk::StateMachineTransition::Pointer mitk::StateMachineState::GetTransition( const std::string& eventClass,
-                                                                              const std::string& eventVariant)
+mitk::StateMachineTransition::Pointer mitk::StateMachineState::GetTransition(const std::string &eventClass,
+                                                                             const std::string &eventVariant)
 {
-  TransitionVector transitions = this->GetTransitionList( eventClass, eventVariant );
+  TransitionVector transitions = this->GetTransitionList(eventClass, eventVariant);
 
-  if ( transitions.size() > 1 )
+  if (transitions.size() > 1)
   {
-    MITK_WARN << "Multiple transitions have been found for event. Use non-deprecated method StateMachineState::GetTransitionList() instead!";
+    MITK_WARN << "Multiple transitions have been found for event. Use non-deprecated method "
+                 "StateMachineState::GetTransitionList() instead!";
   }
 
-  if ( transitions.empty() )
+  if (transitions.empty())
   {
-    return NULL;
+    return nullptr;
   }
   else
   {
@@ -63,15 +63,15 @@ mitk::StateMachineTransition::Pointer mitk::StateMachineState::GetTransition( co
   }
 }
 
-mitk::StateMachineState::TransitionVector mitk::StateMachineState::GetTransitionList( const std::string& eventClass,
-                                                                                      const std::string& eventVariant)
+mitk::StateMachineState::TransitionVector mitk::StateMachineState::GetTransitionList(const std::string &eventClass,
+                                                                                     const std::string &eventVariant)
 {
   TransitionVector transitions;
   mitk::StateMachineTransition::Pointer t = mitk::StateMachineTransition::New("", eventClass, eventVariant);
-  for (TransitionVector::iterator it = m_Transitions.begin(); it != m_Transitions.end(); ++it)
+  for (auto it = m_Transitions.begin(); it != m_Transitions.end(); ++it)
   {
     if (**it == *t) // do not switch it and t, order matters, see  mitk::StateMachineTransition == operator
-      transitions.push_back( *it );
+      transitions.push_back(*it);
   }
   return transitions;
 }
@@ -87,10 +87,10 @@ std::string mitk::StateMachineState::GetName() const
 
 bool mitk::StateMachineState::ConnectTransitions(StateMap *allStates)
 {
-  for (TransitionVector::iterator transIt = m_Transitions.begin(); transIt != m_Transitions.end(); ++transIt)
+  for (auto transIt = m_Transitions.begin(); transIt != m_Transitions.end(); ++transIt)
   {
     bool found = false;
-    for (StateMap::iterator stateIt = allStates->begin(); stateIt != allStates->end(); ++stateIt)
+    for (auto stateIt = allStates->begin(); stateIt != allStates->end(); ++stateIt)
     {
       if ((*stateIt)->GetName() == (*transIt)->GetNextStateName())
       {
@@ -101,7 +101,7 @@ bool mitk::StateMachineState::ConnectTransitions(StateMap *allStates)
     }
     if (!found)
     {
-      MITK_WARN<< "Target State not found in StateMachine.";
+      MITK_WARN << "Target State not found in StateMachine.";
       return false; // only reached if no state matching the string is found
     }
   }

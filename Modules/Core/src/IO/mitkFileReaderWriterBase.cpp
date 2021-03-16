@@ -173,7 +173,7 @@ namespace mitk
     // If the mime type name and extensions list is empty, print a warning
     if (m_CustomMimeType->GetName().empty() && extensions.empty())
     {
-      //MITK_WARN << "Trying to register a MITK reader or writer with an empty mime type name and empty extension list.";
+      MITK_WARN << "Trying to register a MITK reader or writer with an empty mime type name and empty extension list.";
       return m_MimeTypeReg;
     }
 

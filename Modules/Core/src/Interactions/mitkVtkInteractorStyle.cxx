@@ -16,14 +16,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkVtkInteractorStyle.h"
 
-#include <vtkObjectFactory.h>
 #include <vtkCommand.h>
-
+#include <vtkObjectFactory.h>
 
 vtkStandardNewMacro(mitkVtkInteractorStyle);
 
-mitkVtkInteractorStyle::mitkVtkInteractorStyle()
-: vtkInteractorStyleUser()
+mitkVtkInteractorStyle::mitkVtkInteractorStyle() : vtkInteractorStyleUser()
 {
 }
 
@@ -35,7 +33,7 @@ void mitkVtkInteractorStyle::OnMouseWheelForward()
 {
   if (this->HasObserver(vtkCommand::MouseWheelForwardEvent))
   {
-    this->InvokeEvent(vtkCommand::MouseWheelForwardEvent, NULL);
+    this->InvokeEvent(vtkCommand::MouseWheelForwardEvent, nullptr);
   }
 }
 
@@ -43,7 +41,6 @@ void mitkVtkInteractorStyle::OnMouseWheelBackward()
 {
   if (this->HasObserver(vtkCommand::MouseWheelBackwardEvent))
   {
-    this->InvokeEvent(vtkCommand::MouseWheelBackwardEvent, NULL);
+    this->InvokeEvent(vtkCommand::MouseWheelBackwardEvent, nullptr);
   }
 }
-

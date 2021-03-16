@@ -19,12 +19,12 @@
 
 #include "itkObject.h"
 #include "itkObjectFactory.h"
+#include "mitkBaseRenderer.h"
 #include "mitkCommon.h"
+#include "mitkInteractionEvent.h"
 #include "mitkInteractionEventConst.h"
 #include "mitkInteractionPositionEvent.h"
-#include "mitkBaseRenderer.h"
-#include "mitkInteractionEvent.h"
-#include <string.h>
+#include <cstring>
 
 #include <MitkCoreExports.h>
 
@@ -40,22 +40,22 @@ namespace mitk
    * \ingroup Interaction.
    */
 
-  class MITKCORE_EXPORT InteractionKeyEvent : public InteractionEvent {
-
+  class MITKCORE_EXPORT InteractionKeyEvent : public InteractionEvent
+  {
   public:
-    mitkClassMacro(InteractionKeyEvent,InteractionEvent)
-    mitkNewMacro3Param(Self, BaseRenderer*, const std::string& , ModifierKeys)
+    mitkClassMacro(InteractionKeyEvent, InteractionEvent)
+      mitkNewMacro3Param(Self, BaseRenderer *, const std::string &, ModifierKeys)
 
-    bool IsSuperClassOf(const InteractionEvent::Pointer& baseClass) const override;
+        bool IsSuperClassOf(const InteractionEvent::Pointer &baseClass) const override;
 
     ModifierKeys GetModifiers() const;
     std::string GetKey() const;
 
   protected:
-    InteractionKeyEvent(BaseRenderer*, const std::string& key, ModifierKeys modifiers);
-    virtual ~InteractionKeyEvent();
+    InteractionKeyEvent(BaseRenderer *, const std::string &key, ModifierKeys modifiers);
+    ~InteractionKeyEvent() override;
 
-    virtual bool IsEqual(const InteractionEvent&) const override;
+    bool IsEqual(const InteractionEvent &) const override;
 
   private:
     std::string m_Key;

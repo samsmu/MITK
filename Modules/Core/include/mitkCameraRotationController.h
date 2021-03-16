@@ -17,63 +17,34 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef CAMERAROTATIONCONTROLLER_H_HEADER_INCLUDED_NXYCBIU
 #define CAMERAROTATIONCONTROLLER_H_HEADER_INCLUDED_NXYCBIU
 
-#include <MitkCoreExports.h>
 #include "mitkBaseController.h"
+#include <MitkCoreExports.h>
 
 class vtkCamera;
 class vtkRenderWindow;
 
-namespace mitk {
-
-
-class MITKCORE_EXPORT CameraRotationController : public BaseController
+namespace mitk
 {
-public:
-  mitkClassMacro(CameraRotationController,BaseController);
-  itkFactorylessNewMacro(Self)
-  itkCloneMacro(Self)
-  //mitkNewMacro1Param(Self, const char *);
-
-  void RotateCamera();
-  void Elevate();
-
-  void RotateToAngle(double angle);
-  void AcquireCamera();
-
-  void SetRenderWindow(vtkRenderWindow * renWin)
+  class MITKCORE_EXPORT CameraRotationController : public BaseController
   {
-    m_RenderWindow = renWin;
-  }
+  public:
+    mitkClassMacro(CameraRotationController, BaseController);
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
+      // mitkNewMacro1Param(Self, const char *);
 
-  Stepper::Pointer GetElevationSlice() {
-    return m_ElevationSlice;
-  }
+      void RotateCamera();
+    void AcquireCamera();
 
-  //virtual bool ExecuteAction(Action* action, mitk::StateEvent const* stateEvent) override;
-  void RotateCameraToTransformationAngles();
-  void RotateCameraBack();
-  void Mirror(bool horizontal);
-  void ResetTransformationAngles();
+    void SetRenderWindow(vtkRenderWindow *renWin) { m_RenderWindow = renWin; }
+  protected:
+    CameraRotationController();
+    ~CameraRotationController() override;
 
-  double getRoll() { return m_Roll; }
-  double getAzimuth() { return m_Azimuth; }
-
-protected:
-  CameraRotationController();
-  virtual ~CameraRotationController();
-
-  int m_LastStepperValue;
-  int m_ElevateLastStepperValue;
-
-  vtkCamera* m_Camera;
-  vtkRenderWindow* m_RenderWindow;
-
-  Stepper::Pointer m_ElevationSlice;
-
-  double m_Roll;
-  double m_Azimuth;
-};
-
+  private:
+    int m_LastStepperValue;
+    vtkCamera *m_Camera;
+    vtkRenderWindow *m_RenderWindow;
+  };
 }
 
 #endif

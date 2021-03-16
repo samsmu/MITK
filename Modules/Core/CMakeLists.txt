@@ -9,21 +9,15 @@ MITK_CREATE_MODULE(
   INCLUDE_DIRS
     PUBLIC ${MITK_BINARY_DIR}
     PRIVATE src/Algorithms src/Controllers src/DataManagement src/Interactions src/IO src/Rendering ${OPENGL_INCLUDE_DIR}
-  DEPENDS
-    PUBLIC mbilog CppMicroServices
-    PRIVATE MitkUtilities
+  DEPENDS PUBLIC mbilog CppMicroServices
   PACKAGE_DEPENDS
     PRIVATE tinyxml OpenGL
-    # Remove public GDCM, DCMTK and ITKIOGDCM+... dependencies after mitkDicomSeriesReader was removed
-    PUBLIC  GDCM
-    PUBLIC  DCMTK
-    PUBLIC  ITK
+    PUBLIC  ITK|ITKTransform+ITKImageGrid+ITKImageFeature+ITKIOImageBase+ITKIOHDF5+ITKIOLSM+ITKIOMRC+ITKIOBioRad+ITKIOGE+ITKIOStimulate+ITKIOBruker+ITKIOMINC
     # We privately use/link all ITK modules in order to support all IO, Transform, etc.
     # factories from ITK which are registered "automatically" via a factory manager.
     PRIVATE ITK
     PUBLIC  VTK|vtkFiltersTexture+vtkFiltersParallel+vtkImagingStencil+vtkImagingMath+vtkInteractionStyle+vtkRenderingOpenGL2+vtkRenderingContextOpenGL2+vtkRenderingVolumeOpenGL2+vtkRenderingFreeType+vtkRenderingLabel+vtkInteractionWidgets+vtkIOGeometry+vtkIOXML
-    PUBLIC  Boost
-  WARNINGS_AS_ERRORS
+    PUBLIC  Boost|boost
   SUBPROJECTS MITK-Core
   # Do not automatically create CppMicroServices initialization code.
   # Because the VTK 6 "auto-init" functionality injects file-local static
@@ -62,19 +56,9 @@ function(_itk_create_factory_register_manager)
 endfunction()
 _itk_create_factory_register_manager()
 
-# this is needed for libraries which link to Mitk and need
-# symbols from explicitly instantiated templates
-if(MINGW)
-  get_target_property(_mitkCore_MINGW_linkflags ${MODULE_TARGET} LINK_FLAGS)
-  if(NOT _mitkCore_MINGW_linkflags)
-    set(_mitkCore_MINGW_linkflags "")
-  endif(NOT _mitkCore_MINGW_linkflags)
-  set_target_properties(${MODULE_TARGET} PROPERTIES LINK_FLAGS "${_mitkCore_MINGW_linkflags} -Wl,--export-all-symbols")
-endif(MINGW)
-
-if(MSVC_IDE OR MSVC_VERSION OR MINGW)
+if(MSVC_IDE OR MSVC_VERSION)
   target_link_libraries(${MODULE_TARGET} PRIVATE psapi.lib)
-endif(MSVC_IDE OR MSVC_VERSION OR MINGW)
+endif()
 
 add_subdirectory(TestingHelper)
 

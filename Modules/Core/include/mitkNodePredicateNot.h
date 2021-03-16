@@ -14,14 +14,13 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-
 #ifndef MITKNODEPREDICATENOT_H_HEADER_INCLUDED_
 #define MITKNODEPREDICATENOT_H_HEADER_INCLUDED_
 
 #include "mitkNodePredicateCompositeBase.h"
 
-namespace mitk {
-
+namespace mitk
+{
   //##Documentation
   //## @brief Composite predicate that negates its child predicate
   //## Changed: NodePredicateNot now derives from NodePredicateCompositeBase though it really holds
@@ -33,24 +32,24 @@ namespace mitk {
   {
   public:
     mitkClassMacro(NodePredicateNot, NodePredicateCompositeBase);
-    mitkNewMacro1Param(NodePredicateNot, const mitk::NodePredicateBase*);
+    mitkNewMacro1Param(NodePredicateNot, const mitk::NodePredicateBase *);
 
     //##Documentation
     //## @brief Standard Destructor
-    virtual ~NodePredicateNot();
+    ~NodePredicateNot() override;
 
     //##Documentation
     //## @brief Reimplemented, only one child predicate is allowed for the NOT predicate.
-    virtual void AddPredicate(const mitk::NodePredicateBase* p) override;
+    void AddPredicate(const mitk::NodePredicateBase *p) override;
 
     //##Documentation
     //## @brief Checks, if the node does not fulfill the child predicate condition
-    virtual bool CheckNode(const mitk::DataNode* node) const override;
+    bool CheckNode(const mitk::DataNode *node) const override;
+
   protected:
     //##Documentation
     //## @brief Constructor
-    NodePredicateNot(const mitk::NodePredicateBase* p);
-
+    NodePredicateNot(const mitk::NodePredicateBase *p);
   };
 
 } // namespace mitk

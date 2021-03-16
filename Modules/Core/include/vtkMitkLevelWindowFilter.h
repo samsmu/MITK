@@ -21,7 +21,6 @@ class vtkScalarsToColors;
 class vtkPiecewiseFunction;
 #include <vtkImageData.h>
 #include <vtkThreadedImageAlgorithm.h>
-#include <vtkSmartPointer.h>
 
 #include <MitkCoreExports.h>
 /** Documentation
@@ -38,23 +37,20 @@ class vtkPiecewiseFunction;
 */
 class MITKCORE_EXPORT vtkMitkLevelWindowFilter : public vtkThreadedImageAlgorithm
 {
-
-
 public:
-  vtkTypeMacro(vtkMitkLevelWindowFilter,vtkThreadedImageAlgorithm);
+  vtkTypeMacro(vtkMitkLevelWindowFilter, vtkThreadedImageAlgorithm);
 
   static vtkMitkLevelWindowFilter *New();
 
-  virtual vtkMTimeType GetMTime() override;
+  vtkMTimeType GetMTime() override;
   /** \brief Get the lookup table for the RGB level window */
-  vtkScalarsToColors* GetLookupTable();
+  vtkScalarsToColors *GetLookupTable();
   /** \brief Set the lookup table for the RGB level window */
   void SetLookupTable(vtkScalarsToColors *lookupTable);
 
   /** \brief Get the piecewise function used to map scalar to alpha component value (only
    *  used when the lookupTable is a vtkColorTransferFunction) */
-  vtkPiecewiseFunction* GetOpacityPiecewiseFunction()
-  { return m_OpacityFunction; }
+  vtkPiecewiseFunction *GetOpacityPiecewiseFunction() { return m_OpacityFunction; }
   /** \brief Set the piecewise function used to map scalar to alpha component value (only
    *  used when the lookupTable is a vtkColorTransferFunction) */
   void SetOpacityPiecewiseFunction(vtkPiecewiseFunction *opacityFunction);
@@ -68,14 +64,13 @@ public:
   inline double GetMaxOpacity() const;
 
   /** \brief Set clipping bounds for the opaque part of the resliced 2d image */
-  void SetClippingBounds(double*);
+  void SetClippingBounds(double *);
 
 protected:
-
   /** Default constructor. */
   vtkMitkLevelWindowFilter();
   /** Default deconstructor. */
-  ~vtkMitkLevelWindowFilter();
+  ~vtkMitkLevelWindowFilter() override;
   /** \brief Method for threaded execution of the filter.
    * \param *inData: The input.
    * \param *outData: The output of the filter.
@@ -83,18 +78,20 @@ protected:
    * It is a six-component array of the form (xmin, xmax, ymin, ymax, zmin, zmax).
    * \param id: The thread id.
    */
-  void ThreadedExecute(vtkImageData *inData, vtkImageData *outData,int extent[6], int id) override;
+  void ThreadedExecute(vtkImageData *inData, vtkImageData *outData, int extent[6], int id) override;
 
-//  /** Standard VTK filter method to apply the filter. See VTK documentation.*/
-  int RequestInformation(vtkInformation* request,vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
-//  /** Standard VTK filter method to apply the filter. See VTK documentation. Not used at the moment.*/
-//  void ExecuteInformation(vtkImageData *vtkNotUsed(inData), vtkImageData *vtkNotUsed(outData));
+  //  /** Standard VTK filter method to apply the filter. See VTK documentation.*/
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
+  //  /** Standard VTK filter method to apply the filter. See VTK documentation. Not used at the moment.*/
+  //  void ExecuteInformation(vtkImageData *vtkNotUsed(inData), vtkImageData *vtkNotUsed(outData));
 
 private:
   /** m_LookupTable contains the lookup table for the RGB level window.*/
-  vtkSmartPointer<vtkScalarsToColors> m_LookupTable;
+  vtkScalarsToColors *m_LookupTable;
   /** The transfer function to map the scalar to alpha (4th component of the RGBA output value) */
-  vtkPiecewiseFunction* m_OpacityFunction;
+  vtkPiecewiseFunction *m_OpacityFunction;
   /** m_MinOpacity contains the lower bound for the alpha level window.*/
   double m_MinOpacity;
   /** m_MaxOpacity contains the upper bound for the alpha level window.*/

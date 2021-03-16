@@ -14,75 +14,54 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-
 #include "mitkLimitedLinearUndo.h"
 #include <mitkRenderingManager.h>
 
-// Without it does not compile.
-unsigned int mitk::LimitedLinearUndo::m_dequeSize;
-
 mitk::LimitedLinearUndo::LimitedLinearUndo()
+: m_UndoLimit(0)
 {
-  m_dequeSize = DEF_DEQUE_SIZE;
+  // nothing to do
 }
 
 mitk::LimitedLinearUndo::~LimitedLinearUndo()
 {
-  //delete undo and redo list
+  // delete undo and redo list
   this->ClearList(&m_UndoList);
   this->ClearList(&m_RedoList);
 }
 
-void mitk::LimitedLinearUndo::setDequeSize(unsigned int size)
+void mitk::LimitedLinearUndo::ClearList(UndoContainer *list)
 {
-  m_dequeSize = size;
-}
-
-unsigned int mitk::LimitedLinearUndo::getDequeSize()
-{
-  return m_dequeSize;
-}
-
-void mitk::LimitedLinearUndo::ClearList(UndoContainer* list)
-{
-  while(!list->empty())
+  while (!list->empty())
   {
-    UndoStackItem* item = list->back();
+    UndoStackItem *item = list->back();
     list->pop_back();
     delete item;
   }
 }
 
-bool mitk::LimitedLinearUndo::SetOperationEvent(UndoStackItem* stackItem)
+bool mitk::LimitedLinearUndo::SetOperationEvent(UndoStackItem *stackItem)
 {
-  OperationEvent* operationEvent = dynamic_cast<OperationEvent*>(stackItem);
-  if (!operationEvent) return false;
+  auto *operationEvent = dynamic_cast<OperationEvent *>(stackItem);
+  if (!operationEvent)
+    return false;
 
   // clear the redolist, if a new operation is saved
   if (!m_RedoList.empty())
   {
     this->ClearList(&m_RedoList);
-    InvokeEvent( RedoEmptyEvent() );
+    InvokeEvent(RedoEmptyEvent());
   }
 
-  if (m_UndoList.size() >= m_dequeSize)
+  if (0 != m_UndoLimit && m_UndoList.size() == m_UndoLimit)
   {
-    unsigned int deleteItemCount = 1;
-    if (m_UndoList.size() > m_dequeSize)
-    {
-      deleteItemCount += m_UndoList.size() - m_dequeSize;
-    }
-
-    for (unsigned int i = 0; i < deleteItemCount; ++i)
-    {
-      delete m_UndoList.front();
-      m_UndoList.pop_front();
-    }
+    auto item = m_UndoList.front();
+    m_UndoList.pop_front();
+    delete item;
   }
-
   m_UndoList.push_back(operationEvent);
 
-  InvokeEvent( UndoNotEmptyEvent() );
+  InvokeEvent(UndoNotEmptyEvent());
 
   return true;
 }
@@ -97,42 +76,44 @@ bool mitk::LimitedLinearUndo::Undo(bool fine)
   else
   {
     // undo one group event ID
-    int oeid = FirstObjectEventIdOfCurrentGroup(m_UndoList); // get the Object Event ID of the first item with a differnt Group ID (as seen from the end of stack)
+    int oeid = FirstObjectEventIdOfCurrentGroup(
+      m_UndoList); // get the Object Event ID of the first item with a differnt Group ID (as seen from the end of stack)
     return Undo(oeid);
   }
 }
 
 bool mitk::LimitedLinearUndo::Undo()
 {
-  if(m_UndoList.empty()) return false;
+  if (m_UndoList.empty())
+    return false;
 
   int undoObjectEventId = m_UndoList.back()->GetObjectEventId();
-  return Undo( undoObjectEventId );
+  return Undo(undoObjectEventId);
 }
 
 bool mitk::LimitedLinearUndo::Undo(int oeid)
 {
-  if(m_UndoList.empty()) return false;
+  if (m_UndoList.empty())
+    return false;
 
   bool rc = true;
   do
   {
     m_UndoList.back()->ReverseAndExecute();
 
-    m_RedoList.push_back(m_UndoList.back());  // move to redo stack
+    m_RedoList.push_back(m_UndoList.back()); // move to redo stack
     m_UndoList.pop_back();
-    InvokeEvent( RedoNotEmptyEvent() );
+    InvokeEvent(RedoNotEmptyEvent());
 
     if (m_UndoList.empty())
     {
-      InvokeEvent( UndoEmptyEvent() );
+      InvokeEvent(UndoEmptyEvent());
       rc = false;
       break;
     }
-  }
-  while ( m_UndoList.back()->GetObjectEventId() >= oeid );
+  } while (m_UndoList.back()->GetObjectEventId() >= oeid);
 
-  //Update. Check Rendering Mechanism where to request updates
+  // Update. Check Rendering Mechanism where to request updates
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   return rc;
 }
@@ -144,49 +125,34 @@ bool mitk::LimitedLinearUndo::Redo(bool)
 
 bool mitk::LimitedLinearUndo::Redo()
 {
-  if (m_RedoList.empty()) return false;
+  if (m_RedoList.empty())
+    return false;
 
   int redoObjectEventId = m_RedoList.back()->GetObjectEventId();
-  return Redo( redoObjectEventId );
+  return Redo(redoObjectEventId);
 }
 
 bool mitk::LimitedLinearUndo::Redo(int oeid)
 {
-  if (m_RedoList.empty()) return false;
+  if (m_RedoList.empty())
+    return false;
 
   do
   {
     m_RedoList.back()->ReverseAndExecute();
 
-  if (m_UndoList.size() >= m_dequeSize)
-  {
-    unsigned int deleteItemCount = 1;
-    if (m_UndoList.size() > m_dequeSize)
-    {
-      deleteItemCount += m_UndoList.size() - m_dequeSize;
-    }
-
-    for (unsigned int i = 0; i < deleteItemCount; ++i)
-    {
-      delete m_UndoList.front();
-      m_UndoList.pop_front();
-    }
-  }
-
     m_UndoList.push_back(m_RedoList.back());
-
     m_RedoList.pop_back();
-    InvokeEvent( UndoNotEmptyEvent() );
+    InvokeEvent(UndoNotEmptyEvent());
 
     if (m_RedoList.empty())
     {
-      InvokeEvent( RedoEmptyEvent() );
+      InvokeEvent(RedoEmptyEvent());
       break;
     }
-  }
-  while ( m_RedoList.back()->GetObjectEventId() <= oeid );
+  } while (m_RedoList.back()->GetObjectEventId() <= oeid);
 
-  //Update. This should belong into the ExecuteOperation() of OperationActors, but it seems not to be used everywhere
+  // Update. This should belong into the ExecuteOperation() of OperationActors, but it seems not to be used everywhere
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
   return true;
 }
@@ -194,21 +160,38 @@ bool mitk::LimitedLinearUndo::Redo(int oeid)
 void mitk::LimitedLinearUndo::Clear()
 {
   this->ClearList(&m_UndoList);
-  InvokeEvent( UndoEmptyEvent() );
+  InvokeEvent(UndoEmptyEvent());
 
   this->ClearList(&m_RedoList);
-  InvokeEvent( RedoEmptyEvent() );
+  InvokeEvent(RedoEmptyEvent());
 }
 
 void mitk::LimitedLinearUndo::ClearRedoList()
 {
   this->ClearList(&m_RedoList);
-  InvokeEvent( RedoEmptyEvent() );
+  InvokeEvent(RedoEmptyEvent());
 }
 
 bool mitk::LimitedLinearUndo::RedoListEmpty()
 {
   return m_RedoList.empty();
+}
+
+std::size_t mitk::LimitedLinearUndo::GetUndoLimit() const
+{
+  return m_UndoLimit;
+}
+
+void mitk::LimitedLinearUndo::SetUndoLimit(std::size_t undoLimit)
+{
+  if (undoLimit != m_UndoLimit)
+  {
+    if (m_UndoList.size() > undoLimit)
+    {
+      m_UndoList.erase(m_UndoList.begin(), m_UndoList.end() - undoLimit);
+    }
+    m_UndoLimit = undoLimit;
+  }
 }
 
 int mitk::LimitedLinearUndo::GetLastObjectEventIdInList()
@@ -221,38 +204,37 @@ int mitk::LimitedLinearUndo::GetLastGroupEventIdInList()
   return m_UndoList.back()->GetGroupEventId();
 }
 
-mitk::OperationEvent* mitk::LimitedLinearUndo::GetLastOfType(OperationActor* destination, OperationType opType)
+mitk::OperationEvent *mitk::LimitedLinearUndo::GetLastOfType(OperationActor *destination, OperationType opType)
 {
   // When/where is this function needed? In CoordinateSupplier...
-  for ( auto iter = m_UndoList.rbegin(); iter != m_UndoList.rend(); ++iter )
+  for (auto iter = m_UndoList.rbegin(); iter != m_UndoList.rend(); ++iter)
   {
-    OperationEvent* opEvent = dynamic_cast<OperationEvent*>(*iter);
-    if (!opEvent) continue;
+    auto *opEvent = dynamic_cast<OperationEvent *>(*iter);
+    if (!opEvent)
+      continue;
 
-    if (   opEvent->GetOperation() != nullptr
-        && opEvent->GetOperation()->GetOperationType() == opType
-        && opEvent->IsValid()
-        && opEvent->GetDestination() == destination )
+    if (opEvent->GetOperation() != nullptr && opEvent->GetOperation()->GetOperationType() == opType &&
+        opEvent->IsValid() && opEvent->GetDestination() == destination)
       return opEvent;
   }
 
   return nullptr;
 }
 
-int mitk::LimitedLinearUndo::FirstObjectEventIdOfCurrentGroup(mitk::LimitedLinearUndo::UndoContainer& stack)
+int mitk::LimitedLinearUndo::FirstObjectEventIdOfCurrentGroup(mitk::LimitedLinearUndo::UndoContainer &stack)
 {
   int currentGroupEventId = stack.back()->GetGroupEventId();
   int firstObjectEventId = -1;
 
-  for ( auto iter = stack.rbegin(); iter != stack.rend(); ++iter )
+  for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter)
   {
-    if ( (*iter)->GetGroupEventId() == currentGroupEventId )
+    if ((*iter)->GetGroupEventId() == currentGroupEventId)
     {
       firstObjectEventId = (*iter)->GetObjectEventId();
     }
-    else break;
+    else
+      break;
   }
 
   return firstObjectEventId;
 }
-

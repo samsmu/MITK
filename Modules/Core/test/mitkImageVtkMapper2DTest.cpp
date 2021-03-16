@@ -14,16 +14,24 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-//MITK
-#include "mitkTestingMacros.h"
+// MITK
 #include "mitkRenderingTestHelper.h"
+#include "mitkTestingMacros.h"
 
-//VTK
+// VTK
 #include <vtkRegressionTestImage.h>
 
-
-int mitkImageVtkMapper2DTest(int argc, char* argv[])
+int mitkImageVtkMapper2DTest(int argc, char *argv[])
 {
+  try
+  {
+    mitk::RenderingTestHelper openGlTest(640, 480);
+  }
+  catch (const mitk::TestNotRunException &e)
+  {
+    MITK_WARN << "Test not run: " << e.GetDescription();
+    return 77;
+  }
   // load all arguments into a datastorage, take last argument as reference rendering
   // setup a renderwindow of fixed size X*Y
   // render the datastorage
@@ -33,14 +41,14 @@ int mitkImageVtkMapper2DTest(int argc, char* argv[])
   mitk::RenderingTestHelper renderingHelper(640, 480, argc, argv);
 
   //### Usage of CompareRenderWindowAgainstReference: See docu of mitkRrenderingTestHelper
-  MITK_TEST_CONDITION( renderingHelper.CompareRenderWindowAgainstReference(argc, argv) == true, "CompareRenderWindowAgainstReference test result positive?" );
+  MITK_TEST_CONDITION(renderingHelper.CompareRenderWindowAgainstReference(argc, argv) == true,
+                      "CompareRenderWindowAgainstReference test result positive?");
 
-  //use this to generate a reference screenshot or save the file:
-  if(false)
+  // use this to generate a reference screenshot or save the file:
+  if (false)
   {
     renderingHelper.SaveReferenceScreenShot("/home/kilgus/Pictures/RenderingTestData/output.png");
   }
 
   MITK_TEST_END();
 }
-

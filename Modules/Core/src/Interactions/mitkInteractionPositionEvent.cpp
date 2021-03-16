@@ -17,10 +17,9 @@
 #include "mitkInteractionPositionEvent.h"
 #include <string>
 
-mitk::InteractionPositionEvent::InteractionPositionEvent(mitk::BaseRenderer* baseRenderer,
-                                                         const mitk::Point2D& mousePosition)
-  : InteractionEvent(baseRenderer)
-  , m_PointerPosition(mousePosition)
+mitk::InteractionPositionEvent::InteractionPositionEvent(mitk::BaseRenderer *baseRenderer,
+                                                         const mitk::Point2D &mousePosition)
+  : InteractionEvent(baseRenderer), m_PointerPosition(mousePosition)
 {
 }
 
@@ -36,24 +35,7 @@ mitk::Point3D mitk::InteractionPositionEvent::GetPositionInWorld() const
   return worldPos;
 }
 
-mitk::Point3D mitk::InteractionPositionEvent::GetPlanePositionInWorld() const
-{
-  const PlaneGeometry* planeGeometry = GetSender()->GetCurrentWorldPlaneGeometry();
-  mitk::Point2D position;
-  mitk::Point3D worldPos;
-  if (GetSender()->GetMapperID() == BaseRenderer::Standard2D) {
-    worldPos = GetPositionInWorld();
-  } else {
-    GetSender()->PickWorldPoint(m_PointerPosition, worldPos, BaseRenderer::PickingMode::WorldPointPicking);
-  }
-  planeGeometry->Map(worldPos, position);
-  mitk::Point3D point;
-  planeGeometry->Map(position, point);
-
-  return point;
-}
-
-bool mitk::InteractionPositionEvent::IsEqual(const InteractionEvent& other) const
+bool mitk::InteractionPositionEvent::IsEqual(const InteractionEvent &other) const
 {
   return Superclass::IsEqual(other);
 }
@@ -62,7 +44,7 @@ mitk::InteractionPositionEvent::~InteractionPositionEvent()
 {
 }
 
-bool mitk::InteractionPositionEvent::IsSuperClassOf(const InteractionEvent::Pointer& baseClass) const
+bool mitk::InteractionPositionEvent::IsSuperClassOf(const InteractionEvent::Pointer &baseClass) const
 {
-  return (dynamic_cast<InteractionPositionEvent*>(baseClass.GetPointer()) != NULL) ;
+  return (dynamic_cast<InteractionPositionEvent *>(baseClass.GetPointer()) != nullptr);
 }
