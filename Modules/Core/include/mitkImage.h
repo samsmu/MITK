@@ -166,8 +166,16 @@ public:
   //virtual mitkIpPicDescriptor* GetPic();
 
   //##Documentation
+  //## @brief Check whether slice @a s at time @a t in channel @a n is set
+  bool IsSliceSet(int s = 0, int t = 0, int n = 0) const override;
+
+  //##Documentation
   //## @brief Check whether volume at time @a t in channel @a n is set
-  virtual bool IsVolumeSet(int t = 0, int n = 0) const override;
+  bool IsVolumeSet(int t = 0, int n = 0) const override;
+
+  //##Documentation
+  //## @brief Check whether the channel @a n is set
+  bool IsChannelSet(int n = 0) const override;
 
   //##Documentation
   //## @brief Set @a data as volume at time @a t in channel @a n. It is in
@@ -576,9 +584,11 @@ protected:
 
   virtual void PrintSelf(std::ostream& os, itk::Indent indent) const override;
 
+  mutable ImageDataItemPointerArray m_Channels;
   mutable ImageDataItemPointerArray m_Volumes;
+  mutable ImageDataItemPointerArray m_Slices;
   mutable itk::SimpleFastMutexLock m_ImageDataArraysLock;
-  mutable ImageDataItemPointer m_Data;
+  //mutable ImageDataItemPointer m_Data;
 
   unsigned int m_Dimension;
 
@@ -597,7 +607,9 @@ private:
   ImageDataItemPointer GetVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
   ImageDataItemPointer AllocateVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
   ImageDataItemPointer GetChannelData_unlocked(int n, void *data,ImportMemoryManagementType importMemoryManagement) const;
+  bool IsSliceSet_unlocked(int s, int t, int n) const;
   bool IsVolumeSet_unlocked(int t, int n) const;
+  bool IsChannelSet_unlocked(int n) const;
 
   mutable std::vector<ImageAccessLock*> m_ReaderLocks;
   mutable std::vector<ImageAccessLock*> m_WriterLocks;

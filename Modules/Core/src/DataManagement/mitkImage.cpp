@@ -584,6 +584,36 @@ mitk::Image::ImageDataItemPointer mitk::Image::GetChannelData_unlocked(
   }
 }
 
+bool mitk::Image::IsSliceSet(int s, int t, int n) const
+{
+  MutexHolder lock(m_ImageDataArraysLock);
+  return IsSliceSet_unlocked(s, t, n);
+}
+
+bool mitk::Image::IsSliceSet_unlocked(int s, int t, int n) const
+{
+  if (IsValidSlice(s, t, n) == false)
+    return false;
+
+  if (m_Slices[GetSliceIndex(s, t, n)].GetPointer() != nullptr)
+  {
+    return true;
+  }
+
+  ImageDataItemPointer ch, vol;
+  vol = m_Volumes[GetVolumeIndex(t, n)];
+  if ((vol.GetPointer() != nullptr) && (vol->IsComplete()))
+  {
+    return true;
+  }
+  ch = m_Channels[n];
+  if ((ch.GetPointer() != nullptr) && (ch->IsComplete()))
+  {
+    return true;
+  }
+  return false;
+}
+
 bool mitk::Image::IsVolumeSet(int t, int n) const
 {
   MutexHolder lock(m_ImageDataArraysLock);
@@ -601,6 +631,33 @@ bool mitk::Image::IsVolumeSet_unlocked(int t, int n) const
     return true;
 
   return false;
+}
+
+bool mitk::Image::IsChannelSet(int n) const
+{
+  MutexHolder lock(m_ImageDataArraysLock);
+  return IsChannelSet_unlocked(n);
+}
+
+bool mitk::Image::IsChannelSet_unlocked(int n) const
+{
+  if (IsValidChannel(n) == false)
+    return false;
+  ImageDataItemPointer ch, vol;
+  ch = m_Channels[n];
+  if ((ch.GetPointer() != nullptr) && (ch->IsComplete()))
+
+    return true;
+  // let's see if all volumes are set, so that we can (could) combine them to a channel
+  unsigned int t;
+  for (t = 0; t < m_Dimensions[3]; ++t)
+  {
+    if (IsVolumeSet_unlocked(t, n) == false)
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool mitk::Image::SetVolume(const void *data, int t, int n)
@@ -624,7 +681,7 @@ void mitk::Image::Initialize()
     (*it)=nullptr;
   }
 
-  m_Data = nullptr;
+  //m_Data = nullptr;
 
   if( m_ImageStatistics == nullptr)
   {
@@ -715,7 +772,7 @@ void mitk::Image::Initialize(const mitk::PixelType& type, unsigned int dimension
 
   Initialize();
 
-  m_Data = new ImageDataItem(GetImageDescriptor(), 0, nullptr, true);
+  //m_Data = new ImageDataItem(GetImageDescriptor(), 0, nullptr, true);
 
   m_Initialized = true;
 }
@@ -978,26 +1035,43 @@ mitk::Image::ImageDataItemPointer mitk::Image::AllocateVolumeData(int t, int n, 
   return AllocateVolumeData_unlocked(t, n, data, importMemoryManagement);
 }
 
-mitk::Image::ImageDataItemPointer mitk::Image::AllocateVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const
+mitk::Image::ImageDataItemPointer mitk::Image::AllocateVolumeData_unlocked(
+  int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const
 {
   int pos;
-  pos=GetVolumeIndex(t,n);
+  pos = GetVolumeIndex(t, n);
 
   const size_t ptypeSize = this->m_ImageDescriptor->GetChannelTypeById(n).GetSize();
 
-  ImageDataItemPointer vol;
+  // is volume available as part of a channel that is available?
+  ImageDataItemPointer ch, vol;
+  ch = m_Channels[n];
+  if (ch.GetPointer() != nullptr)
+  {
+    vol = new ImageDataItem(*ch,
+                            m_ImageDescriptor,
+                            t,
+                            3,
+                            data,
+                            importMemoryManagement == ManageMemory,
+                            (((size_t)t) * m_OffsetTable[3]) * (ptypeSize));
+    return m_Volumes[pos] = vol;
+  }
+
   mitk::PixelType chPixelType = this->m_ImageDescriptor->GetChannelTypeById(n);
 
-  if (m_Data == nullptr) {
-    m_Data = new ImageDataItem(GetImageDescriptor(), 0, nullptr, true);
+  // allocate new volume
+  if (importMemoryManagement == CopyMemory)
+  {
+    vol = new ImageDataItem(chPixelType, t, 3, m_Dimensions, nullptr, true);
+    if (data != nullptr)
+      std::memcpy(vol->GetData(), data, m_OffsetTable[3] * (ptypeSize));
   }
-  // Create volume data item on the main data
-  vol = new ImageDataItem(*m_Data, GetImageDescriptor(), t, 3u, nullptr, false, m_OffsetTable[3] * (ptypeSize) * t);
-  if (data != nullptr) {
-    std::memcpy(vol->GetData(), data, m_OffsetTable[3] * (ptypeSize));
+  else
+  {
+    vol = new ImageDataItem(chPixelType, t, 3, m_Dimensions, data, importMemoryManagement == ManageMemory);
   }
-
-  m_Volumes[pos]=vol;
+  m_Volumes[pos] = vol;
   return vol;
 }
 
