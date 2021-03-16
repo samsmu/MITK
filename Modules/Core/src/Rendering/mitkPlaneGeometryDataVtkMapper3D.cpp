@@ -535,7 +535,7 @@ namespace mitk
               bool binary = true;
               imageMapper->GetDataNode()->GetBoolProperty("binary", binary);
               dataSetMapper->SetResolveCoincidentTopologyPolygonOffsetParameters(1.0, 0.0);
-              dataSetMapper->SetRelativeCoincidentTopologyZShift(binary ? -.001 : 0.0);
+              //dataSetMapper->SetRelativeCoincidentTopologyZShift(binary ? -.001 : 0.0);
 
               dataSetMapper->SetInputData( surface->GetVtkPolyData() );
             }
@@ -552,7 +552,7 @@ namespace mitk
               texture->SetInputConnection(localStorage->m_LevelWindowFilter->GetOutputPort());
 
               // do not use a VTK lookup table (we do that ourselves in m_LevelWindowFilter)
-              texture->MapColorScalarsThroughLookupTableOff();
+              texture->SetColorModeToDirectScalars();
 
               VtkPropRenderer* propRenderer = dynamic_cast<VtkPropRenderer*>(renderer);
               if (propRenderer != nullptr) {

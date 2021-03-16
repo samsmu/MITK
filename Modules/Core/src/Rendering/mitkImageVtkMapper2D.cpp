@@ -389,7 +389,7 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
   this->ApplyRenderingMode(renderer);
 
   // do not use a VTK lookup table (we do that ourselves in m_LevelWindowFilter)
-  localStorage->m_Texture->MapColorScalarsThroughLookupTableOff();
+  localStorage->m_Texture->SetColorModeToDirectScalars();
 
   int displayedComponent = 0;
   int numberOfComponents = localStorage->m_ReslicedImage->GetNumberOfScalarComponents();  //get the number of scalar components to distinguish between different image types
