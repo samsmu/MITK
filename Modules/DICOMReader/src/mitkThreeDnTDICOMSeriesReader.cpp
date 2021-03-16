@@ -20,14 +20,14 @@ See LICENSE.txt or http://www.mitk.org for details.
 mitk::ThreeDnTDICOMSeriesReader
 ::ThreeDnTDICOMSeriesReader(unsigned int decimalPlacesForOrientation)
 :DICOMITKSeriesGDCMReader(decimalPlacesForOrientation)
-,m_Group3DandT(true)
+,m_Group3DandT(m_DefaultGroup3DandT)
 {
 }
 
 mitk::ThreeDnTDICOMSeriesReader
 ::ThreeDnTDICOMSeriesReader(const ThreeDnTDICOMSeriesReader& other )
 :DICOMITKSeriesGDCMReader(other)
-,m_Group3DandT(true)
+,m_Group3DandT(m_DefaultGroup3DandT)
 {
 }
 
@@ -52,7 +52,7 @@ bool
 mitk::ThreeDnTDICOMSeriesReader
 ::operator==(const DICOMFileReader& other) const
 {
-  if (const Self* otherSelf = dynamic_cast<const Self*>(&other))
+  if (const auto* otherSelf = dynamic_cast<const Self*>(&other))
   {
     return
        DICOMITKSeriesGDCMReader::operator==(other)
@@ -100,8 +100,8 @@ mitk::ThreeDnTDICOMSeriesReader
   while (!remainingBlocks.empty())
   {
     // new block to fill up
-    const DICOMGDCMImageFrameList& firstBlock = remainingBlocks.front();
-    DICOMGDCMImageFrameList current3DnTBlock = firstBlock;
+    const DICOMDatasetAccessingImageFrameList& firstBlock = remainingBlocks.front();
+    DICOMDatasetAccessingImageFrameList current3DnTBlock = firstBlock;
     int current3DnTBlockNumberOfTimeSteps = 1;
 
     // get block characteristics of first block
@@ -117,7 +117,7 @@ mitk::ThreeDnTDICOMSeriesReader
          /*++otherBlockIter*/) // <-- inside loop
     {
       // get block characteristics from first block
-      const DICOMGDCMImageFrameList otherBlock = *otherBlockIter;
+      const DICOMDatasetAccessingImageFrameList otherBlock = *otherBlockIter;
 
       const unsigned int otherBlockNumberOfSlices = otherBlock.size();
       const std::string otherBlockFirstOrigin = otherBlock.front()->GetTagValueAsString( tagImagePositionPatient ).value;
@@ -163,19 +163,19 @@ mitk::ThreeDnTDICOMSeriesReader
        ++o, ++blockIter)
   {
     // bad copy&paste code from DICOMITKSeriesGDCMReader, should be handled in a better way
-    DICOMGDCMImageFrameList gdcmFrameInfoList = *blockIter;
+    DICOMDatasetAccessingImageFrameList gdcmFrameInfoList = *blockIter;
     assert(!gdcmFrameInfoList.empty());
 
     // reverse frames if necessary
     // update tilt information from absolute last sorting
-    const DICOMDatasetList datasetList = ToDICOMDatasetList( gdcmFrameInfoList );
+    const DICOMDatasetList datasetList = ConvertToDICOMDatasetList( gdcmFrameInfoList );
     m_NormalDirectionConsistencySorter->SetInput( datasetList );
     m_NormalDirectionConsistencySorter->Sort();
-    const DICOMGDCMImageFrameList sortedGdcmInfoFrameList = FromDICOMDatasetList( m_NormalDirectionConsistencySorter->GetOutput(0) );
+    const DICOMDatasetAccessingImageFrameList sortedGdcmInfoFrameList = ConvertToDICOMDatasetAccessingImageFrameList( m_NormalDirectionConsistencySorter->GetOutput(0) );
     const GantryTiltInformation& tiltInfo = m_NormalDirectionConsistencySorter->GetTiltInformation();
 
     // set frame list for current block
-    const DICOMImageFrameList frameList = ToDICOMImageFrameList( sortedGdcmInfoFrameList );
+    const DICOMImageFrameList frameList = ConvertToDICOMImageFrameList( sortedGdcmInfoFrameList );
     assert(!frameList.empty());
 
     DICOMImageBlockDescriptor block;
