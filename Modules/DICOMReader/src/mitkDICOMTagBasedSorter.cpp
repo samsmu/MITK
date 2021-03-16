@@ -90,8 +90,8 @@ mitk::DICOMTagBasedSorter::CutDecimalPlaces
 mitk::DICOMTagBasedSorter
 ::DICOMTagBasedSorter()
 :DICOMDatasetSorter()
-,m_StrictSorting(m_DefaultStrictSorting)
-,m_ExpectDistanceOne(m_DefaultExpectDistanceOne)
+,m_StrictSorting(false)
+,m_ExpectDistanceOne(false)
 {
 }
 
@@ -148,7 +148,7 @@ bool
 mitk::DICOMTagBasedSorter
 ::operator==(const DICOMDatasetSorter& other) const
 {
-  if (const auto* otherSelf = dynamic_cast<const DICOMTagBasedSorter*>(&other))
+  if (const DICOMTagBasedSorter* otherSelf = dynamic_cast<const DICOMTagBasedSorter*>(&other))
   {
     if (this->m_StrictSorting != otherSelf->m_StrictSorting) return false;
     if (this->m_ExpectDistanceOne != otherSelf->m_ExpectDistanceOne) return false;
@@ -246,11 +246,8 @@ mitk::DICOMTagBasedSorter
 {
   DICOMTagList allTags = m_DistinguishingTags;
 
-  if (m_SortCriterion.IsNotNull())
-  {
-    const DICOMTagList sortingRelevantTags = m_SortCriterion->GetAllTagsOfInterest();
-    allTags.insert( allTags.end(), sortingRelevantTags.cbegin(), sortingRelevantTags.cend() ); // append
-  }
+  const DICOMTagList sortingRelevantTags = m_SortCriterion->GetAllTagsOfInterest();
+  allTags.insert( allTags.end(), sortingRelevantTags.cbegin(), sortingRelevantTags.cend() ); // append
 
   return allTags;
 }

@@ -75,7 +75,7 @@ class MITKDICOMREADER_EXPORT DICOMDatasetSorter : public itk::LightObject
   protected:
 
     DICOMDatasetSorter();
-    ~DICOMDatasetSorter() override;
+    virtual ~DICOMDatasetSorter();
 
     DICOMDatasetSorter(const DICOMDatasetSorter& other);
     DICOMDatasetSorter& operator=(const DICOMDatasetSorter& other);

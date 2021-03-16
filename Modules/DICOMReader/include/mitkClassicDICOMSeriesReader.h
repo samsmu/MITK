@@ -66,12 +66,12 @@ class MITKDICOMREADER_EXPORT ClassicDICOMSeriesReader : public ThreeDnTDICOMSeri
     mitkCloneMacro( ClassicDICOMSeriesReader );
     itkNewMacro( ClassicDICOMSeriesReader );
 
-    bool operator==(const DICOMFileReader& other) const override;
+    virtual bool operator==(const DICOMFileReader& other) const override;
 
   protected:
 
     ClassicDICOMSeriesReader();
-    ~ClassicDICOMSeriesReader() override;
+    virtual ~ClassicDICOMSeriesReader();
 
     ClassicDICOMSeriesReader(const ClassicDICOMSeriesReader& other);
     ClassicDICOMSeriesReader& operator=(const ClassicDICOMSeriesReader& other);

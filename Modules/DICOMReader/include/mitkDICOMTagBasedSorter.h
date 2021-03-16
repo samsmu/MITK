@@ -68,8 +68,8 @@ class MITKDICOMREADER_EXPORT DICOMTagBasedSorter : public DICOMDatasetSorter
         CutDecimalPlaces(unsigned int precision);
         CutDecimalPlaces(const CutDecimalPlaces& other);
         unsigned int GetPrecision() const;
-        std::string operator()(const std::string&) const override;
-        TagValueProcessor* Clone() const override;
+        virtual std::string operator()(const std::string&) const override;
+        virtual TagValueProcessor* Clone() const override;
       private:
         unsigned int m_Precision;
     };
@@ -93,7 +93,7 @@ class MITKDICOMREADER_EXPORT DICOMTagBasedSorter : public DICOMDatasetSorter
     /**
       \brief A list of all the tags needed for processing (facilitates scanning).
     */
-    DICOMTagList GetTagsOfInterest() override;
+    virtual DICOMTagList GetTagsOfInterest() override;
 
     /**
       \brief Whether or not groups should be checked for consecutive tag values.
@@ -129,24 +129,14 @@ class MITKDICOMREADER_EXPORT DICOMTagBasedSorter : public DICOMDatasetSorter
     /**
       \brief Actually sort as described in the Detailed Description.
     */
-    void Sort() override;
+    virtual void Sort() override;
 
     /**
       \brief Print configuration details into given stream.
     */
-    void PrintConfiguration(std::ostream& os, const std::string& indent = "") const override;
+    virtual void PrintConfiguration(std::ostream& os, const std::string& indent = "") const override;
 
-    bool operator==(const DICOMDatasetSorter& other) const override;
-
-    static bool GetDefaultStrictSorting()
-    {
-      return m_DefaultStrictSorting;
-    }
-
-    static bool GetDefaultExpectDistanceOne()
-    {
-      return m_DefaultExpectDistanceOne;
-    }
+    virtual bool operator==(const DICOMDatasetSorter& other) const override;
 
   protected:
 
@@ -162,7 +152,7 @@ class MITKDICOMREADER_EXPORT DICOMTagBasedSorter : public DICOMDatasetSorter
 
 
     DICOMTagBasedSorter();
-    ~DICOMTagBasedSorter() override;
+    virtual ~DICOMTagBasedSorter();
 
     DICOMTagBasedSorter(const DICOMTagBasedSorter& other);
     DICOMTagBasedSorter& operator=(const DICOMTagBasedSorter& other);
@@ -195,9 +185,6 @@ class MITKDICOMREADER_EXPORT DICOMTagBasedSorter : public DICOMDatasetSorter
 
     bool m_StrictSorting;
     bool m_ExpectDistanceOne;
-
-    const static bool m_DefaultStrictSorting = false;
-    const static bool m_DefaultExpectDistanceOne = false;
 };
 
 }

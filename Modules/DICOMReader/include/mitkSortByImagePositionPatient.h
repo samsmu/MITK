@@ -41,19 +41,19 @@ class MITKDICOMREADER_EXPORT SortByImagePositionPatient : public DICOMSortCriter
     mitkClassMacro( SortByImagePositionPatient, DICOMSortCriterion );
     mitkNewMacro1Param( SortByImagePositionPatient, DICOMSortCriterion::Pointer );
 
-    DICOMTagList GetTagsOfInterest() const override;
-    bool IsLeftBeforeRight(const mitk::DICOMDatasetAccess* left, const mitk::DICOMDatasetAccess* right) const override;
+    virtual DICOMTagList GetTagsOfInterest() const override;
+    virtual bool IsLeftBeforeRight(const mitk::DICOMDatasetAccess* left, const mitk::DICOMDatasetAccess* right) const override;
 
-    double NumericDistance(const mitk::DICOMDatasetAccess* from, const mitk::DICOMDatasetAccess* to) const override;
+    virtual double NumericDistance(const mitk::DICOMDatasetAccess* from, const mitk::DICOMDatasetAccess* to) const override;
 
-    void Print(std::ostream& os) const override;
+    virtual void Print(std::ostream& os) const override;
 
-    bool operator==(const DICOMSortCriterion& other) const override;
+    virtual bool operator==(const DICOMSortCriterion& other) const override;
 
   protected:
 
     SortByImagePositionPatient( DICOMSortCriterion::Pointer secondaryCriterion = nullptr );
-    ~SortByImagePositionPatient() override;
+    virtual ~SortByImagePositionPatient();
 
     SortByImagePositionPatient(const SortByImagePositionPatient& other);
     SortByImagePositionPatient& operator=(const SortByImagePositionPatient& other);

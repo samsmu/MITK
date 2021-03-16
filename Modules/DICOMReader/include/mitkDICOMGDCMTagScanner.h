@@ -17,9 +17,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef mitkDICOMGDCMTagScanner_h
 #define mitkDICOMGDCMTagScanner_h
 
-#include "mitkDICOMTagScanner.h"
+#include "mitkDICOMTagCache.h"
 #include "mitkDICOMEnums.h"
-#include "mitkDICOMGDCMTagCache.h"
+
+#include "mitkDICOMGDCMImageFrameInfo.h"
+
+#include <gdcmScanner.h>
 
 namespace mitk
 {
@@ -44,42 +47,30 @@ namespace mitk
     When used in a process where multiple classes will access the scan
     results, care should be taken that all the tags and files of interest
     are communicated to DICOMGDCMTagScanner before requesting the results!
-
-    @remark This scanner does only support the scanning for simple value tag.
-    If you need to scann for sequence items or non-top-level elements, this scanner
-    will not be sufficient. See i.a. DICOMDCMTKTagScanner for these cases.
   */
-  class MITKDICOMREADER_EXPORT DICOMGDCMTagScanner : public DICOMTagScanner
+  class MITKDICOMREADER_EXPORT DICOMGDCMTagScanner : public DICOMTagCache
   {
     public:
 
-      mitkClassMacro(DICOMGDCMTagScanner, DICOMTagScanner);
+      mitkClassMacro( DICOMGDCMTagScanner, DICOMTagCache );
       itkFactorylessNewMacro( DICOMGDCMTagScanner );
       itkCloneMacro(Self);
 
       /**
         \brief Add this tag to the scanning process.
       */
-      void AddTag(const DICOMTag& tag) override;
+      virtual void AddTag(const DICOMTag& tag);
       /**
         \brief Add a list of tags to the scanning process.
       */
-      void AddTags(const DICOMTagList& tags) override;
-      /**
-      \brief Add this tag path to the scanning process.
-      */
-      void AddTagPath(const DICOMTagPath& tag) override;
-      /**
-      \brief Add a list of tag pathes to the scanning process.
-      */
-      void AddTagPaths(const DICOMTagPathList& tags) override;
+      virtual void AddTags(const DICOMTagList& tags);
 
       /**
         \brief Define the list of files to scan.
         This does not ADD to an internal list, but it replaces the
         whole list of files.
       */
-      void SetInputFiles(const StringList& filenames) override;
+      virtual void SetInputFiles(const StringList& filenames);
 
       /**
         \brief Start the scanning process.
@@ -87,36 +78,29 @@ namespace mitk
         all about files and tags from files that have been scanned
         previously.
       */
-      void Scan() override;
+      virtual void Scan();
 
       /**
         \brief Retrieve a result list for file-by-file tag access.
       */
-      DICOMDatasetAccessingImageFrameList GetFrameInfoList() const override;
-
-      /**
-      \brief Retrieve Pointer to the complete cache of the scan.
-      */
-      DICOMTagCache::Pointer GetScanCache() const override;
+      virtual DICOMGDCMImageFrameList GetFrameInfoList() const;
 
       /**
         \brief Directly retrieve the tag value for a given frame and tag.
-        @pre Scan() must have been called before calling this function.
       */
-      virtual DICOMDatasetFinding GetTagValue(DICOMImageFrameInfo* frame, const DICOMTag& tag) const;
+      virtual DICOMDatasetFinding GetTagValue(DICOMImageFrameInfo* frame, const DICOMTag& tag) const override;
 
-    protected:
+      protected:
 
       DICOMGDCMTagScanner();
-      ~DICOMGDCMTagScanner() override;
+      DICOMGDCMTagScanner(const DICOMGDCMTagScanner&);
+      virtual ~DICOMGDCMTagScanner();
 
       std::set<DICOMTag> m_ScannedTags;
-      StringList m_InputFilenames;
-      DICOMGDCMTagCache::Pointer m_Cache;
-      std::shared_ptr<gdcm::Scanner> m_GDCMScanner;
 
-    private:
-      DICOMGDCMTagScanner(const DICOMGDCMTagScanner&);
+      gdcm::Scanner m_GDCMScanner;
+      StringList m_InputFilenames;
+      DICOMGDCMImageFrameList m_ScanResult;
   };
 }
 

@@ -3,7 +3,7 @@
   label="Image Position by Acquisition"
   description="Group images by Acquistion, then sort groups by Image Position (Patient)"
   class="DICOMITKSeriesGDCMReader"
-  version="2"
+  version="1"
   fixTiltByShearing="true">
 <DICOMDatasetSorter class="DICOMTagBasedSorter" strictSorting="false" expectDistanceOne="false">
   <Distinguishing>

@@ -33,13 +33,13 @@ class DICOMFilenameSorter : public DICOMDatasetSorter
     mitkClassMacro( DICOMFilenameSorter, DICOMDatasetSorter )
     itkNewMacro( DICOMFilenameSorter )
 
-    DICOMTagList GetTagsOfInterest() override;
+    virtual DICOMTagList GetTagsOfInterest() override;
 
-    void Sort() override;
+    virtual void Sort() override;
 
-    void PrintConfiguration(std::ostream& os, const std::string& indent = "") const override;
+    virtual void PrintConfiguration(std::ostream& os, const std::string& indent = "") const override;
 
-    bool operator==(const DICOMDatasetSorter& other) const override;
+    virtual bool operator==(const DICOMDatasetSorter& other) const override;
 
   protected:
 
@@ -49,7 +49,7 @@ class DICOMFilenameSorter : public DICOMDatasetSorter
     };
 
     DICOMFilenameSorter();
-    ~DICOMFilenameSorter() override;
+    virtual ~DICOMFilenameSorter();
 
     DICOMFilenameSorter(const DICOMFilenameSorter& other);
     DICOMFilenameSorter& operator=(const DICOMFilenameSorter& other);
