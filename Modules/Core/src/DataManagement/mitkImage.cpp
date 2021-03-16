@@ -477,6 +477,113 @@ mitk::Image::ImageDataItemPointer mitk::Image::GetVolumeData_unlocked(int t, int
   }
 }
 
+mitk::Image::ImageDataItemPointer mitk::Image::GetChannelData_unlocked(
+  int n, void *data, ImportMemoryManagementType importMemoryManagement) const
+{
+  if (IsValidChannel(n) == false)
+    return nullptr;
+  ImageDataItemPointer ch, vol;
+  ch = m_Channels[n];
+  if ((ch.GetPointer() != nullptr) && (ch->IsComplete()))
+    return ch;
+
+  // let's see if all volumes are set, so that we can (could) combine them to a channel
+  if (IsChannelSet_unlocked(n))
+  {
+    // if there is only one time frame we do not need to combine anything
+    if (m_Dimensions[3] <= 1)
+    {
+      vol = GetVolumeData_unlocked(0, n, data, importMemoryManagement);
+      ch = new ImageDataItem(*vol,
+                             m_ImageDescriptor,
+                             0,
+                             m_ImageDescriptor->GetNumberOfDimensions(),
+                             data,
+                             importMemoryManagement == ManageMemory);
+      ch->SetComplete(true);
+    }
+    else
+    {
+      const size_t ptypeSize = this->m_ImageDescriptor->GetChannelTypeById(n).GetSize();
+
+      ch = m_Channels[n];
+      // ok, let's combine the volumes!
+      if (ch.GetPointer() == nullptr)
+        ch = new ImageDataItem(this->m_ImageDescriptor, -1, nullptr, true);
+      ch->SetComplete(true);
+      size_t size = m_OffsetTable[m_Dimension - 1] * (ptypeSize);
+      unsigned int t;
+      auto slicesIt = m_Slices.begin() + n * m_Dimensions[2] * m_Dimensions[3];
+      for (t = 0; t < m_Dimensions[3]; ++t)
+      {
+        int posVol;
+        ImageDataItemPointer vol;
+
+        posVol = GetVolumeIndex(t, n);
+        vol = GetVolumeData_unlocked(t, n, data, importMemoryManagement);
+
+        if (vol->GetParent() != ch)
+        {
+          // copy data of volume in channel
+          size_t offset = ((size_t)t) * m_OffsetTable[3] * (ptypeSize);
+          std::memcpy(static_cast<char *>(ch->GetData()) + offset, vol->GetData(), size);
+
+          // REVEIW FIX mitkIpPicDescriptor * pic = vol->GetPicDescriptor();
+
+          // replace old volume with reference to channel
+          vol = new ImageDataItem(*ch, m_ImageDescriptor, t, 3, data, importMemoryManagement == ManageMemory, offset);
+          vol->SetComplete(true);
+          // mitkIpFuncCopyTags(vol->GetPicDescriptor(), pic);
+
+          m_Volumes[posVol] = vol;
+
+          // get rid of slices - they may point to old volume
+          ImageDataItemPointer dnull = nullptr;
+          for (unsigned int i = 0; i < m_Dimensions[2]; ++i, ++slicesIt)
+          {
+            assert(slicesIt != m_Slices.end());
+            *slicesIt = dnull;
+          }
+        }
+      }
+      // REVIEW FIX
+      //   if(ch->GetPicDescriptor()->info->tags_head==nullptr)
+      //     mitkIpFuncCopyTags(ch->GetPicDescriptor(), m_Volumes[GetVolumeIndex(0,n)]->GetPicDescriptor());
+    }
+    return m_Channels[n] = ch;
+  }
+
+  // channel is unavailable. Can we calculate it?
+  if ((GetSource().IsNotNull()) && (GetSource()->Updating() == false))
+  {
+    // ... wir muessen rechnen!!! ....
+    m_RequestedRegion.SetIndex(0, 0);
+    m_RequestedRegion.SetIndex(1, 0);
+    m_RequestedRegion.SetIndex(2, 0);
+    m_RequestedRegion.SetIndex(3, 0);
+    m_RequestedRegion.SetIndex(4, n);
+    m_RequestedRegion.SetSize(0, m_Dimensions[0]);
+    m_RequestedRegion.SetSize(1, m_Dimensions[1]);
+    m_RequestedRegion.SetSize(2, m_Dimensions[2]);
+    m_RequestedRegion.SetSize(3, m_Dimensions[3]);
+    m_RequestedRegion.SetSize(4, 1);
+    m_RequestedRegionInitialized = true;
+    GetSource()->Update();
+    // did it work?
+    if (IsChannelSet_unlocked(n))
+      // yes: now we can call ourselves without the risk of a endless loop (see "if" above)
+      return GetChannelData_unlocked(n, data, importMemoryManagement);
+    else
+      return nullptr;
+  }
+  else
+  {
+    ImageDataItemPointer item = AllocateChannelData_unlocked(n, data, importMemoryManagement);
+    item->SetComplete(true);
+    return item;
+  }
+}
+
 bool mitk::Image::IsVolumeSet(int t, int n) const
 {
   MutexHolder lock(m_ImageDataArraysLock);

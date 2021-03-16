@@ -596,7 +596,7 @@ private:
 
   ImageDataItemPointer GetVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
   ImageDataItemPointer AllocateVolumeData_unlocked(int t, int n, void *data, ImportMemoryManagementType importMemoryManagement) const;
-
+  ImageDataItemPointer GetChannelData_unlocked(int n, void *data,ImportMemoryManagementType importMemoryManagement) const;
   bool IsVolumeSet_unlocked(int t, int n) const;
 
   mutable std::vector<ImageAccessLock*> m_ReaderLocks;
