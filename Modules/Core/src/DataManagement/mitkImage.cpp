@@ -319,6 +319,14 @@ bool mitk::Image::canAddAccessLock(ImageAccessLock* lock)
   return true;
 }
 
+mitk::Image::ImageDataItemPointer mitk::Image::GetChannelData(int n,
+                                                              void *data,
+                                                              ImportMemoryManagementType importMemoryManagement) const
+{
+  MutexHolder lock(m_ImageDataArraysLock);
+  return GetChannelData_unlocked(n, data, importMemoryManagement);
+}
+
 void mitk::Image::addAccessLock(ImageAccessLock* lock) {
   if (lock->getWriteAccess()) {
     m_WriterLocks.push_back(lock);
