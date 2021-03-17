@@ -636,7 +636,8 @@ private:
   
   /** Stores all existing ImageReadAccessors */
   mutable std::vector<ImageAccessorBase *> m_Readers;
-
+  /** Stores all existing ImageWriteAccessors */
+  mutable std::vector<ImageAccessorBase *> m_Writers;
   /** A mutex, which needs to be locked to manage m_Readers and m_Writers */
   itk::SimpleFastMutexLock m_ReadWriteLock;
 
