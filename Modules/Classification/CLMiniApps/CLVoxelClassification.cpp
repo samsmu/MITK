@@ -51,11 +51,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 int main(int argc, char* argv[])
 {
   MITK_INFO << "Starting MITK_Forest Mini-App";
+  double startTime = time(0);
 
   //////////////////////////////////////////////////////////////////////////////
   // Read Console Input Parameter
   //////////////////////////////////////////////////////////////////////////////
-  ConfigFileReader allConfig(argv[1]);
+  ConfigFileReader allConfig(argv[2]);
 
   bool readFile = true;
   std::stringstream ss;
@@ -98,15 +99,15 @@ int main(int argc, char* argv[])
     int doTraining = allConfig.IntValue("General","Do Training",1);
     std::string forestPath = allConfig.Value("General","Forest Path");
     std::string trainingCollectionPath = allConfig.Value("General","Patient Collection");
-    std::string testCollectionPath = allConfig.Value("General", "Patient Test Collection", trainingCollectionPath);
+    std::string testCollectionPath = trainingCollectionPath;
+    MITK_INFO << "Training collection: " << trainingCollectionPath;
 
     //////////////////////////////////////////////////////////////////////////////
     // Read Default Classification
     //////////////////////////////////////////////////////////////////////////////
     std::vector<std::string> trainPatients = allConfig.Vector("Training Group",currentRun);
     std::vector<std::string> testPatients = allConfig.Vector("Test Group",currentRun);
-    std::vector<std::string> modalities = allConfig.Vector("Modalities", 0);
-    std::vector<std::string> outputFilter = allConfig.Vector("Output Filter", 0);
+    std::vector<std::string> modalities = allConfig.Vector("Modalities",0);
     std::string trainMask = allConfig.Value("Data","Training Mask");
     std::string completeTrainMask = allConfig.Value("Data","Complete Training Mask");
     std::string testMask = allConfig.Value("Data","Test Mask");
@@ -115,14 +116,6 @@ int main(int argc, char* argv[])
     std::string outputFolder = allConfig.Value("General","Output Folder");
 
     std::string writeDataFilePath = allConfig.Value("Forest","File to write data to");
-
-    //////////////////////////////////////////////////////////////////////////////
-    // Read Data Forest Parameter
-    //////////////////////////////////////////////////////////////////////////////
-    int testSingleDataset = allConfig.IntValue("Data", "Test Single Dataset",0);
-    std::string singleDatasetName = allConfig.Value("Data", "Single Dataset Name", "none");
-    int trainSingleDataset = allConfig.IntValue("Data", "Train Single Dataset", 0);
-    std::string singleTrainDatasetName = allConfig.Value("Data", "Train Single Dataset Name", "none");
 
     //////////////////////////////////////////////////////////////////////////////
     // Read Forest Parameter
@@ -147,7 +140,7 @@ int main(int argc, char* argv[])
       weightLambda = 0.0;
     }
     int maximumTreeDepth =  allConfig.IntValue("Forest", "Maximum Tree Depth",10000);
-    // TODO int randomSplit = allConfig.IntValue("Forest","Use RandomSplit",0);
+    int randomSplit = allConfig.IntValue("Forest","Use RandomSplit",0);
     //////////////////////////////////////////////////////////////////////////////
     // Read Statistic Parameter
     //////////////////////////////////////////////////////////////////////////////
@@ -155,15 +148,15 @@ int main(int argc, char* argv[])
     std::string statisticShortFilePath = allConfig.Value("Evaluation", "Statistic short output file");
     std::string statisticShortFileLabel = allConfig.Value("Evaluation", "Index for short file");
     std::string statisticGoldStandard = allConfig.Value("Evaluation", "Gold Standard Name","GTV");
-    // TODO bool statisticWithHeader = allConfig.IntValue("Evaluation", "Write header in short file",0);
+    bool statisticWithHeader = allConfig.IntValue("Evaluation", "Write header in short file",0);
     std::vector<std::string> labelGroupA = allConfig.Vector("LabelsA",0);
     std::vector<std::string> labelGroupB = allConfig.Vector("LabelsB",0);
     //////////////////////////////////////////////////////////////////////////////
     // Read Special Parameter
     //////////////////////////////////////////////////////////////////////////////
     bool useWeightedPoints = allConfig.IntValue("Forest", "Use point-based weighting",0);
-    // TODO bool writePointsToFile = allConfig.IntValue("Forest", "Write points to file",0);
-    // TODO int importanceWeightAlgorithm = allConfig.IntValue("Forest","Importance weight Algorithm",0);
+    bool writePointsToFile = allConfig.IntValue("Forest", "Write points to file",0);
+    int importanceWeightAlgorithm = allConfig.IntValue("Forest","Importance weight Algorithm",0);
     std::string importanceWeightName = allConfig.Value("Forest","Importance weight name","");
 
     std::ofstream timingFile;
@@ -176,7 +169,7 @@ int main(int argc, char* argv[])
     // Read Images
     //////////////////////////////////////////////////////////////////////////////
     std::vector<std::string> usedModalities;
-    for (std::size_t i = 0; i < modalities.size(); ++i)
+    for (int i = 0; i < modalities.size(); ++i)
     {
       usedModalities.push_back(modalities[i]);
     }
@@ -186,12 +179,7 @@ int main(int argc, char* argv[])
     usedModalities.push_back(statisticGoldStandard);
     usedModalities.push_back(importanceWeightName);
 
-    if (trainSingleDataset > 0)
-    {
-      trainPatients.clear();
-      trainPatients.push_back(singleTrainDatasetName);
-    }
-
+    //  vtkSmartPointer<mitk::CollectionReader> colReader = vtkSmartPointer<mitk::CollectionReader>::New();
     mitk::CollectionReader* colReader = new mitk::CollectionReader();
     colReader->AddDataElementIds(trainPatients);
     colReader->SetDataItemNames(usedModalities);
@@ -200,12 +188,6 @@ int main(int argc, char* argv[])
     if (doTraining)
     {
       trainCollection = colReader->LoadCollection(trainingCollectionPath);
-    }
-
-    if (testSingleDataset > 0)
-    {
-      testPatients.clear();
-      testPatients.push_back(singleDatasetName);
     }
     colReader->ClearDataElementIds();
     colReader->AddDataElementIds(testPatients);
@@ -248,7 +230,7 @@ int main(int argc, char* argv[])
     forest->SetMaximumTreeDepth(maximumTreeDepth);
     forest->SetWeightLambda(weightLambda);
 
-    // TODO forest.UseRandomSplit(randomSplit);
+    // TOOD forest.UseRandomSplit(randomSplit);
 
     if (doTraining)
     {
@@ -262,8 +244,8 @@ int main(int argc, char* argv[])
       auto trainDataX = mitk::DCUtilities::DC3dDToMatrixXd(trainCollection, modalities, trainMask);
       auto trainDataY = mitk::DCUtilities::DC3dDToMatrixXi(trainCollection, trainMask, trainMask);
 
-      if (useWeightedPoints)
-      //if (false)
+      //if (useWeightedPoints)
+      if (false)
       {
         MITK_INFO << "Activated Point-based weighting...";
         //forest.UseWeightedPoints(true);
@@ -331,19 +313,15 @@ int main(int argc, char* argv[])
         forest->SetPointWiseWeight(trainDataW);
         forest->UsePointWiseWeight(true);
       }
-      MITK_INFO << "Start training the forest";
       forest->Train(trainDataX, trainDataY);
-
-      MITK_INFO << "Save Forest";
-      mitk::IOUtil::Save(forest, forestPath);
+      // TODO forest.Save(forestPath);
     } else
     {
-      forest = mitk::IOUtil::Load<mitk::VigraRandomForestClassifier>(forestPath);// TODO forest.Load(forestPath);
+      // TODO forest.Load(forestPath);
     }
 
     time(&now);
     seconds =  std::difftime(now, lastTimePoint);
-    MITK_INFO << "Duration for Training: " << seconds;
     timingFile << seconds << ";";
     time(&lastTimePoint);
     //////////////////////////////////////////////////////////////////////////////
@@ -355,32 +333,16 @@ int main(int argc, char* argv[])
     auto w = forest->GetTreeWeights();
     w(0,0) = 10;
     forest->SetTreeWeights(w);*/
+    mitk::IOUtil::Save(forest,"d:/tmp/forest.forest");
 
     //////////////////////////////////////////////////////////////////////////////
     // If required do test
     //////////////////////////////////////////////////////////////////////////////
-    MITK_INFO << "Convert Test data";
     auto testDataX = mitk::DCUtilities::DC3dDToMatrixXd(testCollection,modalities, testMask);
-
-    MITK_INFO << "Predict Test Data";
     auto testDataNewY = forest->Predict(testDataX);
-    auto testDataNewProb = forest->GetPointWiseProbabilities();
     //MITK_INFO << testDataNewY;
 
-    auto maxClassValue = testDataNewProb.cols();
-    std::vector<std::string> names;
-    for (int i = 0; i < maxClassValue; ++i)
-    {
-      std::string name = resultProb + std::to_string(i);
-      MITK_INFO << name;
-      names.push_back(name);
-    }
-    //names.push_back("prob-1");
-    //names.push_back("prob-2");
-
     mitk::DCUtilities::MatrixToDC3d(testDataNewY, testCollection, resultMask, testMask);
-    mitk::DCUtilities::MatrixToDC3d(testDataNewProb, testCollection, names, testMask);
-    MITK_INFO << "Converted predicted data";
     //forest.SetMaskName(testMask);
     //forest.SetCollection(testCollection);
     //forest.Test();
@@ -426,11 +388,10 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // Save results to folder
     //////////////////////////////////////////////////////////////////////////////
-    ////std::vector<std::string> outputFilter;
+    std::vector<std::string> outputFilter;
     //outputFilter.push_back(resultMask);
     //std::vector<std::string> propNames = forest.GetListOfProbabilityNames();
     //outputFilter.insert(outputFilter.begin(), propNames.begin(), propNames.end());
-    MITK_INFO << "Write Result to HDD";
     mitk::CollectionWriter::ExportCollectionToFolder(testCollection,
       outputFolder + "/result_collection.xml",
       outputFilter);
@@ -446,13 +407,10 @@ int main(int argc, char* argv[])
 
     mitk::CollectionStatistic stat;
     stat.SetCollection(testCollection);
-    stat.SetClassCount(5);
+    stat.SetClassCount(2);
     stat.SetGoldName(statisticGoldStandard);
     stat.SetTestName(resultMask);
     stat.SetMaskName(testMask);
-    mitk::BinaryValueminusOneToIndexMapper mapper;
-    stat.SetGroundTruthValueToIndexMapper(&mapper);
-    stat.SetTestValueToIndexMapper(&mapper);
     stat.Update();
     //stat.Print(statisticFile,sstatisticFile,statisticWithHeader, statisticShortFileLabel);
     stat.Print(statisticFile,sstatisticFile,true, statisticShortFileLabel);

@@ -196,13 +196,12 @@ Eigen::MatrixXi mitk::VigraRandomForestClassifier::Predict(const Eigen::MatrixXd
   vigra::MultiArrayView<2, double> TW(vigra::Shape2(m_RandomForest.tree_count(),1),m_TreeWeights.data());
 
   std::unique_ptr<PredictionData> data;
-  data.reset(new PredictionData(m_RandomForest, X, Y, P, TW));
+  data.reset( new PredictionData(m_RandomForest,X,Y,P,TW));
 
   itk::MultiThreader::Pointer threader = itk::MultiThreader::New();
-  threader->SetSingleMethod(this->PredictCallback, data.get());
+  threader->SetSingleMethod(this->PredictCallback,data.get());
   threader->SingleMethodExecute();
 
-  m_Probabilities = data->m_Probabilities;
   return m_OutLabel;
 }
 
@@ -293,7 +292,7 @@ ITK_THREAD_RETURN_TYPE mitk::VigraRandomForestClassifier::TrainTreesCallback(voi
     data->m_mutex->Unlock();
   }
 
-  return 0;
+  return NULL;
 
 }
 
@@ -346,7 +345,7 @@ ITK_THREAD_RETURN_TYPE mitk::VigraRandomForestClassifier::PredictCallback(void *
   data->m_RandomForest.predictProbabilities(split_features, split_probability);
 
 
-  return 0;
+  return NULL;
 
 }
 
@@ -397,7 +396,7 @@ ITK_THREAD_RETURN_TYPE mitk::VigraRandomForestClassifier::PredictWeightedCallbac
 
   VigraPredictWeighted(data, split_features,split_labels,split_probability);
 
-  return 0;
+  return NULL;
 }
 
 

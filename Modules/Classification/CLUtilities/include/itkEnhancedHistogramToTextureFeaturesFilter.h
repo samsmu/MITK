@@ -207,9 +207,6 @@ namespace itk
       itkMacroGLCMFeatureGetter(InverseDifferenceMomentNormalized);
       itkMacroGLCMFeatureGetter(InverseDifferenceNormalized);
       itkMacroGLCMFeatureGetter(InverseDifference);
-      itkMacroGLCMFeatureGetter(JointAverage);
-      itkMacroGLCMFeatureGetter(FirstMeasureOfInformationCorrelation);
-      itkMacroGLCMFeatureGetter(SecondMeasureOfInformationCorrelation);
 
       /** Texture feature types */
       typedef enum {
@@ -238,9 +235,6 @@ namespace itk
         InverseDifferenceMomentNormalized,
         InverseDifferenceNormalized,
         InverseDifference,
-        JointAverage,
-        FirstMeasureOfInformationCorrelation,
-        SecondMeasureOfInformationCorrelation,
         InvalidFeatureName
       }  TextureFeatureName;
 
@@ -249,15 +243,15 @@ namespace itk
 
     protected:
       EnhancedHistogramToTextureFeaturesFilter();
-      ~EnhancedHistogramToTextureFeaturesFilter() override {}
-      void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
+      ~EnhancedHistogramToTextureFeaturesFilter() {}
+      virtual void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
       /** Make a DataObject to be used for output output. */
       typedef ProcessObject::DataObjectPointerArraySizeType DataObjectPointerArraySizeType;
       using Superclass::MakeOutput;
-      DataObjectPointer MakeOutput(DataObjectPointerArraySizeType) ITK_OVERRIDE;
+      virtual DataObjectPointer MakeOutput(DataObjectPointerArraySizeType) ITK_OVERRIDE;
 
-      void GenerateData() ITK_OVERRIDE;
+      virtual void GenerateData() ITK_OVERRIDE;
 
     private:
       EnhancedHistogramToTextureFeaturesFilter(const Self &); //purposely not implemented

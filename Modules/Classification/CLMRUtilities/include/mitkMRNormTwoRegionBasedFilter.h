@@ -57,13 +57,13 @@ namespace mitk {
   protected:
     MRNormTwoRegionsBasedFilter();
 
-    ~MRNormTwoRegionsBasedFilter() override;
+    ~MRNormTwoRegionsBasedFilter();
 
-    void GenerateInputRequestedRegion() override;
+    virtual void GenerateInputRequestedRegion() override;
 
-    void GenerateOutputInformation() override;
+    virtual void GenerateOutputInformation() override;
 
-    void GenerateData() override;
+    virtual void GenerateData() override;
 
     template < typename TPixel, unsigned int VImageDimension >
     void InternalComputeMask(itk::Image<TPixel, VImageDimension>* itkImage);

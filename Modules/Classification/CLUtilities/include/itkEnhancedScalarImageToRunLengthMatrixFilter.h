@@ -247,18 +247,18 @@ namespace itk
 
     protected:
       EnhancedScalarImageToRunLengthMatrixFilter();
-      ~EnhancedScalarImageToRunLengthMatrixFilter() override {};
-      void PrintSelf( std::ostream& os, Indent indent ) const ITK_OVERRIDE;
+      virtual ~EnhancedScalarImageToRunLengthMatrixFilter() {};
+      virtual void PrintSelf( std::ostream& os, Indent indent ) const ITK_OVERRIDE;
 
       /** Standard itk::ProcessObject subclass method. */
       typedef DataObject::Pointer DataObjectPointer;
 
       typedef ProcessObject::DataObjectPointerArraySizeType DataObjectPointerArraySizeType;
       using Superclass::MakeOutput;
-      DataObjectPointer MakeOutput( DataObjectPointerArraySizeType idx ) ITK_OVERRIDE;
+      virtual DataObjectPointer MakeOutput( DataObjectPointerArraySizeType idx ) ITK_OVERRIDE;
 
       /** This method causes the filter to generate its output. */
-      void GenerateData() ITK_OVERRIDE;
+      virtual void GenerateData() ITK_OVERRIDE;
 
       /**
       * Normalize the direction of the offset before it is applied.

@@ -5,7 +5,7 @@
 #include "itkZeroFluxNeumannBoundaryCondition.h"
 #include "itkConstNeighborhoodIterator.h"
 #include "itkImage.h"
-#include <cstdio>
+#include "stdio.h"
 
 #include <itkHistogramToTextureFeaturesFilter.h>
 #include "itkHistogram.h"
@@ -90,7 +90,7 @@ protected:
     NeighborhoodFunctorImageFilter()
     {
         m_Size.Fill(0);
-        m_MaskImage = nullptr;
+        m_MaskImage = NULL;
         m_BoundsCondition = static_cast< ImageBoundaryConditionPointerType >( &m_DefaultBoundaryCondition );
         this->SetNumberOfIndexedOutputs(FunctorType::OutputCount);
     }
@@ -109,7 +109,7 @@ protected:
        * execution model.
        *
        * \sa ProcessObject::GenerateInputRequestedRegion() */
-    void GenerateInputRequestedRegion() override;
+    virtual void GenerateInputRequestedRegion() throw ( InvalidRequestedRegionError );
 
 
 private:

@@ -34,7 +34,7 @@ static void EnsureDataImageInCollection(mitk::DataCollection::Pointer collection
   for (std::size_t i = 0; i < collection->Size();++i)
   {
     mitk::DataCollection* newCol = dynamic_cast<mitk::DataCollection*>(collection->GetData(i).GetPointer());
-    if (newCol != nullptr)
+    if (newCol != 0)
     {
       EnsureDataImageInCollection(newCol, origin, target);
     }
@@ -66,7 +66,7 @@ static void EnsureLabelImageInCollection(mitk::DataCollection::Pointer collectio
   for (std::size_t i = 0; i < collection->Size();++i)
   {
     mitk::DataCollection* newCol = dynamic_cast<mitk::DataCollection*>(collection->GetData(i).GetPointer());
-    if (newCol != nullptr)
+    if (newCol != 0)
     {
       EnsureLabelImageInCollection(newCol, origin, target);
     }
@@ -91,12 +91,12 @@ bool mitk::CostingStatistic::UpdateCollection()
 
   std::vector<DataCollectionImageIterator<double, 3> > iterProbA;
   std::vector<DataCollectionImageIterator<double, 3> > iterProbB;
-  for (std::size_t i = 0; i < m_ProbabilityClassA.size(); ++i)
+  for (int i = 0; i < m_ProbabilityClassA.size(); ++i)
   {
     DataCollectionImageIterator<double, 3> iter(m_Collection, m_ProbabilityClassA[i]);
     iterProbA.push_back(iter);
   }
-  for (std::size_t i = 0; i < m_ProbabilityClassB.size(); ++i)
+  for (int i = 0; i < m_ProbabilityClassB.size(); ++i)
   {
     DataCollectionImageIterator<double, 3> iter(m_Collection, m_ProbabilityClassB[i]);
     iterProbB.push_back(iter);
@@ -111,11 +111,11 @@ bool mitk::CostingStatistic::UpdateCollection()
     {
       double probA = 0;
       double probB = 0;
-      for (std::size_t i = 0; i < iterProbA.size(); ++i)
+      for (int i = 0; i < iterProbA.size(); ++i)
       {
         probA += iterProbA[i].GetVoxel();
       }
-      for (std::size_t i = 0; i < iterProbB.size(); ++i)
+      for (int i = 0; i < iterProbB.size(); ++i)
       {
         probB += iterProbB[i].GetVoxel();
       }
@@ -131,16 +131,16 @@ bool mitk::CostingStatistic::UpdateCollection()
     ++iterCombineA;
     ++iterCombineB;
     ++iterMask;
-    for (std::size_t i = 0; i < iterProbA.size(); ++i)
+    for (int i = 0; i < iterProbA.size(); ++i)
     {
       ++(iterProbA[i]);
     }
-    for (std::size_t i = 0; i < iterProbB.size(); ++i)
+    for (int i = 0; i < iterProbB.size(); ++i)
     {
       ++(iterProbB[i]);
     }
   }
-  return false;
+  return 0;
 }
 
 bool mitk::CostingStatistic::CalculateClass(double threshold)

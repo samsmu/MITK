@@ -31,28 +31,28 @@ namespace mitk
   {
   public:
 
-    mitkClassMacro(VigraRandomForestClassifier, AbstractClassifier)
+    mitkClassMacro(VigraRandomForestClassifier,AbstractClassifier)
       itkFactorylessNewMacro(Self)
       itkCloneMacro(Self)
 
-      VigraRandomForestClassifier();
+    VigraRandomForestClassifier();
 
-    ~VigraRandomForestClassifier() override;
+    ~VigraRandomForestClassifier();
 
-    void Train(const Eigen::MatrixXd &X, const Eigen::MatrixXi &Y) override;
+    void Train(const Eigen::MatrixXd &X, const Eigen::MatrixXi &Y);
     void OnlineTrain(const Eigen::MatrixXd &X, const Eigen::MatrixXi &Y);
-    Eigen::MatrixXi Predict(const Eigen::MatrixXd &X) override;
+    Eigen::MatrixXi Predict(const Eigen::MatrixXd &X);
     Eigen::MatrixXi PredictWeighted(const Eigen::MatrixXd &X);
 
 
-    bool SupportsPointWiseWeight() override;
-    bool SupportsPointWiseProbability() override;
+    bool SupportsPointWiseWeight();
+    bool SupportsPointWiseProbability();
     void ConvertParameter();
 
     void SetRandomForest(const vigra::RandomForest<int> & rf);
     const vigra::RandomForest<int> & GetRandomForest() const;
 
-    void UsePointWiseWeight(bool) override;
+    void UsePointWiseWeight(bool);
     void SetMaximumTreeDepth(int);
     void SetMinimumSplitNodeSize(int);
     void SetPrecision(double);
@@ -78,7 +78,6 @@ namespace mitk
     struct EigenToVigraTransform;
     struct Parameter;
 
-    vigra::MultiArrayView<2, double> m_Probabilities;
     Eigen::MatrixXd m_TreeWeights;
 
     Parameter * m_Parameter;

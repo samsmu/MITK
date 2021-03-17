@@ -261,7 +261,7 @@ bool mitk::ConfigurationHolder::AsBool(bool value)
   try {
     return this->AsBool();
   }
-  catch (const mitk::Exception &)
+  catch (mitk::Exception)
   {
     return value;
   }
@@ -272,7 +272,7 @@ unsigned int mitk::ConfigurationHolder::AsUnsignedInt(unsigned int value)
   try {
     return this->AsUnsignedInt();
   }
-  catch (const mitk::Exception &)
+  catch (mitk::Exception)
   {
     return value;
   }
@@ -283,7 +283,7 @@ int mitk::ConfigurationHolder::AsInt(int value)
   try {
     return this->AsInt();
   }
-  catch (const mitk::Exception &)
+  catch (mitk::Exception)
   {
     return value;
   }
@@ -294,7 +294,7 @@ double mitk::ConfigurationHolder::AsDouble(double value)
   try {
     return this->AsDouble();
   }
-  catch (const mitk::Exception &)
+  catch (mitk::Exception)
   {
     return value;
   }
@@ -305,7 +305,7 @@ std::string mitk::ConfigurationHolder::AsString(std::string value)
   try {
     return this->AsString();
   }
-  catch (const mitk::Exception &)
+  catch (mitk::Exception)
   {
     return value;
   }

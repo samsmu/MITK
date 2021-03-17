@@ -29,7 +29,7 @@ namespace mitk
   {
   public:
 
-    void Load(us::ModuleContext*) override
+    void Load(us::ModuleContext*)
     {
 
       // *-----------------*
@@ -40,7 +40,7 @@ namespace mitk
       m_DummyLsetReader = new mitk::DummyLsetFileReader();
     }
 
-    void Unload(us::ModuleContext*) override
+    void Unload(us::ModuleContext*)
     {
       delete m_DecisionForestIO;
       delete m_DummyLsetReader;

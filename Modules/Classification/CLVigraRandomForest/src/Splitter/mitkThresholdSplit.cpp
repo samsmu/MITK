@@ -9,8 +9,7 @@ mitk::ThresholdSplit<TColumnDecisionFunctor, TFeatureCalculator, TTag>::Threshol
   m_UseWeights(false),
   m_UseRandomSplit(false),
   m_Precision(0.0),
-  m_MaximumTreeDepth(1000),
-  m_AdditionalData(nullptr)
+  m_MaximumTreeDepth(1000)
 {
 }
 
@@ -25,20 +24,6 @@ mitk::ThresholdSplit<TColumnDecisionFunctor, TFeatureCalculator, TTag>::Threshol
 //  m_Weights(other.GetWeights())*/
 //{
 //}
-template<class TColumnDecisionFunctor, class TFeatureCalculator, class TTag>
-void
-mitk::ThresholdSplit<TColumnDecisionFunctor, TFeatureCalculator, TTag>::SetAdditionalData(AdditionalRFDataAbstract* data)
-{
-  bgfunc.SetAdditionalData(data);
-  m_AdditionalData = data;
-}
-
-template<class TColumnDecisionFunctor, class TFeatureCalculator, class TTag>
-mitk::AdditionalRFDataAbstract *
-mitk::ThresholdSplit<TColumnDecisionFunctor, TFeatureCalculator, TTag>::GetAdditionalData() const
-{
-  return m_AdditionalData;
-}
 
 template<class TColumnDecisionFunctor, class TFeatureCalculator, class TTag>
 void

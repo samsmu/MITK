@@ -76,17 +76,17 @@ namespace mitk {
     static FileListType SanitizeFileList(FileListType list);
 
     CollectionReader();
-    ~CollectionReader() override;
+    ~CollectionReader();
   protected:
 
     /**
     * @brief Derived from XMLReader
     **/
-    void  StartElement (const char* elementName, const char **atts) override;
+    void  StartElement (const char* elementName, const char **atts);
     /**
     * @brief Derived from XMLReader
     **/
-    void  EndElement (const char* elementName) override;
+    void  EndElement (const char* elementName);
 
   private:
     /**

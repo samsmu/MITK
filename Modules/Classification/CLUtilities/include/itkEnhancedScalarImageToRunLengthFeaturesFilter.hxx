@@ -45,8 +45,7 @@ namespace itk
   {
     template<typename TImage, typename THistogramFrequencyContainer>
     EnhancedScalarImageToRunLengthFeaturesFilter<TImage, THistogramFrequencyContainer>
-      ::EnhancedScalarImageToRunLengthFeaturesFilter() :
-      m_CombinedFeatureCalculation(false)
+      ::EnhancedScalarImageToRunLengthFeaturesFilter()
     {
       this->SetNumberOfRequiredInputs( 1 );
       this->SetNumberOfRequiredOutputs( 1 );
@@ -69,9 +68,7 @@ namespace itk
       requestedFeatures->push_back( RunLengthFeaturesFilterType::ShortRunEmphasis );
       requestedFeatures->push_back( RunLengthFeaturesFilterType::LongRunEmphasis );
       requestedFeatures->push_back( RunLengthFeaturesFilterType::GreyLevelNonuniformity );
-      requestedFeatures->push_back( RunLengthFeaturesFilterType::GreyLevelNonuniformityNormalized );
       requestedFeatures->push_back( RunLengthFeaturesFilterType::RunLengthNonuniformity );
-      requestedFeatures->push_back( RunLengthFeaturesFilterType::RunLengthNonuniformityNormalized );
       requestedFeatures->push_back( RunLengthFeaturesFilterType::LowGreyLevelRunEmphasis );
       requestedFeatures->push_back( RunLengthFeaturesFilterType::HighGreyLevelRunEmphasis );
       requestedFeatures->push_back( RunLengthFeaturesFilterType::ShortRunLowGreyLevelEmphasis );
@@ -134,10 +131,6 @@ namespace itk
       ::FullCompute()
     {
       int numOffsets = this->m_Offsets->size();
-      if (m_CombinedFeatureCalculation)
-      {
-        numOffsets = 1;
-      }
       int numFeatures = this->m_RequestedFeatures->size();
       double **features;
 
@@ -162,24 +155,10 @@ namespace itk
       typedef typename RunLengthFeaturesFilterType::RunLengthFeatureName
         InternalRunLengthFeatureName;
 
-      OffsetVectorPointer offsets = OffsetVector::New();
-      if (m_CombinedFeatureCalculation)
-      {
-        for (int i = 0; i < this->m_Offsets->Size(); ++i)
-        {
-          offsets->push_back(m_Offsets->ElementAt(i));
-        }
-      }
-
-
       for( offsetIt = this->m_Offsets->Begin(), offsetNum = 0;
         offsetIt != this->m_Offsets->End(); offsetIt++, offsetNum++ )
       {
-        this->m_RunLengthMatrixGenerator->SetOffset(offsetIt.Value());
-        if (m_CombinedFeatureCalculation)
-        {
-          this->m_RunLengthMatrixGenerator->SetOffsets(offsets);
-        }
+        this->m_RunLengthMatrixGenerator->SetOffset( offsetIt.Value() );
         this->m_RunLengthMatrixGenerator->Update();
         typename RunLengthFeaturesFilterType::Pointer runLengthMatrixCalculator =
           RunLengthFeaturesFilterType::New();
@@ -194,10 +173,6 @@ namespace itk
         {
           features[offsetNum][featureNum] = runLengthMatrixCalculator->GetFeature(
             ( InternalRunLengthFeatureName )fnameIt.Value() );
-        }
-        if (m_CombinedFeatureCalculation)
-        {
-          break;
         }
       }
 

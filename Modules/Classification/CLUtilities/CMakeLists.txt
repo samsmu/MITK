@@ -1,6 +1,7 @@
 MITK_CREATE_MODULE(
-  DEPENDS MitkCore MitkCLCore MitkCommandLine
+  DEPENDS MitkCore MitkCLCore
   PACKAGE_DEPENDS PUBLIC Eigen
+  WARNINGS_AS_ERRORS
 )
 
 add_subdirectory(test)

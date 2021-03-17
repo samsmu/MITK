@@ -13,17 +13,15 @@ A PARTICULAR PURPOSE.
 See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
-#ifdef _MSC_VER
-#  pragma warning (disable : 4996)
-#endif
+#pragma warning (disable : 4996)
 
 #ifndef mitkDataCollection_H_
 #define mitkDataCollection_H_
 
-//#include <itkLightObject.h>
-//#include <itkDataObject.h>
-//#include "itkObjectFactory.h"
-//#include "mitkCommon.h"
+#include <itkLightObject.h>
+#include <itkDataObject.h>
+#include "itkObjectFactory.h"
+#include "mitkCommon.h"
 #include <mitkImage.h>
 #include <mitkDataNode.h>
 
@@ -64,11 +62,11 @@ namespace mitk
       itkCloneMacro(Self)
 
       // Needed methods from Basedata
-      void UpdateOutputInformation() override;
-    void SetRequestedRegionToLargestPossibleRegion() override;
-    bool RequestedRegionIsOutsideOfTheBufferedRegion() override;
-    bool VerifyRequestedRegion() override;
-    void SetRequestedRegion(const itk::DataObject *) override;
+      virtual void UpdateOutputInformation();
+    virtual void SetRequestedRegionToLargestPossibleRegion();
+    virtual bool RequestedRegionIsOutsideOfTheBufferedRegion();
+    virtual bool VerifyRequestedRegion();
+    virtual void SetRequestedRegion(const itk::DataObject *);
 
     void Init(std::string name);
 
@@ -167,7 +165,7 @@ namespace mitk
     /**
     * @brief GetMitkImage - casts data to  mitk::Image and returns it
     *
-    * \note returns nullptr is object  is no mitk::Image or itk::Image
+    * \note returns NULL is object  is no mitk::Image or itk::Image
     *
     * @param index
     * @return
@@ -177,7 +175,7 @@ namespace mitk
     /**
     * @brief GetMitkImage - casts data to  mitk::Image and returns it
     *
-    * \note returns nullptr is object  is no mitk::Image or itk::Image
+    * \note returns NULL is object  is no mitk::Image or itk::Image
     *
     * @param name
     * @return
@@ -246,7 +244,7 @@ namespace mitk
     /**
     * @brief Clear - clears the data collection
     */
-    void Clear() override;
+    void Clear();
 
     /**
     * @brief GetDataNode - returns data node containing data at index
@@ -272,7 +270,7 @@ namespace mitk
   protected:
 
     DataCollection();
-    ~DataCollection() override;
+    virtual ~DataCollection();
 
   private:
     // DATA

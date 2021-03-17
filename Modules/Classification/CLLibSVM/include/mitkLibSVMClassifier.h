@@ -40,13 +40,13 @@ namespace mitk
     itkCloneMacro(Self)
 
     LibSVMClassifier();
-    ~LibSVMClassifier() override;
+    ~LibSVMClassifier();
 
     void Train(const Eigen::MatrixXd &X, const Eigen::MatrixXi &Y) override;
     Eigen::MatrixXi Predict(const Eigen::MatrixXd &X) override;
 
-    bool SupportsPointWiseWeight() override{return true;}
-    bool SupportsPointWiseProbability() override{return false;}
+    bool SupportsPointWiseWeight(){return true;}
+    bool SupportsPointWiseProbability(){return false;}
 
     void PrintParameter(std::ostream & str);
     void ConvertParameter();

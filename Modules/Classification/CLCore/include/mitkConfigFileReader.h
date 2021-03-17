@@ -22,7 +22,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <fstream>
 #include <map>
 #include <vector>
-#include <iostream>
 
 class ConfigFileReader
 
@@ -104,7 +103,7 @@ public:
     std::string value;
     std::string inSection;
     bool inConfigSection = true;
-    std::string::size_type posEqual;
+    int posEqual;
     while (std::getline(stream,line)) {
       line = RemoveComment(line, "#");
 
@@ -142,8 +141,7 @@ public:
   {
     std::string index = ContentIndex(section,entry);
     if (m_ConfigContent.find(index) == m_ConfigContent.end())
-      throw std::string("Entry doesn't exist " + section +"::"+ entry);
-    std::cout << section << "::" << entry << m_ConfigContent.find(index)->second << std::endl;
+      throw "Entry doesn't exist " + section + entry;
     return m_ConfigContent.find(index)->second;
   }
 
@@ -152,9 +150,8 @@ public:
     try {
       return Value(section, entry);
     }
-    catch (const std::string) {
+    catch (const char *) {
       m_ConfigContent[ContentIndex(section, entry)] = standard;
-      std::cout << section << "::" << entry << standard << " (default)" << std::endl;
       return standard;
     }
   }
@@ -172,11 +169,10 @@ public:
     try {
       return IntValue(section, entry);
     }
-    catch (const std::string) {
+    catch (const char *) {
       std::stringstream stream;
       stream << standard;
       m_ConfigContent[ContentIndex(section, entry)] = stream.str();
-      std::cout << section << "::" << entry << stream.str() << "(default)" << std::endl;
       return standard;
     }
   }
@@ -184,18 +180,14 @@ public:
   std::vector<std::string> Vector(std::string const& section, unsigned int index) const
   {
     if (m_ListContent.find(ListIndex(section, index)) == m_ListContent.end())
-    {
-      throw std::string("Entry doesn't exist " + section);
-    }
+      throw "Entry doesn't exist " + section;
     return m_ListContent.find(ListIndex(section,index))->second;
   }
 
   unsigned int ListSize(std::string const& section) const
   {
     if (m_ListSize.find(ListSizeIndex(section)) == m_ListSize.end())
-    {
-      throw std::string("Entry doesn't exist " + section);
-    }
+      throw "Entry doesn't exist " + section;
     return m_ListSize.find(ListSizeIndex(section))->second;
   }
 

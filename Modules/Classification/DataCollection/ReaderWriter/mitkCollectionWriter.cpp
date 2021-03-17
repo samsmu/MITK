@@ -13,15 +13,16 @@
  See LICENSE.txt or http://www.mitk.org for details.
 
  ===================================================================*/
-#ifdef _MSC_VER
-#  pragma warning (disable : 4996)
-#endif
+#pragma warning (disable : 4996)
 
 #include "mitkCollectionWriter.h"
 
 #include <mitkIOUtil.h>
+#include <mitkFiberBundle.h>
+#include <mitkFiberBundleVtkReader.h>
 
 #include "mitkImageCast.h"
+#include "mitkTensorImage.h"
 #include "itkNrrdImageIO.h"
 #include "itkImageFileWriter.h"
 #include "mitkCoreObjectFactory.h"
@@ -98,7 +99,7 @@ bool mitk::CollectionWriter::ExportCollectionToFolder(DataCollection *dataCollec
 
     // Herein create data folders
     DataCollection* subCollections = dynamic_cast<DataCollection*> (dataCollection->GetData(i).GetPointer());
-    if (subCollections == nullptr)
+    if (subCollections == NULL)
     {
       MITK_ERROR<< "mitk::CollectionWriter::SaveCollectionToFolder: Container is illformed. Aborting";
       return false;
@@ -112,7 +113,7 @@ bool mitk::CollectionWriter::ExportCollectionToFolder(DataCollection *dataCollec
       xmlFileStream << "  <" << DATA <<  " " << NAME << "=\"" << subCollections->IndexToName(d) << "\" " <<  FILEPATH << "=\"" << subCollections->GetDataFilePath(d) << "\" id=\"Data" << dataId << "\" >\n";
 
       DataCollection* itemCollections = dynamic_cast<DataCollection*> (subCollections->GetData(d).GetPointer());
-      if (itemCollections == nullptr)
+      if (itemCollections == NULL)
       {
         MITK_ERROR<< "mitk::CollectionWriter::SaveCollectionToFolder: Container is illformed. Aborting";
         return false;
@@ -134,13 +135,57 @@ bool mitk::CollectionWriter::ExportCollectionToFolder(DataCollection *dataCollec
           if (isSelected == false)
             continue;
         }
-
+        Image* image = dynamic_cast<Image*> (itemCollections->GetData(s).GetPointer());
         QString fileName = dir.path() + dir.separator() + subPath + dir.separator() +  QString::fromStdString(dataCollection->IndexToName(i)) + "_" + QString::fromStdString(subCollections->IndexToName(d)) + "_" + QString::fromStdString(itemCollections->IndexToName(s));
         try
         {
-          fileName += ".nrrd";
-          Image::Pointer image = itemCollections->GetMitkImage(s).GetPointer();
-          IOUtil::Save(image, fileName.toStdString());
+          if (itemCollections->IndexToName(s) == "DTI" || itemCollections->IndexToName(s) == "DTIFWE")
+          {
+            fileName += ".dti";
+            itk::NrrdImageIO::Pointer io = itk::NrrdImageIO::New();
+            io->SetFileType( itk::ImageIOBase::Binary );
+            io->UseCompressionOn();
+            TensorImage* tensorImage = dynamic_cast<TensorImage*> (image);
+            MITK_INFO << "Pixeltype Tensor Image: " << tensorImage->GetPixelType().GetPixelTypeAsString();
+            typedef itk::Image<itk::DiffusionTensor3D<TensorScalar>,3> ImageType;
+            typedef itk::ImageFileWriter<ImageType> WriterType;
+            WriterType::Pointer nrrdWriter = WriterType::New();
+            ImageType::Pointer outimage = ImageType::New();
+            CastToItkImage(tensorImage, outimage);
+            nrrdWriter->SetInput( outimage );
+            nrrdWriter->SetImageIO(io);
+            nrrdWriter->SetFileName(fileName.toStdString());
+            nrrdWriter->UseCompressionOn();
+            nrrdWriter->Update();
+          }
+          else if (itemCollections->IndexToName(s) == "FIB")
+          {
+            fileName += ".fib";
+            FiberBundle* fib = dynamic_cast<FiberBundle*> (itemCollections->GetData(s).GetPointer());
+            CoreObjectFactory::FileWriterList fileWriters = CoreObjectFactory::GetInstance()->GetFileWriters();
+            for (CoreObjectFactory::FileWriterList::iterator it = fileWriters.begin() ; it != fileWriters.end() ; ++it)
+            {
+              if ( (*it)->CanWriteBaseDataType(fib) ) {
+                (*it)->SetFileName( fileName.toStdString().c_str() );
+                (*it)->DoWrite( fib );
+              }
+            }
+          }
+          else if (itemCollections->IndexToName(s) == "DWI")
+          {
+            fileName += ".dwi";
+//            NrrdDiffusionImageWriter dwiwriter;
+//            dwiwriter.SetInput( dynamic_cast<mitk::DiffusionImage<short>* > (image));
+//            dwiwriter.SetOutputLocation( fileName.toStdString() );
+
+            IOUtil::SaveImage(image,fileName.toStdString());
+          }
+          else
+          {
+            fileName += ".nrrd";
+            Image::Pointer image = itemCollections->GetMitkImage(s).GetPointer();
+            IOUtil::SaveImage(image,fileName.toStdString());
+          }
         }
         catch( const std::exception& e)
         {
@@ -199,7 +244,7 @@ bool mitk::CollectionWriter::SaveCollection(mitk::DataCollection *dataCollection
 
     // Herein create data folders
     DataCollection* subCollections = dynamic_cast<DataCollection*> (dataCollection->GetData(i).GetPointer());
-    if (subCollections == nullptr)
+    if (subCollections == NULL)
     {
       MITK_ERROR<< "mitk::CollectionWriter::SaveCollectionToFolder: Container is illformed. Aborting";
       return false;
@@ -213,7 +258,7 @@ bool mitk::CollectionWriter::SaveCollection(mitk::DataCollection *dataCollection
       xmlFileStream << "  <" << DATA <<  " " << NAME << "=\"" << subCollections->IndexToName(d) << "\" " <<  FILEPATH << "=\"" << subCollections->GetDataFilePath(d) << "\" id=\"Data" << dataId << "\" >\n";
 
       DataCollection* itemCollections = dynamic_cast<DataCollection*> (subCollections->GetData(d).GetPointer());
-      if (itemCollections == nullptr)
+      if (itemCollections == NULL)
       {
         MITK_ERROR<< "mitk::CollectionWriter::SaveCollectionToFolder: Container is illformed. Aborting";
         return false;
@@ -235,7 +280,7 @@ bool mitk::CollectionWriter::SaveCollection(mitk::DataCollection *dataCollection
           if (isSelected == false)
             continue;
         }
-
+        Image* image = dynamic_cast<Image*> (itemCollections->GetData(s).GetPointer());
         QString fileName;
         bool fullName = false;
         if (itemCollections->GetDataFilePath(s) != "")
@@ -249,10 +294,53 @@ bool mitk::CollectionWriter::SaveCollection(mitk::DataCollection *dataCollection
 
         try
         {
-          if (!fullName)
-            fileName += ".nrrd";
-          Image::Pointer image = itemCollections->GetMitkImage(s).GetPointer();
-          IOUtil::Save(image,fileName.toStdString());
+          if (itemCollections->IndexToName(s) == "DTI" || itemCollections->IndexToName(s) == "DTIFWE")
+          {
+            if (!fullName)
+              fileName += ".dti";
+            itk::NrrdImageIO::Pointer io = itk::NrrdImageIO::New();
+            io->SetFileType( itk::ImageIOBase::Binary );
+            io->UseCompressionOn();
+            TensorImage* tensorImage = dynamic_cast<TensorImage*> (image);
+            MITK_INFO << "Pixeltype Tensor Image: " << tensorImage->GetPixelType().GetPixelTypeAsString();
+            typedef itk::Image<itk::DiffusionTensor3D<TensorScalar>,3> ImageType;
+            typedef itk::ImageFileWriter<ImageType> WriterType;
+            WriterType::Pointer nrrdWriter = WriterType::New();
+            ImageType::Pointer outimage = ImageType::New();
+            CastToItkImage(tensorImage, outimage);
+            nrrdWriter->SetInput( outimage );
+            nrrdWriter->SetImageIO(io);
+            nrrdWriter->SetFileName(fileName.toStdString());
+            nrrdWriter->UseCompressionOn();
+            nrrdWriter->Update();
+          }
+          else if (itemCollections->IndexToName(s) == "FIB")
+          {
+            if (!fullName)
+              fileName += ".fib";
+            FiberBundle* fib = dynamic_cast<FiberBundle*> (itemCollections->GetData(s).GetPointer());
+            CoreObjectFactory::FileWriterList fileWriters = CoreObjectFactory::GetInstance()->GetFileWriters();
+            for (CoreObjectFactory::FileWriterList::iterator it = fileWriters.begin() ; it != fileWriters.end() ; ++it)
+            {
+              if ( (*it)->CanWriteBaseDataType(fib) ) {
+                (*it)->SetFileName( fileName.toStdString().c_str() );
+                (*it)->DoWrite( fib );
+              }
+            }
+          }
+          else if (itemCollections->IndexToName(s) == "DWI")
+          {
+            if (!fullName)
+              fileName += ".dwi";
+            IOUtil::SaveImage(image,fileName.toStdString());
+          }
+          else
+          {
+            if (!fullName)
+              fileName += ".nrrd";
+            Image::Pointer image = itemCollections->GetMitkImage(s).GetPointer();
+            IOUtil::SaveImage(image,fileName.toStdString());
+          }
         }
         catch( const std::exception& e)
         {

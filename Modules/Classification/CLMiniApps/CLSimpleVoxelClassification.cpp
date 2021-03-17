@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
   }
 
   // Default values
+  bool useStatsFile = false;
   unsigned int forestSize = 8;
   unsigned int treeDepth = 10;
   std::string configName = "";
@@ -134,6 +135,7 @@ int main(int argc, char* argv[])
     }
 
     if (parsedArgs.count("stats") || parsedArgs.count("s")) {
+      useStatsFile = true;
       experimentFS.open(us::any_cast<std::string>(parsedArgs["stats"]).c_str(),
           std::ios_base::app);
     }

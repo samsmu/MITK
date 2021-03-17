@@ -201,10 +201,6 @@ namespace itk
         for( neighborIt.GoToBegin(); !neighborIt.IsAtEnd(); ++neighborIt )
         {
           const PixelType centerPixelIntensity = neighborIt.GetCenterPixel();
-          if (centerPixelIntensity != centerPixelIntensity) // Check for invalid values
-          {
-            continue;
-          }
           IndexType centerIndex = neighborIt.GetIndex();
           if( centerPixelIntensity < this->m_Min ||
             centerPixelIntensity > this->m_Max ||
@@ -228,7 +224,6 @@ namespace itk
           PixelType pixelIntensity( NumericTraits<PixelType>::ZeroValue() );
           IndexType index;
 
-          int steps = 0;
           index = centerIndex + offset;
           IndexType lastGoodIndex = centerIndex;
           bool runLengthSegmentAlreadyVisited = false;
@@ -240,7 +235,6 @@ namespace itk
 
           while ( inputImage->GetRequestedRegion().IsInside(index) )
           {
-            pixelIntensity = inputImage->GetPixel(index);
             // For the same offset, each run length segment can
             // only be visited once
             if (alreadyVisitedImage->GetPixel( index ) )
@@ -248,11 +242,8 @@ namespace itk
               runLengthSegmentAlreadyVisited = true;
               break;
             }
-            if (pixelIntensity != pixelIntensity)
-            {
-              break;
-            }
 
+            pixelIntensity = inputImage->GetPixel( index );
 
             // Special attention paid to boundaries of bins.
             // For the last bin,
@@ -263,13 +254,11 @@ namespace itk
             // the bin is left close and right open.
 
             if ( pixelIntensity >= centerBinMin
-              && ( pixelIntensity < centerBinMax || ( pixelIntensity == centerBinMax && centerBinMax == lastBinMax ) )
-              && (!this->GetMaskImage() || this->GetMaskImage()->GetPixel(index) == this->m_InsidePixelValue))
+              && ( pixelIntensity < centerBinMax || ( pixelIntensity == centerBinMax && centerBinMax == lastBinMax ) ) )
             {
               alreadyVisitedImage->SetPixel( index, true );
               lastGoodIndex = index;
               index += offset;
-              steps++;
             }
             else
             {
@@ -279,7 +268,6 @@ namespace itk
 
           if ( runLengthSegmentAlreadyVisited )
           {
-            MITK_INFO << "Already visited 1 " << index;
             continue;
           }
           IndexType lastGoodIndex2 = lastGoodIndex;
@@ -287,38 +275,26 @@ namespace itk
           lastGoodIndex = centerIndex;
           while ( inputImage->GetRequestedRegion().IsInside(index) )
           {
-            pixelIntensity = inputImage->GetPixel(index);
-            if (pixelIntensity != pixelIntensity)
-            {
-              break;
-            }
             if (alreadyVisitedImage->GetPixel( index ) )
             {
-              if (pixelIntensity >= centerBinMin
-                && (pixelIntensity < centerBinMax || (pixelIntensity == centerBinMax && centerBinMax == lastBinMax)))
-              {
-                runLengthSegmentAlreadyVisited = true;
-              }
+              runLengthSegmentAlreadyVisited = true;
               break;
             }
 
+            pixelIntensity = inputImage->GetPixel( index );
             if ( pixelIntensity >= centerBinMin
-              && ( pixelIntensity < centerBinMax || ( pixelIntensity == centerBinMax && centerBinMax == lastBinMax ) )
-              && (!this->GetMaskImage() || this->GetMaskImage()->GetPixel(index) == this->m_InsidePixelValue))
+              && ( pixelIntensity < centerBinMax || ( pixelIntensity == centerBinMax && centerBinMax == lastBinMax ) ) )
             {
               alreadyVisitedImage->SetPixel( index, true );
               lastGoodIndex = index;
-              steps++;
               index -= offset;
             }
             else
               break;
           }
-          if (runLengthSegmentAlreadyVisited)
-          {
-            MITK_INFO << "Already visited 2 " << index;
+          if ( runLengthSegmentAlreadyVisited )
             continue;
-          }
+
           PointType centerPoint;
           inputImage->TransformIndexToPhysicalPoint(
             centerIndex, centerPoint );
@@ -328,8 +304,7 @@ namespace itk
           inputImage->TransformIndexToPhysicalPoint( lastGoodIndex2, point2 );
 
           run[0] = centerPixelIntensity;
-          run[1] = steps;
-          //run[1] = point.EuclideanDistanceTo( point2 );
+          run[1] = point.EuclideanDistanceTo( point2 );
 
           if( run[1] >= this->m_MinDistance && run[1] <= this->m_MaxDistance )
           {

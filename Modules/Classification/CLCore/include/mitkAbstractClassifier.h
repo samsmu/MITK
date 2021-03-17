@@ -173,20 +173,20 @@ public:
 
 #ifndef DOXYGEN_SKIP
 
-  void SetRequestedRegionToLargestPossibleRegion() override{}
-  bool RequestedRegionIsOutsideOfTheBufferedRegion() override{return true;}
-  bool VerifyRequestedRegion() override{return false;}
+  virtual void SetRequestedRegionToLargestPossibleRegion(){}
+  virtual bool RequestedRegionIsOutsideOfTheBufferedRegion(){return true;}
+  virtual bool VerifyRequestedRegion(){return false;}
 
-  void SetRequestedRegion(const itk::DataObject* /*data*/) override{}
+  virtual void SetRequestedRegion(const itk::DataObject* /*data*/){}
 
 
   // Override
-  bool IsEmpty() const override
+  virtual bool IsEmpty() const override
   {
     if(IsInitialized() == false)
       return true;
     const TimeGeometry* timeGeometry = const_cast<AbstractClassifier*>(this)->GetUpdatedTimeGeometry();
-    if(timeGeometry == nullptr)
+    if(timeGeometry == NULL)
       return true;
     return false;
   }

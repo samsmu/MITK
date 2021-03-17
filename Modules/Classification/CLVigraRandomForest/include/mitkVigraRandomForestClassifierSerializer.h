@@ -14,12 +14,12 @@ public:
   itkFactorylessNewMacro(Self)
   itkCloneMacro(Self)
 
-  std::string Serialize() override;
+  virtual std::string Serialize() override;
 
 protected:
 
   VigraRandomForestClassifierSerializer();
-  ~VigraRandomForestClassifierSerializer() override;
+  virtual ~VigraRandomForestClassifierSerializer();
 };
 
 }
