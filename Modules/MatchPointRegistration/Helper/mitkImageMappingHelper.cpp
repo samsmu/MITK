@@ -30,6 +30,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkImageMappingHelper.h"
 #include "mitkRegistrationHelper.h"
+#include "mitkImageReadAccessor.h"
 
 template <typename TImage >
 typename ::itk::InterpolateImageFunction< TImage >::Pointer generateInterpolator(mitk::ImageMappingInterpolator::Type interpolatorType)

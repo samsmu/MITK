@@ -54,7 +54,7 @@ namespace mitk {
   friend class ImageAccessorBase;
 //  template<class TOutputImage>
 //  friend class ImageToItk;
-
+  friend class ImagePixelAccessor;
   public:
 
   typedef itk::SmartPointer<mitk::Image> ImagePointer;
