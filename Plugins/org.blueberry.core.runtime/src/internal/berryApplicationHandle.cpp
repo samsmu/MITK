@@ -178,20 +178,29 @@ QVariant ApplicationHandle::run(const QVariant& context_)
       context = arguments[IApplicationContext::APPLICATION_ARGS];
   }
 
+  QVariant tempResult;
+  try
   {
-    QMutexLocker l(&mutex);
-    if (!(status.testFlag(FLAG_STARTING) || status.testFlag(FLAG_STOPPING)))
     {
-      throw ctkApplicationException(ctkApplicationException::APPLICATION_INTERNAL_ERROR,
-                                    QString("The application instance has been stopped before it could be started: ") + getInstanceId());
+      QMutexLocker l(&mutex);
+      if (!(status.testFlag(FLAG_STARTING) || status.testFlag(FLAG_STOPPING)))
+      {
+        throw ctkApplicationException(ctkApplicationException::APPLICATION_INTERNAL_ERROR,
+                                      QString("The application instance has been stopped before it could be started: ") + getInstanceId());
+      }
+      application = GetConfiguration()->CreateExecutableExtension<IApplication>("run");
+      waitCondition.wakeAll();
     }
-    application = GetConfiguration()->CreateExecutableExtension<IApplication>("run");
-    waitCondition.wakeAll();
-  }
-  QVariant tempResult = application->Start(this);
-  if (!tempResult.isValid()) tempResult = QVariant(QVariant::Int);
+    tempResult = application->Start(this);
+    if (!tempResult.isValid()) tempResult = QVariant(QVariant::Int);
 
-  tempResult = SetInternalResult(tempResult, nullptr);
+    tempResult = SetInternalResult(tempResult, nullptr);
+  }
+  catch (...)
+  {
+    tempResult = SetInternalResult(tempResult, nullptr);
+    throw;
+  }
 
   if (org_blueberry_core_runtime_Activator::DEBUG)
   {
@@ -311,7 +320,7 @@ QVariant ApplicationHandle::SetInternalResult(const QVariant& result, IApplicati
   } else {
     if (result == IApplicationContext.EXIT_ASYNC_RESULT) {
       setAsyncResult = true;
-      return NULL_RESULT; // the result well be set with setResult
+      return nullptr_RESULT; // the result well be set with setResult
     }
   }
   */
