@@ -1140,6 +1140,13 @@ mitk::Image::ImageDataItemPointer mitk::Image::AllocateVolumeData_unlocked(
   return vol;
 }
 
+mitk::Image::ImageDataItemPointer mitk::Image::AllocateChannelData(
+  int n, void *data, ImportMemoryManagementType importMemoryManagement) const
+{
+  MutexHolder lock(m_ImageDataArraysLock);
+  return AllocateChannelData_unlocked(n, data, importMemoryManagement);
+}
+
 mitk::Image::ImageDataItemPointer mitk::Image::AllocateChannelData_unlocked(
   int n, void *data, ImportMemoryManagementType importMemoryManagement) const
 {
