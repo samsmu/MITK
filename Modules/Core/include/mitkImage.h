@@ -165,7 +165,11 @@ public:
   The pixel type is always being converted to double.
    \deprecatedSince{2012_09} Please use image accessors instead: See Doxygen/Related-Pages/Concepts/Image. This method can be replaced by a method from ImagePixelWriteAccessor or ImagePixelReadAccessor */
   DEPRECATED(double GetPixelValueByWorldCoordinate(const mitk::Point3D& position, unsigned int timestep = 0, unsigned int component=0));
-
+  
+   //##Documentation
+   //## @brief Get a volume at a specific time @a t of channel @a n as a vtkImageData.
+    virtual vtkImageData *GetVtkImageData(int t = 0, int n = 0);
+    virtual const vtkImageData *GetVtkImageData(int t = 0, int n = 0) const;
   //##Documentation
   //## @brief Get the complete image, i.e., all channels linked together, as a @a mitkIpPicDescriptor.
   //##

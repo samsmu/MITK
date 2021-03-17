@@ -421,6 +421,32 @@ double mitk::Image::GetPixelValueByWorldCoordinate(const mitk::Point3D& position
   return value;
 }
 
+vtkImageData *mitk::Image::GetVtkImageData(int t, int n)
+{
+  if (m_Initialized == false)
+  {
+    if (GetSource().IsNull())
+      return nullptr;
+    if (GetSource()->Updating() == false)
+      GetSource()->UpdateOutputInformation();
+  }
+  ImageDataItemPointer volume = GetVolumeData(t, n);
+  return volume.GetPointer() == nullptr ? nullptr : volume->GetVtkImageAccessor(this)->GetVtkImageData();
+}
+
+const vtkImageData *mitk::Image::GetVtkImageData(int t, int n) const
+{
+  if (m_Initialized == false)
+  {
+    if (GetSource().IsNull())
+      return nullptr;
+    if (GetSource()->Updating() == false)
+      GetSource()->UpdateOutputInformation();
+  }
+  ImageDataItemPointer volume = GetVolumeData(t, n);
+  return volume.GetPointer() == nullptr ? nullptr : volume->GetVtkImageAccessor(this)->GetVtkImageData();
+}
+
 mitk::Image::ImageDataItemPointer mitk::Image::GetSliceData(int s, int t, int n) const
 {
   const size_t ptypeSize = this->m_ImageDescriptor->GetChannelTypeById(n).GetSize();
