@@ -97,6 +97,7 @@ class MITKCORE_EXPORT Image : public SlicedData
   friend class ImageVtkReadAccessor;
   friend class ImageVtkWriteAccessor;
   friend class ImageReadAccessor;
+  friend class ImageWriteAccessor;
 
 public:
   mitkClassMacro(Image, SlicedData);
