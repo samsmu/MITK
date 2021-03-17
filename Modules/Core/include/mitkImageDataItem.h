@@ -30,6 +30,8 @@ namespace mitk {
 
   class PixelType;
   class ImageVtkAccessor;
+  class ImageVtkReadAccessor;
+  class ImageVtkWriteAccessor;
   class Image;
 
 
@@ -52,8 +54,10 @@ namespace mitk {
 
   friend class Image;
   friend class ImageAccessorBase;
-//  template<class TOutputImage>
-//  friend class ImageToItk;
+  friend class ImageWriteAccessor;
+  friend class ImageReadAccessor;
+
+  template <class TPixel, unsigned int VDimension>
   friend class ImagePixelAccessor;
   public:
 
