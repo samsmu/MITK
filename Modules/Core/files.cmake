@@ -92,6 +92,7 @@ set(CPP_FILES
   DataManagement/mitkImageRegionAccessor.cpp
   DataManagement/mitkImageStatisticsHolder.cpp
   DataManagement/mitkImageVtkAccessor.cpp
+  DataManagement/mitkImageWriteAccessor.cpp
   DataManagement/mitkIntPropertyExtension.cpp
   DataManagement/mitkLandmarkProjector.cpp
   DataManagement/mitkLandmarkProjectorBasedCurvedGeometry.cpp
