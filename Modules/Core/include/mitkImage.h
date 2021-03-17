@@ -108,13 +108,22 @@ public:
   typedef itk::Statistics::Histogram<double> HistogramType;
   typedef mitk::ImageStatisticsHolder* StatisticsHolderPointer;
 
-  //## @param ImportMemoryManagementType This parameter is evaluated when setting new data to an image.
-  //## The different options are:
-  //## CopyMemory: Data to be set is copied and assigned to a new memory block. Data memory block will be freed on deletion of mitk::Image.
-  //## MamageMemory: Data to be set will be referenced, and Data memory block will be freed on deletion of mitk::Image.
-  //## Reference Memory: Data to be set will be referenced, but Data memory block will not be freed on deletion of mitk::Image.
-  //## DontManageMemory = ReferenceMemory.
-  enum ImportMemoryManagementType { CopyMemory, ManageMemory, ReferenceMemory, AsyncCopyMemory, DontManageMemory = ReferenceMemory };
+ //## @param ImportMemoryManagementType This parameter is evaluated when setting new data to an image.
+    //## The different options are:
+    //## CopyMemory: Data to be set is copied and assigned to a new memory block. Data memory block will be freed on
+    // deletion of mitk::Image.
+    //## MamageMemory: Data to be set will be referenced, and Data memory block will be freed on deletion of
+    //mitk::Image.
+    //## Reference Memory: Data to be set will be referenced, but Data memory block will not be freed on deletion of
+    // mitk::Image.
+    //## DontManageMemory = ReferenceMemory.
+    enum ImportMemoryManagementType
+    {
+      CopyMemory,
+      ManageMemory,
+      ReferenceMemory,
+      DontManageMemory = ReferenceMemory
+    };
 
   //##Documentation
   //## @brief Vector container of SmartPointers to ImageDataItems;
@@ -126,13 +135,6 @@ public:
   ReaderType::DictionaryArrayType& AllocateMetaDataDictionaryArray() const;
   void SetMetaDataDictionary(ReaderType::DictionaryArrayType metaData);
   void SetMetaDataDictionary(DicomTagToValueList& array);
-  enum ImportMemoryManagementType
-    {
-      CopyMemory,
-      ManageMemory,
-      ReferenceMemory,
-      DontManageMemory = ReferenceMemory
-    };
 public:
 
 
