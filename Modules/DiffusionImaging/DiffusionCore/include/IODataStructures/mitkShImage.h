@@ -41,7 +41,7 @@ namespace mitk
     itkFactorylessNewMacro(Self)
     itkCloneMacro(Self)
 
-    virtual const vtkImageData* GetNonRgbVtkImageData(int t = 0, int n = 0) const;
+    //virtual const vtkImageData* GetNonRgbVtkImageData(int t = 0, int n = 0) const;
     virtual vtkImageData* GetNonRgbVtkImageData(int t = 0, int n = 0);
 
     //const vtkImageData* GetVtkImageData(int t = 0, int n = 0) const override;

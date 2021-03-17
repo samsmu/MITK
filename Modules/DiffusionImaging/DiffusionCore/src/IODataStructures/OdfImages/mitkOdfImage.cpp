@@ -33,12 +33,12 @@ mitk::OdfImage::~OdfImage()
 
 }
 
-const vtkImageData* mitk::OdfImage::GetVtkImageData(int t, int n) const
+/*const vtkImageData* mitk::OdfImage::GetVtkImageData(int t, int n) const
 {
   if(m_RgbImage.IsNull())
     ConstructRgbImage();
   return m_RgbImage->GetVtkImageData(t,n);
-}
+}*/
 
 vtkImageData*mitk::OdfImage::GetVtkImageData(int t, int n)
 {
@@ -63,10 +63,10 @@ void mitk::OdfImage::ConstructRgbImage() const
   m_RgbImage->SetVolume( filter->GetOutput()->GetBufferPointer() );
 }
 
-const vtkImageData* mitk::OdfImage::GetNonRgbVtkImageData(int t, int n) const
+/*const vtkImageData* mitk::OdfImage::GetNonRgbVtkImageData(int t, int n) const
 {
   return Superclass::GetVtkImageData(t,n);
-}
+}*/
 
 vtkImageData* mitk::OdfImage::GetNonRgbVtkImageData(int t, int n)
 {

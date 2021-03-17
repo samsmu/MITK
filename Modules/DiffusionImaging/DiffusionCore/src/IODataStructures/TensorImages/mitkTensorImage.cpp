@@ -46,14 +46,14 @@ vtkImageData* mitk::TensorImage::GetVtkImageData(int t, int n)
   return m_RgbImage->GetVtkImageData(t,n);
 }
 
-const vtkImageData*mitk::TensorImage::GetVtkImageData(int t, int n) const
+/*const vtkImageData*mitk::TensorImage::GetVtkImageData(int t, int n) const
 {
   if(m_RgbImage.IsNull())
   {
     ConstructRgbImage();
   }
   return m_RgbImage->GetVtkImageData(t,n);
-}
+}*/
 
 void mitk::TensorImage::ConstructRgbImage() const
 {

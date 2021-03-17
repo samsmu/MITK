@@ -85,14 +85,14 @@ vtkImageData* mitk::ShImage::GetVtkImageData(int t, int n)
    return m_RgbImage->GetVtkImageData(t,n);
 }
 
-const vtkImageData*mitk::ShImage::GetVtkImageData(int t, int n) const
+/*const vtkImageData*mitk::ShImage::GetVtkImageData(int t, int n) const
 {
   if(m_RgbImage.IsNull())
   {
     ConstructRgbImage();
   }
   return m_RgbImage->GetVtkImageData(t,n);
-}
+}*/
 
 template<int nShOrder>
 void mitk::ShImage::Construct() const
@@ -139,10 +139,10 @@ void mitk::ShImage::ConstructRgbImage() const
   }
 }
 
-const vtkImageData* mitk::ShImage::GetNonRgbVtkImageData(int t, int n) const
+/*const vtkImageData* mitk::ShImage::GetNonRgbVtkImageData(int t, int n) const
 {
   return Superclass::GetVtkImageData(t,n);
-}
+}*/
 
 vtkImageData* mitk::ShImage::GetNonRgbVtkImageData(int t, int n)
 {
