@@ -96,6 +96,7 @@ class MITKCORE_EXPORT Image : public SlicedData
   friend class ImageVtkAccessor;
   friend class ImageVtkReadAccessor;
   friend class ImageVtkWriteAccessor;
+  friend class ImageReadAccessor;
 
 public:
   mitkClassMacro(Image, SlicedData);
@@ -632,6 +633,9 @@ private:
 
   mutable std::vector<ImageAccessLock*> m_ReaderLocks;
   mutable std::vector<ImageAccessLock*> m_WriterLocks;
+  
+  /** Stores all existing ImageReadAccessors */
+  mutable std::vector<ImageAccessorBase *> m_Readers;
 
   /** A mutex, which needs to be locked to manage m_Readers and m_Writers */
   itk::SimpleFastMutexLock m_ReadWriteLock;
