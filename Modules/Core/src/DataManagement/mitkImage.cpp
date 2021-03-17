@@ -434,7 +434,7 @@ vtkImageData *mitk::Image::GetVtkImageData(int t, int n)
   return volume.GetPointer() == nullptr ? nullptr : volume->GetVtkImageAccessor(this)->getVtkImageData();
 }
 
-const vtkImageData *mitk::Image::GetVtkImageData(int t, int n) const
+/*const vtkImageData *mitk::Image::GetVtkImageData(int t, int n) const
 {
   if (m_Initialized == false)
   {
@@ -445,7 +445,7 @@ const vtkImageData *mitk::Image::GetVtkImageData(int t, int n) const
   }
   ImageDataItemPointer volume = GetVolumeData(t, n);
   return volume.GetPointer() == nullptr ? nullptr : volume->GetVtkImageAccessor(this)->getVtkImageData();
-}
+}*/
 
 mitk::Image::ImageDataItemPointer mitk::Image::GetSliceData(int s, int t, int n) const
 {

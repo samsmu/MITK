@@ -169,7 +169,7 @@ public:
    //##Documentation
    //## @brief Get a volume at a specific time @a t of channel @a n as a vtkImageData.
     virtual vtkImageData *GetVtkImageData(int t = 0, int n = 0);
-    virtual const vtkImageData *GetVtkImageData(int t = 0, int n = 0) const;
+    //virtual const vtkImageData *GetVtkImageData(int t = 0, int n = 0) const;
   //##Documentation
   //## @brief Get the complete image, i.e., all channels linked together, as a @a mitkIpPicDescriptor.
   //##
