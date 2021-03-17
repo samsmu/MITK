@@ -44,7 +44,7 @@ namespace mitk
     virtual const vtkImageData* GetNonRgbVtkImageData(int t = 0, int n = 0) const;
     virtual vtkImageData* GetNonRgbVtkImageData(int t = 0, int n = 0);
 
-    const vtkImageData* GetVtkImageData(int t = 0, int n = 0) const override;
+    //const vtkImageData* GetVtkImageData(int t = 0, int n = 0) const override;
     vtkImageData* GetVtkImageData(int t = 0, int n = 0) override;
 
     virtual void ConstructRgbImage() const;
