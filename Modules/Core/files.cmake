@@ -76,6 +76,8 @@ set(CPP_FILES
   DataManagement/mitkIPropertyExtensions.cpp
   DataManagement/mitkIPropertyFilters.cpp
   DataManagement/mitkIPropertyPersistence.cpp
+  DataManagement/mitkIPropertyOwner.cpp
+  DataManagement/mitkIPropertyProvider.cpp
   DataManagement/mitkImage.cpp
   DataManagement/mitkImageAccessLock.cpp
   DataManagement/mitkImageCastPart1.cpp
@@ -91,7 +93,6 @@ set(CPP_FILES
   DataManagement/mitkImageStatisticsHolder.cpp
   DataManagement/mitkImageVtkAccessor.cpp
   DataManagement/mitkIntPropertyExtension.cpp
-  DataManagement/mitkIPropertyOwner.cpp
   DataManagement/mitkLandmarkProjector.cpp
   DataManagement/mitkLandmarkProjectorBasedCurvedGeometry.cpp
   DataManagement/mitkLevelWindow.cpp
