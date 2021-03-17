@@ -126,7 +126,13 @@ public:
   ReaderType::DictionaryArrayType& AllocateMetaDataDictionaryArray() const;
   void SetMetaDataDictionary(ReaderType::DictionaryArrayType metaData);
   void SetMetaDataDictionary(DicomTagToValueList& array);
-
+  enum ImportMemoryManagementType
+    {
+      CopyMemory,
+      ManageMemory,
+      ReferenceMemory,
+      DontManageMemory = ReferenceMemory
+    };
 public:
 
 
@@ -569,7 +575,9 @@ protected:
 
   virtual void Expand( unsigned int timeSteps ) override;
 
+  virtual ImageDataItemPointer AllocateSliceData(int s = 0, int t = 0, int n = 0, void *data = nullptr, ImportMemoryManagementType importMemoryManagement = CopyMemory) const;
   virtual ImageDataItemPointer AllocateVolumeData(int t = 0, int n = 0, void *data = nullptr, ImportMemoryManagementType importMemoryManagement = CopyMemory) const;
+  virtual ImageDataItemPointer AllocateChannelData(int n = 0, void *data = nullptr, ImportMemoryManagementType importMemoryManagement = CopyMemory) const;
 
   Image();
 
