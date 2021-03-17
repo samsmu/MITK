@@ -22,14 +22,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkImageToItk.h>
 
 #include <mitkPPArgCount.h>
-#include <mitkPPSeqForEach.h>
-#include <mitkPPSeqForEachProduct.h>
-#include <mitkPPSeqToTuple.h>
-#include <mitkPPCat.h>
-#include <mitkPPExpand.h>
-#include <mitkPPTupleRem.h>
-#include <mitkPPStringize.h>
-
+#include <boost/preprocessor/expand.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/for_each_product.hpp>
+#include <boost/preprocessor/seq/to_tuple.hpp>
+#include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor/tuple/rem.hpp>
 #include <sstream>
 
 namespace mitk {
