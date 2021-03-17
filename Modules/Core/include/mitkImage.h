@@ -215,7 +215,17 @@ public:
   //## The data is managed according to the parameter \a importMemoryManagement.
   //## @sa SetPicVolume
   virtual bool SetImportVolume(void *data, int t = 0, int n = 0, ImportMemoryManagementType importMemoryManagement = CopyMemory );
-
+  //##Documentation
+    //## @brief Set @a data in channel @a n. It is in
+    //## the responsibility of the caller to ensure that the data vector @a data
+    //## is really a channel (at least is not smaller than a channel), since there is
+    //## no chance to check this.
+    //##
+    //## The data is managed according to the parameter \a importMemoryManagement.
+    //## @sa SetPicChannel
+    virtual bool SetImportChannel(void *data,
+                                  int n = 0,
+                                  ImportMemoryManagementType importMemoryManagement = CopyMemory);
   //##Documentation
   //## initialize new (or re-initialize) image information
   //## @warning Initialize() by pic assumes a plane, evenly spaced geometry starting at (0,0,0).

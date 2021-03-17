@@ -699,6 +699,48 @@ void mitk::Image::SetSlice(const void* data, int s, int t, int n)
   memcpy((char*)volume->GetData() + (size_t)s * m_OffsetTable[2] * pixelSize, data, m_OffsetTable[2] * pixelSize);
 }
 
+bool mitk::Image::SetImportChannel(void *data, int n, ImportMemoryManagementType importMemoryManagement)
+{
+  if (IsValidChannel(n) == false)
+    return false;
+
+  // channel descriptor
+
+  const size_t ptypeSize = this->m_ImageDescriptor->GetChannelTypeById(n).GetSize();
+
+  ImageDataItemPointer ch;
+  if (IsChannelSet(n))
+  {
+    ch = GetChannelData(n, data, importMemoryManagement);
+    if (ch->GetManageMemory() == false)
+    {
+      ch = AllocateChannelData(n, data, importMemoryManagement);
+      if (ch.GetPointer() == nullptr)
+        return false;
+    }
+    if (ch->GetData() != data)
+      std::memcpy(ch->GetData(), data, m_OffsetTable[4] * (ptypeSize));
+    ch->Modified();
+    ch->SetComplete(true);
+    // we have changed the data: call Modified()!
+    Modified();
+  }
+  else
+  {
+    ch = AllocateChannelData(n, data, importMemoryManagement);
+    if (ch.GetPointer() == nullptr)
+      return false;
+    if (ch->GetData() != data)
+      std::memcpy(ch->GetData(), data, m_OffsetTable[4] * (ptypeSize));
+    ch->SetComplete(true);
+
+    this->m_ImageDescriptor->GetChannelDescriptor(n).SetData(ch->GetData());
+    // we just added a missing Channel, which is not regarded as modification.
+    // Therefore, we do not call Modified()!
+  }
+  return true;
+}
+
 void mitk::Image::Initialize()
 {
   ImageDataItemPointerArray::iterator it, end;
