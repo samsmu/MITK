@@ -305,21 +305,38 @@ struct QmitkIOUtil::Impl
 {
   struct ReaderOptionsDialogFunctor : public ReaderOptionsFunctorBase
   {
-
-    virtual bool operator()(LoadInfo& loadInfo) override
+    bool operator()(LoadInfo &loadInfo) const override
     {
-      return OptionsDialogFunctor<QmitkFileReaderOptionsDialog>(loadInfo);
+      QmitkFileReaderOptionsDialog dialog(loadInfo);
+      if (dialog.exec() == QDialog::Accepted)
+      {
+        return !dialog.ReuseOptions();
+      }
+      else
+      {
+        loadInfo.m_Cancel = true;
+        return true;
+      }
     }
   };
 
   struct WriterOptionsDialogFunctor : public WriterOptionsFunctorBase
   {
-
-    virtual bool operator()(SaveInfo& saveInfo) override
+    bool operator()(SaveInfo &saveInfo) const override
     {
-      return OptionsDialogFunctor<QmitkFileWriterOptionsDialog>(saveInfo);
+      QmitkFileWriterOptionsDialog dialog(saveInfo);
+      if (dialog.exec() == QDialog::Accepted)
+      {
+        return !dialog.ReuseOptions();
+      }
+      else
+      {
+        saveInfo.m_Cancel = true;
+        return true;
+      }
     }
   };
+};
 
 };
 
