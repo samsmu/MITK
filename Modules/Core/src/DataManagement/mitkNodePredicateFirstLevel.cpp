@@ -32,7 +32,7 @@ bool mitk::NodePredicateFirstLevel::CheckNode(const mitk::DataNode* node) const
     throw std::invalid_argument("NodePredicateFirstLevel: invalid node");
 
 
-  if(m_DataStorage.IsNull())
+   if (m_DataStorage.IsExpired())
     throw std::invalid_argument("NodePredicateFirstLevel: DataStorage is invalid");
 
   mitk::DataStorage::SetOfObjects::ConstPointer list = m_DataStorage.Lock()->GetSources(node, nullptr, true);

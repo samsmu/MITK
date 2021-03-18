@@ -222,15 +222,15 @@ bool mitk::Dispatcher::ProcessEvent(InteractionEvent* event)
  */
 void mitk::Dispatcher::RemoveOrphanedInteractors()
 {
-  for (ListInteractorType::iterator it = m_Interactors.begin(); it != m_Interactors.end();)
+  for (auto it = m_Interactors.begin(); it != m_Interactors.end();)
   {
-    if ((*it).IsNull())
+    if ((*it).IsExpired())
     {
       it = m_Interactors.erase(it);
     }
     else
     {
-      DataNode::Pointer node = (*it)->GetDataNode();
+      DataNode::Pointer node = (*it).Lock()->GetDataNode();
 
       if (node.IsNull())
       {
@@ -240,7 +240,7 @@ void mitk::Dispatcher::RemoveOrphanedInteractors()
       {
         DataInteractor::Pointer interactor = node->GetDataInteractor();
 
-        if (interactor != it->GetPointer())
+        if (interactor != it->Lock().GetPointer())
         {
           it = m_Interactors.erase(it);
         }
