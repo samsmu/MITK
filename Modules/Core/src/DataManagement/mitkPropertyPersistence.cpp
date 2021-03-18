@@ -40,7 +40,7 @@ bool mitk::PropertyPersistence::AddInfo(const PropertyPersistenceInfo *info, boo
 
   mitk::PropertyPersistenceInfo::MimeTypeNameType mime = info->GetMimeTypeName();
 
-  auto infoRange = m_InfoMap.equal_range(info->GetName());
+  auto infoRange = m_Infos.equal_range(info->GetName());
 
   auto predicate = [mime](const std::pair<const std::string, mitk::PropertyPersistenceInfo::ConstPointer> &x) {
     return x.second.IsNotNull() && x.second->GetMimeTypeName() == mime;
@@ -55,10 +55,10 @@ bool mitk::PropertyPersistence::AddInfo(const PropertyPersistenceInfo *info, boo
   {
     if (exists && overwrite)
     {
-      m_InfoMap.erase(finding);
+      m_Infos.erase(finding);
     }
     result = true;
-    m_InfoMap.insert(std::make_pair(info->GetName(), info));
+    m_Infos.insert(std::make_pair(info->GetName(), info));
   }
 
   return result;
