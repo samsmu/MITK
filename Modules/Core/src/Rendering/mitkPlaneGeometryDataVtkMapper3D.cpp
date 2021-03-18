@@ -158,13 +158,13 @@ namespace mitk
     // Delete entries in m_ImageActors list one by one
     m_ImageActors.clear();
 
-    m_DataStorage = NULL;
+    m_DataStorage = nullptr;
   }
 
   vtkProp* PlaneGeometryDataVtkMapper3D::GetVtkProp(mitk::BaseRenderer * /*renderer*/)
   {
-    if ( (this->GetDataNode() != NULL )
-      && (m_ImageAssembly != NULL) )
+    if ( (this->GetDataNode() != nullptr )
+      && (m_ImageAssembly != nullptr) )
       {
       // Do not transform the entire Prop3D assembly, but only the image part
       // here. The colored frame is transformed elsewhere (via m_EdgeTransformer),
@@ -310,10 +310,10 @@ namespace mitk
 
       // If no reference geometry is available, clip with the current global
       // bounds
-      else if (m_DataStorage.IsNotNull())
+      else if (!m_DataStorage.IsExpired())
       {
-        m_SurfaceCreator->SetBoundingBox(m_DataStorage->ComputeVisibleBoundingBox(NULL, "includeInBoundingBox"));
-        tubeRadius = sqrt( m_SurfaceCreator->GetBoundingBox()->GetDiagonalLength2() ) / 450.0;
+        m_SurfaceCreator->SetBoundingBox(m_DataStorage.Lock()->ComputeVisibleBoundingBox(nullptr, "includeInBoundingBox"));
+        tubeRadius = sqrt(m_SurfaceCreator->GetBoundingBox()->GetDiagonalLength2()) / 450.0;
       }
 
       // Calculate the surface of the PlaneGeometry
@@ -405,7 +405,7 @@ namespace mitk
       // Traverse the data tree to find nodes resliced by ImageMapperGL2D
       //use a predicate to get all data nodes which are "images" or inherit from mitk::Image
       mitk::TNodePredicateDataType< mitk::Image >::Pointer predicateAllImages = mitk::TNodePredicateDataType< mitk::Image >::New();
-      mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetSubset(predicateAllImages);
+      mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage.Lock()->GetSubset(predicateAllImages);
       //process all found images
       for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
       {
