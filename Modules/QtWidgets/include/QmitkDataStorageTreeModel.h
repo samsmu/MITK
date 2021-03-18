@@ -269,6 +269,7 @@ private:
   /// Checks if dicom properties patient name, study names and series name exists
   ///
   bool DicomPropertiesExists(const mitk::DataNode&) const;
+  unsigned long m_DataStorageDeletedTag;
 };
 
 #endif /* QMITKDATASTORAGETREEMODEL_H_ */

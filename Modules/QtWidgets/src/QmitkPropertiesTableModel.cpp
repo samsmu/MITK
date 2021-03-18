@@ -50,7 +50,7 @@ QmitkPropertiesTableModel::~QmitkPropertiesTableModel()
 //# PUBLIC GETTER
 mitk::PropertyList::Pointer QmitkPropertiesTableModel::GetPropertyList() const
 {
-  return m_PropertyList.GetPointer();
+  return m_PropertyList.Lock();
 }
 
 Qt::ItemFlags QmitkPropertiesTableModel::flags(const QModelIndex& index) const
@@ -195,24 +195,20 @@ int QmitkPropertiesTableModel::columnCount(const QModelIndex & /*parent*/)const
 void QmitkPropertiesTableModel::SetPropertyList( mitk::PropertyList* _PropertyList )
 {
   // if propertylist really changed
-  if(m_PropertyList.GetPointer() != _PropertyList)
+  if(m_PropertyList != _PropertyList)
   {
     // Remove delete listener if there was a propertylist before
-    if(m_PropertyList.IsNotNull())
-    {
-      m_PropertyList.ObjectDelete.RemoveListener
-        (mitk::MessageDelegate1<QmitkPropertiesTableModel
-        , const itk::Object*>( this, &QmitkPropertiesTableModel::PropertyListDelete ));
-    }
+    if (!m_PropertyList.IsExpired())
+      m_PropertyList.Lock()->RemoveObserver(m_PropertyListDeleteObserverTag);
 
     // set new list
     m_PropertyList = _PropertyList;
 
-    if(m_PropertyList.IsNotNull())
+    if (!m_PropertyList.IsExpired())
     {
-      m_PropertyList.ObjectDelete.AddListener
-        (mitk::MessageDelegate1<QmitkPropertiesTableModel
-        , const itk::Object*>( this, &QmitkPropertiesTableModel::PropertyListDelete ));
+      auto command = itk::SimpleMemberCommand<QmitkPropertiesTableModel>::New();
+      command->SetCallbackFunction(this, &QmitkPropertiesTableModel::PropertyListDelete);
+      m_PropertyListDeleteObserverTag = m_PropertyList.Lock()->AddObserver(itk::DeleteEvent(), command);
     }
     this->Reset();
   }
@@ -261,7 +257,7 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
   {
     // block all events now!
     m_BlockEvents = true;
-
+    auto propertyList = m_PropertyList.Lock();
     // the properties name
     if(index.column() == PROPERTY_VALUE_COLUMN)
     {
@@ -279,8 +275,8 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
         col.SetGreen(qcolor.green() / 255.0);
         col.SetBlue(qcolor.blue() / 255.0);
         colorProp->SetColor(col);
-        m_PropertyList->InvokeEvent(itk::ModifiedEvent());
-        m_PropertyList->Modified();
+        propertyList->InvokeEvent(itk::ModifiedEvent());
+        propertyList->Modified();
 
         mitk::RenderingManager::GetInstance()->RequestUpdateAll();
       }
@@ -288,8 +284,8 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
       else if(mitk::BoolProperty* boolProp = dynamic_cast<mitk::BoolProperty*>(baseProp))
       {
         boolProp->SetValue(value.toInt() == Qt::Checked ? true : false);
-        m_PropertyList->InvokeEvent(itk::ModifiedEvent());
-        m_PropertyList->Modified();
+        propertyList->InvokeEvent(itk::ModifiedEvent());
+        propertyList->Modified();
 
         mitk::RenderingManager::GetInstance()->RequestUpdateAll();
       }
@@ -297,8 +293,8 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
       else if (mitk::StringProperty* stringProp = dynamic_cast<mitk::StringProperty*>(baseProp))
       {
         stringProp->SetValue((value.value<QString>()).toStdString());
-        m_PropertyList->InvokeEvent(itk::ModifiedEvent());
-        m_PropertyList->Modified();
+        propertyList->InvokeEvent(itk::ModifiedEvent());
+        propertyList->Modified();
 
         mitk::RenderingManager::GetInstance()->RequestUpdateAll();
       }
@@ -309,8 +305,8 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
         if (intValue != intProp->GetValue())
         {
           intProp->SetValue(intValue);
-          m_PropertyList->InvokeEvent(itk::ModifiedEvent());
-          m_PropertyList->Modified();
+          propertyList->InvokeEvent(itk::ModifiedEvent());
+          propertyList->Modified();
 
           mitk::RenderingManager::GetInstance()->RequestUpdateAll();
         }
@@ -322,8 +318,8 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
         if (floatValue != floatProp->GetValue())
         {
           floatProp->SetValue(floatValue);
-          m_PropertyList->InvokeEvent(itk::ModifiedEvent());
-          m_PropertyList->Modified();
+          propertyList->InvokeEvent(itk::ModifiedEvent());
+          propertyList->Modified();
 
           mitk::RenderingManager::GetInstance()->RequestUpdateAll();
         }
@@ -337,8 +333,8 @@ bool QmitkPropertiesTableModel::setData(const QModelIndex &index, const QVariant
           if ( enumerationProp->IsValidEnumerationValue( activatedItem ) )
           {
             enumerationProp->SetValue( activatedItem );
-            m_PropertyList->InvokeEvent( itk::ModifiedEvent() );
-            m_PropertyList->Modified();
+            propertyList->InvokeEvent( itk::ModifiedEvent() );
+            propertyList->Modified();
 
             mitk::RenderingManager::GetInstance()->RequestUpdateAll();
           }
@@ -449,7 +445,7 @@ void QmitkPropertiesTableModel::Reset()
   }
 
   std::vector<PropertyDataSet> allPredicates;
-  if(m_PropertyList.IsNotNull())
+  if (!m_PropertyList.IsExpired())
   {
     // first of all: collect all properties from the list
     for(auto it=m_PropertyList->GetMap()->begin()

@@ -578,11 +578,8 @@ void QmitkDataStorageTreeModel::SetDataStorageDeleted( const itk::Object* /*_Dat
 
 void QmitkDataStorageTreeModel::AddNodeInternal(const mitk::DataNode *node)
 {
-    if(node == 0
-      || m_DataStorage.IsNull()
-      || !m_DataStorage->Exists(node)
-      || m_Root->Find(node) != 0)
-      return;
+    if (node == nullptr || m_DataStorage.IsExpired() || !m_DataStorage.Lock()->Exists(node) || m_Root->Find(node) != nullptr)
+    return;
 
     // find out if we have a root node
     TreeItem* parentTreeItem = m_Root;
