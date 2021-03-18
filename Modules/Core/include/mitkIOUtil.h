@@ -88,7 +88,7 @@ public:
   
   struct MITKCORE_EXPORT WriterOptionsFunctorBase
   {
-    virtual bool operator()(SaveInfo& saveInfo) = 0;
+    virtual bool operator()(SaveInfo& saveInfo) const = 0;
   };
 
   /**
