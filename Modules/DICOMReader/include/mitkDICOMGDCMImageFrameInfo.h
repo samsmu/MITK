@@ -17,8 +17,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef mitkDICOMGDCMImageFrameInfo_h
 #define mitkDICOMGDCMImageFrameInfo_h
 
-#include "mitkDICOMImageFrameInfo.h"
-#include "mitkDICOMDatasetAccess.h"
+#include "mitkDICOMDatasetAccessingImageFrameInfo.h"
 
 #include "gdcmScanner.h"
 
@@ -32,33 +31,27 @@ namespace mitk
     from gdcm::Scanner. The scanning results will be used to implement the tag
     access methods of DICOMDatasetAccess.
   */
-  class MITKDICOMREADER_EXPORT DICOMGDCMImageFrameInfo : public itk::LightObject, public DICOMDatasetAccess
+  class MITKDICOMREADER_EXPORT DICOMGDCMImageFrameInfo : public DICOMDatasetAccessingImageFrameInfo
   {
     public:
 
-      mitkClassMacroItkParent(DICOMGDCMImageFrameInfo, itk::LightObject);
+      mitkClassMacro(DICOMGDCMImageFrameInfo, DICOMDatasetAccessingImageFrameInfo);
       itkFactorylessNewMacro( DICOMGDCMImageFrameInfo );
       mitkNewMacro1Param( DICOMGDCMImageFrameInfo, const std::string&);
       mitkNewMacro2Param( DICOMGDCMImageFrameInfo, const std::string&, unsigned int );
       mitkNewMacro1Param( DICOMGDCMImageFrameInfo, const DICOMImageFrameInfo::Pointer& );
       mitkNewMacro2Param( DICOMGDCMImageFrameInfo, const DICOMImageFrameInfo::Pointer&, gdcm::Scanner::TagToValue const&);
 
-      virtual ~DICOMGDCMImageFrameInfo();
+      ~DICOMGDCMImageFrameInfo() override;
 
-      virtual DICOMDatasetFinding GetTagValueAsString(const DICOMTag&) const override;
+      DICOMDatasetFinding GetTagValueAsString(const DICOMTag&) const override;
+
+      FindingsListType GetTagValueAsString(const DICOMTagPath& path) const override;
 
       std::string GetFilenameIfAvailable() const override;
 
-      /// The frame that this objects refers to
-      DICOMImageFrameInfo::Pointer GetFrameInfo() const;
-      /// The frame that this objects refers to
-      void SetFrameInfo(DICOMImageFrameInfo::Pointer frameinfo);
-
     protected:
-
-      DICOMImageFrameInfo::Pointer m_FrameInfo;
-
-      DICOMGDCMImageFrameInfo(const DICOMImageFrameInfo::Pointer& frameinfo);
+      explicit DICOMGDCMImageFrameInfo(const DICOMImageFrameInfo::Pointer& frameinfo);
       DICOMGDCMImageFrameInfo(const DICOMImageFrameInfo::Pointer& frameinfo, gdcm::Scanner::TagToValue const& tagToValueMapping);
       DICOMGDCMImageFrameInfo(const std::string& filename = "", unsigned int frameNo = 0);
 

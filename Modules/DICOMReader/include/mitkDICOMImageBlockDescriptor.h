@@ -25,6 +25,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkImage.h"
 #include "mitkProperties.h"
 #include "mitkWeakPointer.h"
+#include "mitkIPropertyProvider.h"
 
 #include "mitkGantryTiltInformation.h"
 
@@ -45,14 +46,14 @@ namespace mitk
   public:
     typedef DICOMCachedValueLookupTable Self;
     typedef GenericLookupTable< DICOMCachedValueInfo >   Superclass;
-    virtual const char *GetNameOfClass() const
+    const char *GetNameOfClass() const override
     {
       return "DICOMCachedValueLookupTable";
     }
 
     DICOMCachedValueLookupTable() {}
-    virtual Superclass& operator=(const Superclass& other) { return Superclass::operator=(other); }
-    virtual ~DICOMCachedValueLookupTable() {}
+    Superclass& operator=(const Superclass& other) override { return Superclass::operator=(other); }
+    ~DICOMCachedValueLookupTable() override {}
   };
 
   /**
@@ -64,7 +65,7 @@ namespace mitk
      be loaded by the file reader.
 
      The descriptor contains the following information:
-     - the mitk::Image itself. This will be NULL after analysis and only be present after actual loading.
+     - the mitk::Image itself. This will be nullptr after analysis and only be present after actual loading.
      - a list of frames (mostly: filenames) that went into composition of the mitk::Image.
      - an assessment of the reader's ability to load this set of files (ReaderImplementationLevel)
      - this can be used for reader selection when one reader is able to load an image with correct colors and the other is able to produce only gray values, for example
@@ -77,12 +78,12 @@ namespace mitk
      - whether pixel spacing is meant to be in-patient or on-detector (mitk::PixelSpacingInterpretation)
      - details about a possible gantry tilt (intended for use by file readers, may be hidden later)
      */
-  class MITKDICOMREADER_EXPORT DICOMImageBlockDescriptor
+  class MITKDICOMREADER_EXPORT DICOMImageBlockDescriptor: public IPropertyProvider
   {
   public:
 
     DICOMImageBlockDescriptor();
-    ~DICOMImageBlockDescriptor();
+    virtual ~DICOMImageBlockDescriptor();
 
     DICOMImageBlockDescriptor(const DICOMImageBlockDescriptor& other);
     DICOMImageBlockDescriptor& operator=(const DICOMImageBlockDescriptor& other);
@@ -122,6 +123,15 @@ namespace mitk
     /// Convenience function around GetProperty()
     int GetIntProperty(const std::string& key, int defaultValue) const;
 
+    virtual BaseProperty::ConstPointer GetConstProperty(const std::string &propertyKey,
+      const std::string &contextName = "",
+      bool fallBackOnDefaultContext = true) const override;
+
+    virtual std::vector<std::string> GetPropertyKeys(const std::string &contextName = "",
+      bool includeDefaultContext = false) const override;
+
+    virtual std::vector<std::string> GetPropertyContextNames() const override;
+
   private:
 
     // For future implementation: load slice-by-slice, mark this using these methods
@@ -158,14 +168,22 @@ namespace mitk
 
     void SetTagCache(DICOMTagCache* privateCache);
 
+    /** Type specifies additional tags of interest. Key is the tag path of interest.
+    * The value is an optional user defined name for the property that should be used to store the tag value(s).
+    * Empty value is default and will imply to use the found DICOMTagPath as property name.*/
+    typedef std::map<DICOMTagPath, std::string> AdditionalTagsMapType;
     /**
-    * \brief Set a list of DICOM-Tags that will be copied into the property of the mitk::Image.
+    * \brief Set a list of DICOMTagPaths that specifiy all DICOM-Tags that will be copied into the property of the mitk::Image.
     *
     * This method can be used to specify a list of DICOM-tags that shall be available after the loading.
-    * The content of the DICOM tags will be stored in a StringLookupTable on the mitk::Image,
-    * where the property-key equals the key in the unordered_map.
+    * The value in the tagMap is an optional user defined name for the property key that should be used
+    * when storing the property). Empty value is default and will imply to use the found DICOMTagPath
+    * as property key.
+    * By default the content of the DICOM tags will be stored in a StringLookupTable on the mitk::Image.
+    * This behaviour can be changed by setting a different TagLookupTableToPropertyFunctor via
+    * SetTagLookupTableToPropertyFunctor().
     */
-    void SetAdditionalTagsOfInterest(const std::unordered_map<const char*, DICOMTag>& tagList);
+    void SetAdditionalTagsOfInterest(const AdditionalTagsMapType& tagMap);
 
     typedef std::function<mitk::BaseProperty::Pointer(const DICOMCachedValueLookupTable&) > TagLookupTableToPropertyFunctor;
 
@@ -212,7 +230,8 @@ namespace mitk
 
     mutable bool m_PropertiesOutOfDate;
 
-    std::unordered_map<const char*, DICOMTag> m_AdditionalTagList;
+    AdditionalTagsMapType m_AdditionalTagMap;
+    std::set<std::string> m_FoundAdditionalTags;
 
     TagLookupTableToPropertyFunctor m_PropertyFunctor;
   };
