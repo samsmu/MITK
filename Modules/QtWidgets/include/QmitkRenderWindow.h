@@ -20,7 +20,7 @@
 #include "mitkRenderWindowBase.h"
 
 #include <MitkQtWidgetsExports.h>
-#include "QVTKWidget.h"
+#include "QVTKOpenGLWidget.h"
 #include <vtkGenericOpenGLRenderWindow.h>
 #include "QmitkRenderWindowMenu.h"
 
@@ -41,7 +41,7 @@ namespace mitk {
  * \ingroup QmitkModule
  * \brief MITK implementation of the QVTKWidget
  */
-class MITKQTWIDGETS_EXPORT QmitkRenderWindow: public QVTKWidget, public mitk::RenderWindowBase
+class MITKQTWIDGETS_EXPORT QmitkRenderWindow: public QVTKOpenGLWidget, public mitk::RenderWindowBase
 {
   Q_OBJECT
 
