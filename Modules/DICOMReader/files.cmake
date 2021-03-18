@@ -11,6 +11,7 @@ set(CPP_FILES
   mitkDICOMImageFrameInfo.cpp
   mitkDICOMSortCriterion.cpp
   mitkDICOMSortByTag.cpp
+  mitkDICOMDCMTKTagScanner.cpp
   mitkITKDICOMSeriesReaderHelper.cpp
   mitkEquiDistantBlocksSorter.cpp
   mitkNormalDirectionConsistencySorter.cpp
