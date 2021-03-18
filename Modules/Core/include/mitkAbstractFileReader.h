@@ -106,6 +106,10 @@ public:
   us::ServiceRegistration<IFileReader> RegisterService(us::ModuleContext* context = us::GetModuleContext());
   void UnregisterService();
 
+    /**
+     * @return A list of files that were loaded during the last call of Read. Has to be filled by the actual reader class.
+     */
+    std::vector< std::string > GetReadFiles() override;
 protected:
 
   /**
