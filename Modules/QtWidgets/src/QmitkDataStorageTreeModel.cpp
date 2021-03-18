@@ -66,7 +66,7 @@ mitk::DataNode::Pointer QmitkDataStorageTreeModel::GetNode( const QModelIndex &i
 
 const mitk::DataStorage::Pointer QmitkDataStorageTreeModel::GetDataStorage() const
 {
-  return m_DataStorage.GetPointer();
+  return m_DataStorage.Lock();
 }
 
 QModelIndex QmitkDataStorageTreeModel::index( int row, int column, const QModelIndex & parent ) const
@@ -298,11 +298,13 @@ bool QmitkDataStorageTreeModel::dropMimeData(const QMimeData *data,
         // dropped on node, behaviour depends on preference setting
         if (m_AllowHierarchyChange)
         {
+          auto dataStorage = m_DataStorage.Lock();
+
           m_BlockDataStorageEvents = true;
-          mitk::DataNode* droppedNode = (*diIter)->GetDataNode();
-          mitk::DataNode* dropOntoNode = dropItem->GetDataNode();
-          m_DataStorage->Remove(droppedNode);
-          m_DataStorage->Add(droppedNode, dropOntoNode);
+          mitk::DataNode *droppedNode = (*diIter)->GetDataNode();
+          mitk::DataNode *dropOntoNode = dropItem->GetDataNode();
+          dataStorage->Remove(droppedNode);
+          dataStorage->Add(droppedNode, dropOntoNode);
           m_BlockDataStorageEvents = false;
 
           dropItem->InsertChild((*diIter), dropIndex);
@@ -338,18 +340,18 @@ bool QmitkDataStorageTreeModel::dropMimeData(const QMimeData *data,
     mitk::DataNode* node = NULL;
     foreach(node, dataNodeList)
     {
-      if(node && m_DataStorage.IsNotNull() && !m_DataStorage->Exists(node))
+      if (node && !m_DataStorage.IsExpired() && !m_DataStorage.Lock()->Exists(node))
       {
-          m_DataStorage->Add( node );
-          mitk::BaseData::Pointer basedata = node->GetData();
+        m_DataStorage.Lock()->Add(node);
+        mitk::BaseData::Pointer basedata = node->GetData();
 
-          if (basedata.IsNotNull())
-          {
-            mitk::RenderingManager::GetInstance()->InitializeViews(
-              basedata->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true );
+        if (basedata.IsNotNull())
+        {
+          mitk::RenderingManager::GetInstance()->InitializeViews(
+            basedata->GetTimeGeometry(), mitk::RenderingManager::REQUEST_UPDATE_ALL, true);
 
-            numberOfNodesDropped++;
-          }
+          numberOfNodesDropped++;
+        }
       }
     }
     // Only do a rendering update, if we actually dropped anything.
@@ -507,22 +509,25 @@ void QmitkDataStorageTreeModel::SetDataStorage( mitk::DataStorage* _DataStorage 
 {
   if(m_DataStorage != _DataStorage) // dont take the same again
   {
-    if(m_DataStorage.IsNotNull())
+    if (!m_DataStorage.IsExpired())
     {
+      auto dataStorage = m_DataStorage.Lock();
+
       // remove Listener for the data storage itself
-      m_DataStorage.ObjectDelete.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const itk::Object*>( this, &QmitkDataStorageTreeModel::SetDataStorageDeleted ) );
+      dataStorage->RemoveObserver(m_DataStorageDeletedTag);
 
       // remove listeners for the nodes
-      m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const mitk::DataNode*>( this, &QmitkDataStorageTreeModel::AddNode ) );
+      dataStorage->AddNodeEvent.RemoveListener(
+        mitk::MessageDelegate1<QmitkDataStorageTreeModel, const mitk::DataNode *>(this,
+                                                                                  &QmitkDataStorageTreeModel::AddNode));
 
-      m_DataStorage->ChangedNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const mitk::DataNode*>( this, &QmitkDataStorageTreeModel::SetNodeModified ) );
+      dataStorage->ChangedNodeEvent.RemoveListener(
+        mitk::MessageDelegate1<QmitkDataStorageTreeModel, const mitk::DataNode *>(
+          this, &QmitkDataStorageTreeModel::SetNodeModified));
 
-      m_DataStorage->RemoveNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const mitk::DataNode*>( this, &QmitkDataStorageTreeModel::RemoveNode ) );
-
+      dataStorage->RemoveNodeEvent.RemoveListener(
+        mitk::MessageDelegate1<QmitkDataStorageTreeModel, const mitk::DataNode *>(
+          this, &QmitkDataStorageTreeModel::RemoveNode));
     }
 
     // take over the new data storage
@@ -537,23 +542,28 @@ void QmitkDataStorageTreeModel::SetDataStorage( mitk::DataStorage* _DataStorage 
     this->beginResetModel();
     this->endResetModel();
 
-    if(m_DataStorage.IsNotNull())
+    if (!m_DataStorage.IsExpired())
     {
+      auto dataStorage = m_DataStorage.Lock();
+
       // add Listener for the data storage itself
-      m_DataStorage.ObjectDelete.AddListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const itk::Object*>( this, &QmitkDataStorageTreeModel::SetDataStorageDeleted ) );
+      auto command = itk::SimpleMemberCommand<QmitkDataStorageTreeModel>::New();
+      command->SetCallbackFunction(this, &QmitkDataStorageTreeModel::SetDataStorageDeleted);
+      m_DataStorageDeletedTag = dataStorage->AddObserver(itk::DeleteEvent(), command);
 
       // add listeners for the nodes
-      m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const mitk::DataNode*>( this, &QmitkDataStorageTreeModel::AddNode ) );
+      dataStorage->AddNodeEvent.AddListener(mitk::MessageDelegate1<QmitkDataStorageTreeModel, const mitk::DataNode *>(
+        this, &QmitkDataStorageTreeModel::AddNode));
 
-      m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const mitk::DataNode*>( this, &QmitkDataStorageTreeModel::SetNodeModified ) );
+      dataStorage->ChangedNodeEvent.AddListener(
+        mitk::MessageDelegate1<QmitkDataStorageTreeModel, const mitk::DataNode *>(
+          this, &QmitkDataStorageTreeModel::SetNodeModified));
 
-      m_DataStorage->RemoveNodeEvent.AddFirstListener( mitk::MessageDelegate1<QmitkDataStorageTreeModel
-        , const mitk::DataNode*>( this, &QmitkDataStorageTreeModel::RemoveNode ) );
+      dataStorage->RemoveNodeEvent.AddListener(
+        mitk::MessageDelegate1<QmitkDataStorageTreeModel, const mitk::DataNode *>(
+          this, &QmitkDataStorageTreeModel::RemoveNode));
 
-      mitk::DataStorage::SetOfObjects::ConstPointer _NodeSet = m_DataStorage->GetSubset(m_Predicate);
+      mitk::DataStorage::SetOfObjects::ConstPointer _NodeSet = dataStorage->GetSubset(m_Predicate);
 
       // finally add all nodes to the model
       this->Update();
@@ -618,14 +628,11 @@ void QmitkDataStorageTreeModel::AddNodeInternal(const mitk::DataNode *node)
 
 void QmitkDataStorageTreeModel::AddNode( const mitk::DataNode* node )
 {
-    if(node == 0
-      || m_BlockDataStorageEvents
-      || m_DataStorage.IsNull()
-      || !m_DataStorage->Exists(node)
-      || m_Root->Find(node) != 0)
-      return;
+    if (node == nullptr || m_BlockDataStorageEvents || m_DataStorage.IsExpired() || !m_DataStorage.Lock()->Exists(node) ||
+      m_Root->Find(node) != nullptr)
+    return;
 
-      this->AddNodeInternal(node);
+  this->AddNodeInternal(node);
 }
 
 
@@ -701,9 +708,9 @@ void QmitkDataStorageTreeModel::SetNodeModified( const mitk::DataNode* node )
 
 mitk::DataNode* QmitkDataStorageTreeModel::GetParentNode( const mitk::DataNode* node ) const
 {
-  mitk::DataNode* dataNode = 0;
+  mitk::DataNode *dataNode = nullptr;
 
-  mitk::DataStorage::SetOfObjects::ConstPointer _Sources = m_DataStorage->GetSources(node);
+  mitk::DataStorage::SetOfObjects::ConstPointer _Sources = m_DataStorage.Lock()->GetSources(node);
 
   if(_Sources->Size() > 0)
     dataNode = _Sources->front();
@@ -983,19 +990,25 @@ void QmitkDataStorageTreeModel::TreeItem::SetParent( TreeItem* _Parent )
 
 void QmitkDataStorageTreeModel::Update()
 {
-    if (m_DataStorage.IsNotNull())
+      if (!m_DataStorage.IsExpired())
+  {
+    mitk::DataStorage::SetOfObjects::ConstPointer _NodeSet = m_DataStorage.Lock()->GetAll();
+
+    /// Regardless the value of this preference, the new nodes must not be inserted
+    /// at the top now, but at the position according to their layer.
+    bool newNodesWereToBePlacedOnTop = m_PlaceNewNodesOnTop;
+    m_PlaceNewNodesOnTop = false;
+
+    for (const auto& node: *_NodeSet)
     {
-        this->beginResetModel();
-        this->endResetModel();
-
-        mitk::DataStorage::SetOfObjects::ConstPointer _NodeSet = m_DataStorage->GetAll();
-
-        for (mitk::DataStorage::SetOfObjects::const_iterator it = _NodeSet->begin(); it != _NodeSet->end(); it++)
-        {
-            // save node
-            this->AddNodeInternal(*it);
-        }
+      this->AddNodeInternal(node);
     }
+
+    m_PlaceNewNodesOnTop = newNodesWereToBePlacedOnTop;
+
+    /// Adjust the layers to ensure that derived nodes are above their sources.
+    this->AdjustLayerProperty();
+  }
 }
 
 void QmitkDataStorageTreeModel::SetAllowHierarchyChange(bool allowHierarchyChange)
