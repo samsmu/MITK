@@ -96,6 +96,8 @@ private:
   std::unique_ptr<QmitkPropertyItem> m_RootItem;
   std::map<std::string, unsigned long> m_PropertyDeletedTags;
   std::map<std::string, unsigned long> m_PropertyModifiedTags;
+  unsigned long m_PropertyListDeletedTag;
+  unsigned long m_PropertyListModifiedTag;
 };
 
 #endif

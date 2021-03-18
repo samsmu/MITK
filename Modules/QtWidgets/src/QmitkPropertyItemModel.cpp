@@ -258,7 +258,7 @@ Qt::ItemFlags QmitkPropertyItemModel::flags(const QModelIndex& index) const
 
 mitk::PropertyList* QmitkPropertyItemModel::GetPropertyList() const
 {
-  return m_PropertyList.GetPointer();
+  return m_PropertyList.Lock().GetPointer();
 }
 
 QVariant QmitkPropertyItemModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -399,8 +399,9 @@ bool QmitkPropertyItemModel::setData(const QModelIndex& index, const QVariant& v
     colorProperty->SetValue(QtToMitk(value.value<QColor>()));
   }
 
-  m_PropertyList->InvokeEvent(itk::ModifiedEvent());
-  m_PropertyList->Modified();
+  auto propertyList = m_PropertyList.Lock();
+
+  propertyList->Modified();
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 

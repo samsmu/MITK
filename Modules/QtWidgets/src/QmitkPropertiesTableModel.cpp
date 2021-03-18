@@ -214,9 +214,9 @@ void QmitkPropertiesTableModel::SetPropertyList( mitk::PropertyList* _PropertyLi
   }
 }
 
-void QmitkPropertiesTableModel::PropertyListDelete( const itk::Object * /*_PropertyList*/ )
+void QmitkPropertiesTableModel::PropertyListDelete()
 {
-  if(!m_BlockEvents)
+  if (!m_BlockEvents)
   {
     m_BlockEvents = true;
     this->Reset();

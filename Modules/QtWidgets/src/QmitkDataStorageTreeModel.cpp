@@ -571,9 +571,9 @@ void QmitkDataStorageTreeModel::SetDataStorage( mitk::DataStorage* _DataStorage 
   }
 }
 
-void QmitkDataStorageTreeModel::SetDataStorageDeleted( const itk::Object* /*_DataStorage*/ )
+void QmitkDataStorageTreeModel::SetDataStorageDeleted()
 {
-  this->SetDataStorage(0);
+  this->SetDataStorage(nullptr);
 }
 
 void QmitkDataStorageTreeModel::AddNodeInternal(const mitk::DataNode *node)

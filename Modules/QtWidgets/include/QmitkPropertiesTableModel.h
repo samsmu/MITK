@@ -98,7 +98,7 @@ public:
   ///
   /// \brief Gets called when the list is about to be deleted.
   ///
-  virtual void PropertyListDelete(const itk::Object *_PropertyList);
+  virtual void PropertyListDelete();
 
   ///
   /// \brief Called when a single property was changed. Send a model changed event to the Qt-outer world.
