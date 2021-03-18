@@ -67,11 +67,6 @@ public:
     virtual bool operator()(LoadInfo& loadInfo) = 0;
   };
 
-  struct MITKCORE_EXPORT WriterOptionsFunctorBase
-  {
-    virtual bool operator()(SaveInfo& saveInfo) = 0;
-  };
-
   struct MITKCORE_EXPORT SaveInfo
   {
     SaveInfo(const BaseData* baseData, const MimeType& mimeType, const std::string& path);
@@ -89,6 +84,11 @@ public:
     std::string m_Path;
     /// Flag indicating if sub-sequent save operations are to be canceled.
     bool m_Cancel;
+  };
+  
+  struct MITKCORE_EXPORT WriterOptionsFunctorBase
+  {
+    virtual bool operator()(SaveInfo& saveInfo) = 0;
   };
 
   /**
