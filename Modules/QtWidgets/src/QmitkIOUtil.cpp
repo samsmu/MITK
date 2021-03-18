@@ -338,8 +338,6 @@ struct QmitkIOUtil::Impl
   };
 };
 
-};
-
 struct MimeTypeComparison : public std::unary_function<mitk::MimeType, bool>
 {
   MimeTypeComparison(const std::string& mimeTypeName)
