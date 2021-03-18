@@ -30,7 +30,7 @@ namespace mitk
 
     typedef IPropertyPersistence::InfoMapType InfoMapType;
 
-    bool AddInfo(const std::string& propertyName, PropertyPersistenceInfo::Pointer info, bool overwrite) override;
+    bool AddInfo(const PropertyPersistenceInfo *info, bool overwrite) override;
     InfoMapType GetInfos(const std::string& propertyName) override;
     InfoMapType GetInfosByKey(const std::string& persistenceKey) override;
     PropertyPersistenceInfo::Pointer GetInfo(const std::string& propertyName, const MimeTypeNameType& mime, bool allowWildCard) override;
