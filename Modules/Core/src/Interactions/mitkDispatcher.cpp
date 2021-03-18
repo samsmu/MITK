@@ -74,9 +74,9 @@ void mitk::Dispatcher::AddDataInteractor(const DataNode* dataNode)
 
 void mitk::Dispatcher::RemoveDataInteractor(const DataNode* dataNode)
 {
-  for (ListInteractorType::iterator it = m_Interactors.begin(); it != m_Interactors.end();)
+  for (auto it = m_Interactors.begin(); it != m_Interactors.end();)
   {
-    if ((*it).IsNull() || (*it)->GetDataNode() == nullptr || (*it)->GetDataNode() == dataNode)
+    if ((*it).IsExpired() || (*it).Lock()->GetDataNode() == nullptr || (*it).Lock()->GetDataNode() == dataNode)
     {
       it = m_Interactors.erase(it);
     }
@@ -117,43 +117,44 @@ bool mitk::Dispatcher::ProcessEvent(InteractionEvent* event)
   }
   switch (m_ProcessingMode)
   {
-  case CONNECTEDMOUSEACTION:
-    // finished connected mouse action
-    if (std::strcmp(p->GetNameOfClass(), "MouseReleaseEvent") == 0)
-    {
-      m_ProcessingMode = REGULAR;
+    case CONNECTEDMOUSEACTION:
+      // finished connected mouse action
+      if (std::strcmp(p->GetNameOfClass(), "MouseReleaseEvent") == 0)
+      {
+        m_ProcessingMode = REGULAR;
 
-      if (m_SelectedInteractor.IsNotNull())
-        eventIsHandled = m_SelectedInteractor->HandleEvent(event, m_SelectedInteractor->GetDataNode());
+        if (!m_SelectedInteractor.IsExpired())
+          eventIsHandled = m_SelectedInteractor.Lock()->HandleEvent(event, m_SelectedInteractor.Lock()->GetDataNode());
 
-      m_SelectedInteractor = nullptr;
-    }
-    // give event to selected interactor
-    if (eventIsHandled == false && m_SelectedInteractor.IsNotNull())
-      eventIsHandled = m_SelectedInteractor->HandleEvent(event, m_SelectedInteractor->GetDataNode());
+        m_SelectedInteractor = nullptr;
+      }
+      // give event to selected interactor
+      if (eventIsHandled == false && !m_SelectedInteractor.IsExpired())
+        eventIsHandled = m_SelectedInteractor.Lock()->HandleEvent(event, m_SelectedInteractor.Lock()->GetDataNode());
 
-    break;
+      break;
 
-  case GRABINPUT:
-    if (m_SelectedInteractor.IsNotNull())
-    {
-      eventIsHandled = m_SelectedInteractor->HandleEvent(event, m_SelectedInteractor->GetDataNode());
-      SetEventProcessingMode(m_SelectedInteractor);
-    }
+    case GRABINPUT:
+      if (!m_SelectedInteractor.IsExpired())
+      {
+        eventIsHandled = m_SelectedInteractor.Lock()->HandleEvent(event, m_SelectedInteractor.Lock()->GetDataNode());
+        SetEventProcessingMode(m_SelectedInteractor.Lock());
+      }
 
-    break;
+      break;
 
-  case PREFERINPUT:
-    if (m_SelectedInteractor.IsNotNull() && m_SelectedInteractor->HandleEvent(event, m_SelectedInteractor->GetDataNode()) == true)
-    {
-      SetEventProcessingMode(m_SelectedInteractor);
-      eventIsHandled = true;
-    }
+    case PREFERINPUT:
+      if (!m_SelectedInteractor.IsExpired() &&
+          m_SelectedInteractor.Lock()->HandleEvent(event, m_SelectedInteractor.Lock()->GetDataNode()) == true)
+      {
+        SetEventProcessingMode(m_SelectedInteractor.Lock());
+        eventIsHandled = true;
+      }
 
-    break;
+      break;
 
-  case REGULAR:
-    break;
+    case REGULAR:
+      break;
   }
 
   // Standard behavior. Is executed in STANDARD mode  and PREFERINPUT mode, if preferred interactor rejects event.
@@ -169,12 +170,14 @@ bool mitk::Dispatcher::ProcessEvent(InteractionEvent* event)
     ListInteractorType::const_iterator it;
     for ( it=tmpInteractorList.cbegin(); it!=tmpInteractorList.cend(); ++it )
     {
-      if ((*it).IsNotNull() && (*it)->HandleEvent(event, (*it)->GetDataNode()))
+      if (!(*it).IsExpired() && (*it).Lock()->HandleEvent(event, (*it).Lock()->GetDataNode()))
       {
         // Interactor can be deleted during HandleEvent(), so check it again
-        if ((*it).IsNotNull()) {
-          // if an event is handled several properties are checked, in order to determine the processing mode of the dispatcher
-          SetEventProcessingMode(*it);
+        if (!(*it).IsExpired())
+        {
+          // if an event is handled several properties are checked, in order to determine the processing mode of the
+          // dispatcher
+          SetEventProcessingMode((*it).Lock());
         }
         if (std::strcmp(p->GetNameOfClass(), "MousePressEvent") == 0 && m_ProcessingMode == REGULAR)
         {
