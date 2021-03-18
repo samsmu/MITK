@@ -448,9 +448,10 @@ void QmitkPropertiesTableModel::Reset()
   if (!m_PropertyList.IsExpired())
   {
     // first of all: collect all properties from the list
-    for(auto it=m_PropertyList->GetMap()->begin()
-      ; it!=m_PropertyList->GetMap()->end()
-      ; it++)
+    auto propertyList = m_PropertyList.Lock();
+
+    // first of all: collect all properties from the list
+    for (auto it = propertyList->GetMap()->begin(); it != propertyList->GetMap()->end(); it++)
     {
       allPredicates.push_back(*it); //% TODO
     }

@@ -94,7 +94,7 @@ void QmitkDataStorageComboBox::UnsubscribeToChangeData()
 //#PUBLIC GETTER
 mitk::DataStorage::Pointer QmitkDataStorageComboBox::GetDataStorage() const
 {
-  return m_DataStorage.GetPointer();
+  return m_DataStorage.Lock();
 }
 
 const mitk::NodePredicateBase::ConstPointer QmitkDataStorageComboBox::GetPredicate() const

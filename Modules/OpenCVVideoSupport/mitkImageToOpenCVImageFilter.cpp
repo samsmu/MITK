@@ -33,6 +33,10 @@ namespace mitk{
     m_OpenCVImage = nullptr;
   }
 
+  Image* ImageToOpenCVImageFilter::GetImage()
+  {
+    return m_Image.Lock();
+  }
 
   void ImageToOpenCVImageFilter::SetImage( Image* _Image )
   {
