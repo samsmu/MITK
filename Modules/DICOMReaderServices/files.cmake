@@ -5,6 +5,6 @@ set(CPP_FILES
   mitkAutoSelectingDICOMReaderService.cpp
   mitkClassicDICOMSeriesReaderService.cpp
   mitkDICOMReaderServicesActivator.cpp
-  mitkDICOMFilesHelper.cpp
+  mitkSimpleVolumeDICOMSeriesReaderService.cpp
   mitkDICOMTagsOfInterestService.cpp
 )
