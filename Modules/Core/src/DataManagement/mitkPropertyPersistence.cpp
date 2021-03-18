@@ -26,23 +26,25 @@ mitk::PropertyPersistence::~PropertyPersistence()
 {
 }
 
-bool mitk::PropertyPersistence::AddInfo(const std::string& propertyName, PropertyPersistenceInfo::Pointer info, bool overwrite)
+bool mitk::PropertyPersistence::AddInfo(const PropertyPersistenceInfo *info, bool overwrite)
 {
-  if (propertyName.empty())
+  if (!info)
   {
     return false;
   }
 
-  if (info.IsNull())
+  if (info->GetName().empty())
   {
     return false;
   }
 
-  PropertyPersistenceInfo::MimeTypeNameType mime = info->GetMimeTypeName();
+  mitk::PropertyPersistenceInfo::MimeTypeNameType mime = info->GetMimeTypeName();
 
-  auto infoRange = m_Infos.equal_range(propertyName);
+  auto infoRange = m_InfoMap.equal_range(info->GetName());
 
-  auto predicate = [mime](const std::pair<const std::string, PropertyPersistenceInfo::Pointer>& x){return x.second.IsNotNull() && x.second->GetMimeTypeName() == mime; };
+  auto predicate = [mime](const std::pair<const std::string, mitk::PropertyPersistenceInfo::ConstPointer> &x) {
+    return x.second.IsNotNull() && x.second->GetMimeTypeName() == mime;
+  };
 
   auto finding = std::find_if(infoRange.first, infoRange.second, predicate);
 
@@ -53,10 +55,10 @@ bool mitk::PropertyPersistence::AddInfo(const std::string& propertyName, Propert
   {
     if (exists && overwrite)
     {
-      m_Infos.erase(finding);
+      m_InfoMap.erase(finding);
     }
     result = true;
-    m_Infos.insert(std::make_pair(propertyName, info));
+    m_InfoMap.insert(std::make_pair(info->GetName(), info));
   }
 
   return result;

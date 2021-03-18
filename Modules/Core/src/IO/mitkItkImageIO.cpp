@@ -440,7 +440,7 @@ std::vector<BaseData::Pointer> ItkImageIO::Read()
 
       if( !isDefaultKey )
       {
-        mitk::CoreServices::GetPropertyPersistence()->AddInfo(assumedPropertyName, info);
+        mitk::CoreServices::GetPropertyPersistence()->AddInfo(info);
       }
     }
   }
