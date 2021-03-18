@@ -215,7 +215,7 @@ protected:
   std::string GetLocalFileName() const;
 
   virtual void SetDefaultDataNodeProperties(DataNode* node, const std::string& filePath);
-
+  std::vector< std::string > m_ReadFiles;
 private:
 
   AbstractFileReader& operator=(const AbstractFileReader& other);

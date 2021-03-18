@@ -231,6 +231,8 @@ us::ServiceRegistration<CustomMimeType> AbstractFileReader::RegisterMimeType(us:
   return d->RegisterMimeType(context);
 }
 
+std::vector< std::string > AbstractFileReader::GetReadFiles(){ return m_ReadFiles; }
+
 void AbstractFileReader::SetMimeType(const CustomMimeType& mimeType)
 {
   d->SetMimeType(mimeType);

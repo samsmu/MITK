@@ -92,9 +92,9 @@ DataNode* SegmentationSink::LookForPointerTargetBelowGroupNode(const char* name)
   DataNode::Pointer groupNode;
   GetPointerParameter("Group node", groupNode);
 
-  if (groupNode.IsNotNull() && m_DataStorage.IsNotNull())
+  if (groupNode.IsNotNull() && !m_DataStorage.IsExpired())
   {
-    return m_DataStorage->GetNamedDerivedNode(name, groupNode, true);
+    return m_DataStorage.Lock()->GetNamedDerivedNode(name, groupNode, true);
   }
 
   return nullptr;
