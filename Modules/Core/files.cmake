@@ -265,6 +265,7 @@ set(CPP_FILES
 
   Rendering/mitkAbstractAnnotationRenderer.cpp
   Rendering/mitkAbstractOverlayLayouter.cpp
+  Rendering/mitkAnnotationUtils.cpp
   Rendering/mitkBaseRenderer.cpp
   #Rendering/mitkGLMapper.cpp Moved to deprecated LegacyGL Module
   Rendering/mitkGradientBackground.cpp
