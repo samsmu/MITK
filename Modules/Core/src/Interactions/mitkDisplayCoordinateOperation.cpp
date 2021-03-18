@@ -55,7 +55,7 @@ mitk::DisplayCoordinateOperation::~DisplayCoordinateOperation()
 
 mitk::BaseRenderer* mitk::DisplayCoordinateOperation::GetRenderer()
 {
-    return m_Renderer;
+    return m_Renderer.Lock();
 }
 
 mitk::Vector2D mitk::DisplayCoordinateOperation::GetLastToCurrentDisplayVector()

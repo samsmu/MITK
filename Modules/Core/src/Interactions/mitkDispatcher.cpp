@@ -24,9 +24,9 @@ namespace
 {
   struct cmp
   {
-    bool operator()(mitk::DataInteractor* d1, mitk::DataInteractor* d2)
+    bool operator()(mitk::WeakPointer<mitk::DataInteractor> d1, mitk::WeakPointer<mitk::DataInteractor> d2)
     {
-      return (d1->GetLayer() > d2->GetLayer());
+      return (d1.Lock()->GetLayer() > d2.Lock()->GetLayer());
     }
   };
 }
