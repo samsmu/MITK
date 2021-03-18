@@ -16,6 +16,7 @@ set(CPP_FILES
   mitkDICOMTagScanner.cpp
   mitkDICOMTagPath.cpp
   mitkDICOMGenericTagCache.cpp
+  mitkDICOMGenericImageFrameInfo.cpp
   mitkITKDICOMSeriesReaderHelper.cpp
   mitkEquiDistantBlocksSorter.cpp
   mitkNormalDirectionConsistencySorter.cpp
