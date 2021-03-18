@@ -119,7 +119,7 @@ struct MITKCORE_EXPORT IFileReader : public IFileIO
    * \throws mitk::Exception
    */
   virtual DataStorage::SetOfObjects::Pointer Read(mitk::DataStorage& ds, volatile bool* interrupt = nullptr) = 0;
-
+  virtual std::vector< std::string > GetReadFiles() = 0;
 };
 
 } // namespace mitk
