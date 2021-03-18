@@ -83,9 +83,10 @@ private:
   void CreateRootItem();
   QModelIndex FindProperty(const mitk::BaseProperty* property);
   void OnPropertyDeleted(const itk::Object* property, const itk::EventObject& event);
-  void OnPropertyListDeleted(const itk::Object* propertyList);
+  void OnPropertyListModified();
+  void OnPropertyListDeleted();
   void OnPropertyModified(const itk::Object* property, const itk::EventObject& event);
-  void SetNewPropertyList(mitk::PropertyList* propertyList);
+  void SetNewPropertyList(mitk::PropertyList* newPropertyList);
 
   bool m_ShowAliases;
   bool m_FilterProperties;

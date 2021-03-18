@@ -319,7 +319,12 @@ void QmitkPropertyItemModel::OnPropertyDeleted(const itk::Object* /*property*/, 
     this->reset();*/
 }
 
-void QmitkPropertyItemModel::OnPropertyListDeleted(const itk::Object*)
+void QmitkPropertyItemModel::OnPropertyListModified()
+{
+  this->SetNewPropertyList(m_PropertyList.Lock());
+}
+
+void QmitkPropertyItemModel::OnPropertyListDeleted()
 {
   this->CreateRootItem();
 }
@@ -408,7 +413,7 @@ bool QmitkPropertyItemModel::setData(const QModelIndex& index, const QVariant& v
   return true;
 }
 
-void QmitkPropertyItemModel::SetNewPropertyList(mitk::PropertyList* propertyList)
+void QmitkPropertyItemModel::SetNewPropertyList(mitk::PropertyList* newPropertyList)
 {
   typedef mitk::PropertyList::PropertyMap PropertyMap;
 
