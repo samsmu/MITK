@@ -6,13 +6,13 @@ set(mitk_modules
   Logging
   Config
   Core
+  Annotation
   CommandLine
   AppUtil
   DCMTesting
   RDF
   LegacyIO
   DataTypesExt
-  Annotation
   Overlays
   LegacyGL
   AlgorithmsExt
