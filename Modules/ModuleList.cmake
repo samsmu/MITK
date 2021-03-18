@@ -12,6 +12,7 @@ set(mitk_modules
   RDF
   LegacyIO
   DataTypesExt
+  Annotation
   Overlays
   LegacyGL
   AlgorithmsExt
