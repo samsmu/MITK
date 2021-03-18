@@ -23,7 +23,11 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkSurface.h>
 #include <vtkRenderWindow.h>
 
+#include <boost/preprocessor/expand.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/for_each_product.hpp>
+#include <boost/preprocessor/seq/to_tuple.hpp>
+#include <boost/preprocessor/stringize.hpp>
 #include <boost/preprocessor/tuple/rem.hpp>
 
 #define DeclareMitkImageCasterMethods(r, data, type)                                                                   \
