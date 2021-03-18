@@ -13,6 +13,7 @@ set(CPP_FILES
   mitkDICOMSortByTag.cpp
   mitkDICOMDCMTKTagScanner.cpp
   mitkDICOMTagScanner.cpp
+  mitkDICOMTagPath.cpp
   mitkITKDICOMSeriesReaderHelper.cpp
   mitkEquiDistantBlocksSorter.cpp
   mitkNormalDirectionConsistencySorter.cpp
