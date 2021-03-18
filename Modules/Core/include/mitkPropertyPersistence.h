@@ -40,9 +40,11 @@ namespace mitk
     void RemoveInfos(const std::string& propertyName, const MimeTypeNameType& mime) override;
 
   private:
-    typedef std::multimap<const std::string, PropertyPersistenceInfo::Pointer> InfoMap;
-    typedef InfoMap::const_iterator InfoMapConstIterator;
-    typedef InfoMap::iterator InfoMapIterator;
+    typedef std::multimap<const std::string, PropertyPersistenceInfo::ConstPointer> InfoMap;
+
+    /**Helper function that selects */
+    using SelectFunctionType = std::function<bool(const InfoMap::value_type &)>;
+    static InfoMap SelectInfo(const InfoMap &infoMap, const SelectFunctionType &selectFunction);
 
     PropertyPersistence(const PropertyPersistence&);
     PropertyPersistence& operator=(const PropertyPersistence&);
