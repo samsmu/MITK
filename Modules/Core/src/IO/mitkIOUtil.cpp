@@ -312,7 +312,7 @@ struct IOUtil::Impl
       : m_Options(options)
     {}
 
-    virtual bool operator()(SaveInfo& saveInfo) override
+    virtual bool operator()(SaveInfo& saveInfo) const override
     {
       IFileWriter* writer = saveInfo.m_WriterSelector.GetSelected().GetWriter();
       if (writer)
