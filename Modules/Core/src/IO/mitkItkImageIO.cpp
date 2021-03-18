@@ -391,23 +391,23 @@ std::vector<BaseData::Pointer> ItkImageIO::Read()
       std::string mimeTypeName = GetMimeType()->GetName();
 
       //Check of there is already a info for the key and our mime type.
-      IPropertyPersistence::InfoMapType infos = mitk::CoreServices::GetPropertyPersistence()->GetInfosByKey(key);
+      IPropertyPersistence::InfoResultType infoList = mitk::CoreServices::GetPropertyPersistence()->GetInfoByKey(key);
 
       auto predicate = [mimeTypeName](const std::pair<const std::string, PropertyPersistenceInfo::Pointer>& x){return x.second.IsNotNull() && x.second->GetMimeTypeName() == mimeTypeName; };
-      auto finding = std::find_if(infos.begin(), infos.end(), predicate);
+      auto finding = std::find_if(infoList.begin(), infoList.end(), predicate);
 
-      if (finding == infos.end())
+      if (finding == infoList.end())
       {
         auto predicateWild = [](const std::pair<const std::string, PropertyPersistenceInfo::Pointer>& x){return x.second.IsNotNull() && x.second->GetMimeTypeName() == PropertyPersistenceInfo::ANY_MIMETYPE_NAME(); };
-        finding = std::find_if(infos.begin(), infos.end(), predicateWild);
+        finding = std::find_if(infoList.begin(), infoList.end(), predicateWild);
       }
 
       PropertyPersistenceInfo::Pointer info;
 
-      if (finding != infos.end())
+      if (finding != infoList.end())
       {
-        assumedPropertyName = finding->first;
-        info = finding->second;
+          assumedPropertyName = (*finding)->GetName();
+          info = *finding;
       }
       else
       { //we have not found anything suitable so we generate our own info
@@ -591,21 +591,21 @@ void ItkImageIO::Write()
 
     for(const auto &property : *imagePropertyList->GetMap())
     {
-      PropertyPersistenceInfo::Pointer info = mitk::CoreServices::GetPropertyPersistence()->GetInfo(property.first, GetMimeType()->GetName(), true);
+      IPropertyPersistence::InfoResultType infoList =mitk::CoreServices::GetPropertyPersistence()->GetInfo(property.first, GetMimeType()->GetName(), true);
 
-      if( info.IsNull())
-      {
-        continue;
-      }
+        if (infoList.empty())
+        {
+          continue;
+        }
 
-      std::string value = info->GetSerializationFunction()(property.second);
+      std::string value = infoList.front()->GetSerializationFunction()(property.second);
 
       if( value == mitk::BaseProperty::VALUE_CANNOT_BE_CONVERTED_TO_STRING )
       {
         continue;
       }
 
-      std::string key = info->GetKey();
+      std::string key = infoList.front()->GetKey();
 
       itk::EncapsulateMetaData<std::string>(m_ImageIO->GetMetaDataDictionary(), key, value);
     }
