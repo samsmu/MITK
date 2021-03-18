@@ -64,7 +64,7 @@ public:
   
   struct MITKCORE_EXPORT ReaderOptionsFunctorBase
   {
-    virtual bool operator()(LoadInfo& loadInfo) = 0;
+    virtual bool operator()(LoadInfo &loadInfo) const = 0;
   };
 
   struct MITKCORE_EXPORT SaveInfo

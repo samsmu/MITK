@@ -292,15 +292,15 @@ struct IOUtil::Impl
       : m_Options(options)
     {}
 
-    virtual bool operator()(LoadInfo& loadInfo) override
-    {
-      IFileReader* reader = loadInfo.m_ReaderSelector.GetSelected().GetReader();
-      if (reader)
+    bool operator()(LoadInfo &loadInfo) const override
       {
-        reader->SetOptions(m_Options);
+        IFileReader *reader = loadInfo.m_ReaderSelector.GetSelected().GetReader();
+        if (reader)
+        {
+          reader->SetOptions(m_Options);
+        }
+        return false;
       }
-      return false;
-    }
 
   private:
     const IFileReader::Options& m_Options;
