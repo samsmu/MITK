@@ -12,6 +12,7 @@ set(CPP_FILES
   mitkDICOMSortCriterion.cpp
   mitkDICOMSortByTag.cpp
   mitkDICOMDCMTKTagScanner.cpp
+  mitkDICOMDatasetAccessingImageFrameInfo.cpp
   mitkDICOMTagScanner.cpp
   mitkDICOMTagPath.cpp
   mitkITKDICOMSeriesReaderHelper.cpp
