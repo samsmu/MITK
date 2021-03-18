@@ -48,7 +48,7 @@ namespace mitk
       * \param[in] overwrite Overwrite already existing persistence info.
       * \return True if persistence info was added successfully.
       */
-    virtual bool AddInfo(const std::string& propertyName, PropertyPersistenceInfo::Pointer info, bool overwrite = false) = 0;
+    virtual bool AddInfo(const PropertyPersistenceInfo *info, bool overwrite = false) = 0;
 
     /** \brief Get the persistence info for a specific base data property.
       *
