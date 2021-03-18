@@ -69,12 +69,12 @@ void SegmentationSink::InsertBelowGroupNode(mitk::DataNode* node)
 {
   DataNode* groupNode = GetGroupNode();
 
-  if (m_DataStorage.IsNotNull())
-  {
-    if (node)
-      node->GetData()->DisconnectPipeline();
-    m_DataStorage->Add( node, groupNode );
-  }
+    if (!m_DataStorage.IsExpired())
+    {
+      if (node)
+        node->GetData()->DisconnectPipeline();
+      m_DataStorage.Lock()->Add(node, groupNode);
+    }
 
   RenderingManager::GetInstance()->RequestUpdateAll();
 }

@@ -42,7 +42,7 @@ void mitk::NonBlockingAlgorithm::SetDataStorage(DataStorage& storage)
 
 DataStorage* mitk::NonBlockingAlgorithm::GetDataStorage()
 {
-  return m_DataStorage;
+  return m_DataStorage.Lock();
 }
 
 
