@@ -379,74 +379,78 @@ std::vector<BaseData::Pointer> ItkImageIO::Read()
 
   MITK_INFO << "number of image components: "<< image->GetPixelType().GetNumberOfComponents() << std::endl;
 
-  for (itk::MetaDataDictionary::ConstIterator iter = dictionary.Begin(), iterEnd = dictionary.End();
-       iter != iterEnd; ++iter)
-  {
-    if (iter->second->GetMetaDataObjectTypeInfo() == typeid(std::string))
+for (auto iter = dictionary.Begin(), iterEnd = dictionary.End(); iter != iterEnd;
+         ++iter)
     {
-      const std::string& key = iter->first;
-      std::string assumedPropertyName = key;
-      std::replace(assumedPropertyName.begin(), assumedPropertyName.end(), '_', '.');
-
-      std::string mimeTypeName = GetMimeType()->GetName();
-
-      //Check of there is already a info for the key and our mime type.
-      IPropertyPersistence::InfoResultType infoList = mitk::CoreServices::GetPropertyPersistence()->GetInfoByKey(key);
-      auto predicate = [mimeTypeName](const PropertyPersistenceInfo::Pointer &x) {
-        return x.IsNotNull() && x->GetMimeTypeName() == mimeTypeName;
-      };
-      auto finding = std::find_if(infoList.begin(), infoList.end(), predicate);
-
-      if (finding == infoList.end())
+      if (iter->second->GetMetaDataObjectTypeInfo() == typeid(std::string))
       {
-        auto predicateWild = [](const PropertyPersistenceInfo::Pointer &x) {
-            return x.IsNotNull() && x->GetMimeTypeName() == PropertyPersistenceInfo::ANY_MIMETYPE_NAME();
+        const std::string &key = iter->first;
+        std::string assumedPropertyName = key;
+        std::replace(assumedPropertyName.begin(), assumedPropertyName.end(), '_', '.');
+
+        std::string mimeTypeName = GetMimeType()->GetName();
+
+        // Check if there is already a info for the key and our mime type.
+        IPropertyPersistence::InfoResultType infoList = mitk::CoreServices::GetPropertyPersistence()->GetInfoByKey(key);
+
+        auto predicate = [mimeTypeName](const PropertyPersistenceInfo::ConstPointer &x) {
+          return x.IsNotNull() && x->GetMimeTypeName() == mimeTypeName;
         };
-        finding = std::find_if(infoList.begin(), infoList.end(), predicateWild);
-      }
+        auto finding = std::find_if(infoList.begin(), infoList.end(), predicate);
 
-      PropertyPersistenceInfo::Pointer info;
+        if (finding == infoList.end())
+        {
+          auto predicateWild = [](const PropertyPersistenceInfo::ConstPointer &x) {
+            return x.IsNotNull() && x->GetMimeTypeName() == PropertyPersistenceInfo::ANY_MIMETYPE_NAME();
+          };
+          finding = std::find_if(infoList.begin(), infoList.end(), predicateWild);
+        }
 
-      if (finding != infoList.end())
-      {
+        PropertyPersistenceInfo::ConstPointer info;
+
+        if (finding != infoList.end())
+        {
           assumedPropertyName = (*finding)->GetName();
           info = *finding;
-      }
-      else
-      { //we have not found anything suitable so we generate our own info
-        info = PropertyPersistenceInfo::New(key);
-        info->SetMimeTypeName(PropertyPersistenceInfo::ANY_MIMETYPE_NAME());
-      }
+        }
+        else
+        { // we have not found anything suitable so we generate our own info
+          PropertyPersistenceInfo::Pointer newInfo = PropertyPersistenceInfo::New();
+          newInfo->SetNameAndKey(assumedPropertyName, key);
+          newInfo->SetMimeTypeName(PropertyPersistenceInfo::ANY_MIMETYPE_NAME());
+          info = newInfo;
+        }
 
-      std::string value = dynamic_cast<itk::MetaDataObject<std::string>*>(iter->second.GetPointer())->GetMetaDataObjectValue();
+        std::string value =
+          dynamic_cast<itk::MetaDataObject<std::string> *>(iter->second.GetPointer())->GetMetaDataObjectValue();
 
-      mitk::BaseProperty::Pointer loadedProp = info->GetDeserializationFunction()(value);
+        mitk::BaseProperty::Pointer loadedProp = info->GetDeserializationFunction()(value);
 
-      image->SetProperty(assumedPropertyName.c_str(), loadedProp);
+        image->SetProperty(assumedPropertyName.c_str(), loadedProp);
 
-      // Read properties should be persisted unless they are default properties
-      // which are written anyway
-      bool isDefaultKey( false );
+        // Read properties should be persisted unless they are default properties
+        // which are written anyway
+        bool isDefaultKey(false);
 
-      for( const auto &defaultKey : m_DefaultMetaDataKeys )
-      {
-        if (defaultKey.length() <= assumedPropertyName.length())
+        for (const auto &defaultKey : m_DefaultMetaDataKeys)
         {
-          // does the start match the default key
-          if (assumedPropertyName.substr(0, defaultKey.length()).find(defaultKey) != std::string::npos)
+          if (defaultKey.length() <= assumedPropertyName.length())
           {
-            isDefaultKey = true;
-            break;
+            // does the start match the default key
+            if (assumedPropertyName.substr(0, defaultKey.length()).find(defaultKey) != std::string::npos)
+            {
+              isDefaultKey = true;
+              break;
+            }
           }
         }
-      }
 
-      if( !isDefaultKey )
-      {
-        mitk::CoreServices::GetPropertyPersistence()->AddInfo(info);
+        if (!isDefaultKey)
+        {
+          mitk::CoreServices::GetPropertyPersistence()->AddInfo(info);
+        }
       }
     }
-  }
 
   MITK_INFO << "...finished!" << std::endl;
 
