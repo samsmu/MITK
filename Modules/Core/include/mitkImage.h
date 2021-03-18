@@ -203,6 +203,19 @@ public:
   //## ITKImageImport is recommended.
   //## @sa SetPicVolume, SetImportVolume
   virtual bool SetVolume(const void *data, int t = 0, int n = 0);
+  
+      //##Documentation
+    //## @brief Set @a data in channel @a n. It is in
+    //## the responsibility of the caller to ensure that the data vector @a data
+    //## is really a channel (at least is not smaller than a channel), since there is
+    //## no chance to check this.
+    //##
+    //## The data is copied to an array managed by the image. If the image shall
+    //## reference the data, use SetImportChannel with ImportMemoryManagementType
+    //## set to ReferenceMemory. For importing ITK images use of mitk::
+    //## ITKImageImport is recommended.
+    //## @sa SetPicChannel, SetImportChannel
+    virtual bool SetChannel(const void *data, int n = 0);
 
   virtual void SetSlice(const void* data, int s = 0, int t = 0, int n = 0);
 

@@ -692,6 +692,12 @@ bool mitk::Image::SetVolume(const void *data, int t, int n)
   return SetImportVolume(const_cast<void*>(data), t, n, CopyMemory);
 }
 
+bool mitk::Image::SetChannel(const void *data, int n)
+{
+  // const_cast is no risk for ImportMemoryManagementType == CopyMemory
+  return SetImportChannel(const_cast<void *>(data), n, CopyMemory);
+}
+
 void mitk::Image::SetSlice(const void* data, int s, int t, int n)
 {
   ImageDataItem::Pointer volume = GetVolumeData(t, n);
