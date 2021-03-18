@@ -61,6 +61,16 @@ public:
     FileReaderSelector m_ReaderSelector;
     bool m_Cancel;
   };
+  
+  struct MITKCORE_EXPORT ReaderOptionsFunctorBase
+  {
+    virtual bool operator()(LoadInfo& loadInfo) = 0;
+  };
+
+  struct MITKCORE_EXPORT WriterOptionsFunctorBase
+  {
+    virtual bool operator()(SaveInfo& saveInfo) = 0;
+  };
 
   struct MITKCORE_EXPORT SaveInfo
   {
@@ -424,16 +434,6 @@ public:
   DEPRECATED(static bool SavePointSet(mitk::PointSet::Pointer pointset, const std::string& path));
 
 protected:
-
-  struct ReaderOptionsFunctorBase
-  {
-    virtual bool operator()(LoadInfo& loadInfo) = 0;
-  };
-
-  struct WriterOptionsFunctorBase
-  {
-    virtual bool operator()(SaveInfo& saveInfo) = 0;
-  };
 
   static std::string Load(std::vector<LoadInfo>& loadInfos, DataStorage::SetOfObjects* nodeResult,
                           DataStorage* ds, ReaderOptionsFunctorBase* optionsCallback, volatile bool* interrupt = nullptr);
