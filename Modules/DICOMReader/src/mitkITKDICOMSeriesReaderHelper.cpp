@@ -449,7 +449,7 @@ mitk::TimeGeometry::Pointer
         bounds[1] = boundsList[pos + 1][0];
       }
 
-      newTimeGeometry->AppendNewTimeStepClone(templateGeometry, bounds[0], bounds[1]);
+      newTimeGeometry->AppendTimeStepClone(templateGeometry, bounds[0], bounds[1]);
     }
     timeGeometry = newTimeGeometry.GetPointer();
   }
