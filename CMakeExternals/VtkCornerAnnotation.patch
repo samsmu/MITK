@@ -1,39 +1,13 @@
-diff --git a/Rendering/Annotation/vtkCornerAnnotation.h b/Rendering/Annotation/vtkCornerAnnotation.h
---- a/Rendering/Annotation/vtkCornerAnnotation.h
-+++ b/Rendering/Annotation/vtkCornerAnnotation.h
-@@ -194,6 +194,9 @@
-   vtkGetMacro(ShowSliceAndImage, int);
-   //@}
- 
-+  void SetMaximumLengthText(int i, const char* text);
-+  void QueueFontUpdate();
-+
- protected:
-   vtkCornerAnnotation();
-   ~vtkCornerAnnotation() VTK_OVERRIDE;
-@@ -219,6 +222,12 @@
-   int MinimumFontSize;
-   int MaximumFontSize;
- 
-+  char** MaximumLengthText;
-+  char** TextBuffer;
-+  bool UpdateFontSize;
-+  void FreezeFontSize(vtkViewport* viewport);
-+  int* GetBestFitFont(vtkViewport* viewport);
-+
-   double LinearFontScaleFactor;
-   double NonlinearFontScaleFactor;
- 
-
 diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation/vtkCornerAnnotation.cxx
+index 06fe07d..dbf9785 100644
 --- a/Rendering/Annotation/vtkCornerAnnotation.cxx
 +++ b/Rendering/Annotation/vtkCornerAnnotation.cxx
-@@ -43,9 +43,13 @@
+@@ -42,10 +42,12 @@ vtkCornerAnnotation::vtkCornerAnnotation()
+ 
    this->LastSize[0] = 0;
    this->LastSize[1] = 0;
- 
+-
 +  this->UpdateFontSize = false;
-+
    this->MaximumLineHeight = 1.0;
    this->MinimumFontSize = 6;
    this->MaximumFontSize = 200;
@@ -42,15 +16,15 @@ diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation
    this->LinearFontScaleFactor    = 5.0;
    this->NonlinearFontScaleFactor = 0.35;
    this->FontSize = 15;
-@@ -59,6 +63,7 @@
+@@ -59,6 +61,7 @@ vtkCornerAnnotation::vtkCornerAnnotation()
      this->TextMapper[i] = vtkTextMapper::New();
      this->TextActor[i] = vtkActor2D::New();
      this->TextActor[i]->SetMapper(this->TextMapper[i]);
 +    this->MaximumLengthText[i] = NULL;
    }
  
-   this->ImageActor = NULL;
-@@ -79,6 +84,7 @@
+   this->ImageActor = nullptr;
+@@ -79,6 +82,7 @@ vtkCornerAnnotation::~vtkCornerAnnotation()
    for (int i = 0; i < NumTextPositions; i++)
    {
      delete [] this->CornerText[i];
@@ -58,16 +32,15 @@ diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation
      this->TextMapper[i]->Delete();
      this->TextActor[i]->Delete();
    }
-@@ -383,8 +389,6 @@
+@@ -384,7 +388,6 @@ int GetNumberOfLines(const char *str)
  //----------------------------------------------------------------------------
  int vtkCornerAnnotation::RenderOpaqueGeometry(vtkViewport *viewport)
  {
 -  int fontSize;
--
+ 
    // Check to see whether we have to rebuild everything
    // If the viewport has changed we may - or may not need
-   // to rebuild, it depends on if the projected coords chage
-@@ -457,12 +461,13 @@
+@@ -458,12 +461,12 @@ int vtkCornerAnnotation::RenderOpaqueGeometry(vtkViewport *viewport)
        // Perform shallow copy here since each individual corner has a
        // different aligment/size but they share the other this->TextProperty
        // attributes.
@@ -78,26 +51,10 @@ diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation
          for (int i = 0; i < NumTextPositions; i++)
          {
 +          int fontSize = this->TextMapper[i]->GetTextProperty()->GetFontSize();
-+
            vtkTextProperty *tprop = this->TextMapper[i]->GetTextProperty();
            tprop->ShallowCopy(this->TextProperty);
            tprop->SetFontSize(fontSize);
-@@ -483,12 +488,12 @@
-           +---------+
-       */
- 
--      int tempi[2*NumTextPositions];
-+      int tempi[2 * NumTextPositions];
-       int allZeros = 1;
-       for (int i = 0; i < NumTextPositions; i++)
-       {
-         this->TextMapper[i]->GetSize(viewport, tempi + i * 2);
--        if (tempi[2*i] > 0 || tempi[2*i+1] > 0)
-+        if (tempi[2 * i] > 0 || tempi[2 * i + 1] > 0)
-         {
-           allZeros = 0;
-         }
-@@ -499,113 +504,12 @@
+@@ -500,109 +503,9 @@ int vtkCornerAnnotation::RenderOpaqueGeometry(vtkViewport *viewport)
          return 0;
        }
  
@@ -192,10 +149,7 @@ diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation
 -
 -        max_width_corners = (width_01 > width_23) ? width_01 : width_23;
 -        max_width         = (width_56 > max_width_corners) ? width_56 : max_width_corners;
-+      if (UpdateFontSize) {
-+        FreezeFontSize(viewport);
-+        UpdateFontSize = false;
-       }
+-      }
 -
 -      fontSize = static_cast<int>(pow((double)fontSize,
 -              NonlinearFontScaleFactor)*LinearFontScaleFactor);
@@ -207,15 +161,13 @@ diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation
 -      for (int i = 0; i < NumTextPositions; i++)
 -      {
 -        this->TextMapper[i]->GetTextProperty()->SetFontSize(fontSize);
--      }
--
-+      
-       // Now set the position of the TextActors
--
-       this->SetTextActorsPosition(vSize);
++      if (UpdateFontSize) {
++        FreezeFontSize(viewport);
++        UpdateFontSize = false;
+       }
  
-       for (int i = 0; i < NumTextPositions; i++)
-@@ -630,6 +534,100 @@
+       // Now set the position of the TextActors
+@@ -631,6 +534,101 @@ int vtkCornerAnnotation::RenderOpaqueGeometry(vtkViewport *viewport)
    return 1;
  }
  
@@ -313,12 +265,33 @@ diff --git a/Rendering/Annotation/vtkCornerAnnotation.cxx b/Rendering/Annotation
 +  UpdateFontSize = true;
 +}
 +
++
  //-----------------------------------------------------------------------------
  // Description:
  // Does this prop have some translucent polygonal geometry?
-@@ -753,5 +751,3 @@
-   os << indent << "TextProperty: " << this->TextProperty << endl;
-   os << indent << "ShowSliceAndImage: " << this->ShowSliceAndImage << endl;
- }
+diff --git a/Rendering/Annotation/vtkCornerAnnotation.h b/Rendering/Annotation/vtkCornerAnnotation.h
+index 0b4203c..a6d653a 100644
+--- a/Rendering/Annotation/vtkCornerAnnotation.h
++++ b/Rendering/Annotation/vtkCornerAnnotation.h
+@@ -193,7 +193,8 @@ public:
+   vtkSetMacro(ShowSliceAndImage, int);
+   vtkGetMacro(ShowSliceAndImage, int);
+   //@}
 -
--
++  void SetMaximumLengthText(int i, const char* text);
++  void QueueFontUpdate();
+ protected:
+   vtkCornerAnnotation();
+   ~vtkCornerAnnotation() override;
+@@ -218,6 +219,11 @@ protected:
+ 
+   int MinimumFontSize;
+   int MaximumFontSize;
++  char** MaximumLengthText;
++  char** TextBuffer;
++  bool UpdateFontSize;
++  void FreezeFontSize(vtkViewport* viewport);
++  int* GetBestFitFont(vtkViewport* viewport);
+ 
+   double LinearFontScaleFactor;
+   double NonlinearFontScaleFactor;
