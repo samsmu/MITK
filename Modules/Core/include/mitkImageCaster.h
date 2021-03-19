@@ -18,7 +18,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #define MITKIMAGECASTER_H
 
 #include <itkCastImageFilter.h>
+#include <itkExtractImageFilter.h>
 #include <itkImage.h>
+#include <itkVectorIndexSelectionCastImageFilter.h>
 #include <mitkImageCast.h>
 #include <mitkSurface.h>
 #include <vtkRenderWindow.h>
