@@ -19,8 +19,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkAutoSelectingDICOMReaderService.h"
 #include "mitkClassicDICOMSeriesReaderService.h"
 #include "mitkDICOMTagsOfInterestService.h"
-
-#include "mitkDICOMTagHelper.h"
+#include "mitkSimpleVolumeDICOMSeriesReaderService.h"
 
 #include <usModuleContext.h>
 
