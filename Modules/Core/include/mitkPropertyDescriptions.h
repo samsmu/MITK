@@ -29,6 +29,10 @@ namespace mitk
     ~PropertyDescriptions();
 
     bool AddDescription(const std::string& propertyName, const std::string& description, const std::string& className, bool overwrite) override;
+    bool AddDescriptionRegEx(const std::string &propertyRegEx,
+                             const std::string &description,
+                             const std::string &className,
+                             bool overwrite) override;
     std::string GetDescription(const std::string& propertyName, const std::string& className) override;
     bool HasDescription(const std::string& propertyName, const std::string& className) override;
     void RemoveAllDescriptions(const std::string& className) override;

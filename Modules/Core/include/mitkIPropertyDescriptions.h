@@ -44,7 +44,19 @@ namespace mitk
      * \return True if description was added successfully.
      */
     virtual bool AddDescription(const std::string& propertyName, const std::string& description, const std::string& className = "", bool overwrite = false) = 0;
-
+    
+    /** \brief Add a description for all properties matching the property regulary expression.
+    *
+    * \param[in] propertyRegEx String of the regular expression specifing all relevant property names.
+    * \param[in] description Description of the property.
+    * \param[in] className Optional data node class name to which this description is restricted.
+    * \param[in] overwrite Overwrite already existing description.
+    * \return True if description was added successfully.
+    */
+    virtual bool AddDescriptionRegEx(const std::string &propertyRegEx,
+                                     const std::string &description,
+                                     const std::string &className = "",
+                                     bool overwrite = false) = 0;
     /** \brief Get the description for a specific property.
      *
      * \param[in] propertyName Name of the property.

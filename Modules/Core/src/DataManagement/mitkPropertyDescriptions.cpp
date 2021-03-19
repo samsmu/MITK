@@ -43,6 +43,35 @@ bool mitk::PropertyDescriptions::AddDescription(const std::string& propertyName,
   return ret.second;
 }
 
+bool mitk::PropertyDescriptions::AddDescriptionRegEx(const std::string &propertyRegEx,
+                                                     const std::string &description,
+                                                     const std::string &className,
+                                                     bool overwrite)
+{
+  if (propertyRegEx.empty())
+    return false;
+
+  try
+  {
+    std::regex checker(propertyRegEx); // no exception => valid we can change the info
+  }
+  catch (const std::regex_error &)
+  {
+    return false;
+  }
+
+  DescriptionMap &descriptions = m_DescriptionsRegEx[className];
+  std::pair<DescriptionMapIterator, bool> ret = descriptions.insert(std::make_pair(propertyRegEx, description));
+
+  if (!ret.second && overwrite)
+  {
+    ret.first->second = description;
+    ret.second = true;
+  }
+
+  return ret.second;
+}
+
 std::string mitk::PropertyDescriptions::GetDescription(const std::string& propertyName, const std::string& className)
 {
   if (!propertyName.empty())
