@@ -28,15 +28,15 @@ namespace mitk {
   void DICOMReaderServicesActivator::Load(us::ModuleContext* context)
   {
     m_AutoSelectingDICOMReader.reset(new AutoSelectingDICOMReaderService());
-    m_ClassicDICOMSeriesReader.reset(new ClassicDICOMSeriesReaderService());
+    m_SimpleVolumeDICOMSeriesReader.reset(new SimpleVolumeDICOMSeriesReaderService());
 
     m_DICOMTagsOfInterestService.reset(new DICOMTagsOfInterestService());
     context->RegisterService<mitk::IDICOMTagsOfInterest>(m_DICOMTagsOfInterestService.get());
 
-    DefaultDICOMTagMapType tagmap = GetDefaultDICOMTagsOfInterest();
+    DICOMTagPathMapType tagmap = GetDefaultDICOMTagsOfInterest();
     for (auto tag : tagmap)
     {
-      m_DICOMTagsOfInterestService->AddTagOfInterest(tag.second);
+      m_DICOMTagsOfInterestService->AddTagOfInterest(tag.first);
     }
   }
 

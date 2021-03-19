@@ -115,7 +115,7 @@ AddTagOfInterest(const DICOMTagPath& tagPath, bool makePersistant)
   }
 };
 
-mitk::DICOMTagsOfInterestService::DICOMTagPathMapType
+mitk::DICOMTagPathMapType
 mitk::DICOMTagsOfInterestService::
 GetTagsOfInterest() const
 {
