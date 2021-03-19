@@ -157,10 +157,13 @@ void QmitkPointListViewWidget::MoveSelectedPointUp()
   if (m_PointSet.IsExpired())
     return;
 
+  auto pointSet = m_PointSet.Lock();
+
   mitk::PointSet::PointIdentifier selectedID;
-  selectedID = m_PointSet->SearchSelectedPoint(m_TimeStep);
-  mitk::PointOperation* doOp = new mitk::PointOperation(mitk::OpMOVEPOINTUP, m_PointSet->GetPoint(selectedID, m_TimeStep), selectedID, true);
-  m_PointSet->ExecuteOperation(doOp);
+  selectedID = pointSet->SearchSelectedPoint(m_TimeStep);
+  mitk::PointOperation *doOp =
+    new mitk::PointOperation(mitk::OpMOVEPOINTUP, pointSet->GetPoint(selectedID, m_TimeStep), selectedID, true);
+  pointSet->ExecuteOperation(doOp);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll(); // Workaround for update problem in Pointset/Mapper
 }
 
@@ -240,25 +243,26 @@ void QmitkPointListViewWidget::Update(bool currentRowChanged)
   }
 
   // remove unnecessary listwidgetitems
-  while (m_PointSet->GetPointSet(m_TimeStep)->GetPoints()->Size() < (unsigned int)this->count() )
+  while (pointSet->GetPointSet(m_TimeStep)->GetPoints()->Size() < (unsigned int)this->count())
   {
-    QListWidgetItem * item = this->takeItem(this->count()-1);
+    QListWidgetItem *item = this->takeItem(this->count() - 1);
     delete item;
   }
 
   // update selection in pointset or in the list widget
-  if(!currentRowChanged)
+   if (!currentRowChanged)
   {
-    if ( m_PointSet->GetNumberOfSelected( m_TimeStep ) > 1 )
+    if (pointSet->GetNumberOfSelected(m_TimeStep) > 1)
     {
       /// @TODO use logging as soon as available
-      std::cerr << "Point set has multiple selected points. This view is not designed for more than one selected point." << std::endl;
+      std::cerr << "Point set has multiple selected points. This view is not designed for more than one selected point."
+                << std::endl;
     }
 
-    int selectedIndex = m_PointSet->SearchSelectedPoint( m_TimeStep );
+    int selectedIndex = pointSet->SearchSelectedPoint(m_TimeStep);
     if (selectedIndex != -1) // no selected point is found
     {
-      this->setCurrentRow ( selectedIndex );
+      this->setCurrentRow(selectedIndex);
     }
   }
   m_SelfCall = false;
