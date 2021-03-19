@@ -65,6 +65,29 @@ namespace mitk
   protected:
     static vtkRenderer *m_3DRenderer;
   };
+  
+  template<typename TPixel, unsigned int VImageDimension>
+  void extractComponentFromVectorByItk(itk::VectorImage<TPixel, VImageDimension>* itkVectorImage, mitk::Image* mitkImage, int component)
+  {
+    typedef itk::VectorImage<TPixel, VImageDimension> InputImageType;
+    typedef itk::Image<TPixel, VImageDimension> OutputImageType;
+    typedef itk::VectorIndexSelectionCastImageFilter<InputImageType, OutputImageType> ComponentFilterType;
+
+    typename ComponentFilterType::Pointer extractor = ComponentFilterType::New();
+
+    extractor->SetInput(itkVectorImage);
+    extractor->SetIndex(component);
+    extractor->Update();
+
+    mitkImage->InitializeByItk<OutputImageType>(extractor->GetOutput());
+    mitkImage->SetVolume(extractor->GetOutput()->GetBufferPointer());
+  }
+
+  template<typename TPixel, unsigned int VImageDimension = 3U>
+  void paste3Dto4DByItk(itk::Image<TPixel, VImageDimension>* itkImage3d, mitk::Image* image4d, unsigned int t)
+  {
+    image4d->SetVolume(itkImage3d->GetBufferPointer(), t);
+  }
 } // namespace mitk
 
 #endif // MITKIMAGECASTER_H
