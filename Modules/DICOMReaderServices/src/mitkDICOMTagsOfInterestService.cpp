@@ -15,7 +15,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 #include "mitkDICOMTagsOfInterestService.h"
-#include "mitkDICOMTagHelper.h"
 
 #include "usModuleContext.h"
 #include "usGetModuleContext.h"

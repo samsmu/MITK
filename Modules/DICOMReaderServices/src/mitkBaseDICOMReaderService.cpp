@@ -21,7 +21,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkDICOMFileReaderSelector.h>
 #include <mitkImage.h>
 #include <mitkDICOMFilesHelper.h>
-#include <mitkDICOMTagHelper.h>
 #include <mitkDICOMProperty.h>
 #include <mitkDicomSeriesReader.h>
 #include <mitkLocaleSwitch.h>
