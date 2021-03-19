@@ -23,7 +23,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkDICOMFilesHelper.h>
 #include <mitkDICOMTagsOfInterestHelper.h>
 #include <mitkDICOMProperty.h>
-#include "legacy/mitkDicomSeriesReader.h"
+//#include "legacy/mitkDicomSeriesReader.h"
 #include <mitkDICOMDCMTKTagScanner.h>
 #include <mitkLocaleSwitch.h>
 #include "mitkIPropertyProvider.h"
