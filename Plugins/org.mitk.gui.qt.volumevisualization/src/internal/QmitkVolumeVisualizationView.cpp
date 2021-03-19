@@ -61,7 +61,7 @@ QmitkVolumeVisualizationView::QmitkVolumeVisualizationView()
 QmitkVolumeVisualizationView::~QmitkVolumeVisualizationView()
 {
   // Delete listeners
-  if (m_SelectedNode.IsNotNull() && m_ListeningNode) {
+  if (m_SelectedNode.IsExpired() && m_ListeningNode) {
     mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
     if (property.IsNotNull()) {
       property->RemoveObserver(m_NodeListenerTag);
@@ -123,9 +123,9 @@ void QmitkVolumeVisualizationView::CreateQtPartControl(QWidget* parent)
 
 void QmitkVolumeVisualizationView::OnMitkInternalPreset( int mode )
 {
-  if (m_SelectedNode.IsNull()) return;
+  if (m_SelectedNode.IsExpired()) return;
 
-  mitk::DataNode::Pointer node(m_SelectedNode.GetPointer());
+  auto node = m_SelectedNode.Lock();
   mitk::TransferFunctionProperty::Pointer transferFuncProp;
   if (node->GetProperty(transferFuncProp, "TransferFunction"))
   {
@@ -184,7 +184,7 @@ void QmitkVolumeVisualizationView::OnSelectionChanged(berry::IWorkbenchPart::Poi
 
     m_Controls->m_SelectedImageLabel->setText(infoText);
 
-    if (m_SelectedNode.IsNotNull() && m_ListeningNode) {
+    if (m_SelectedNode.IsExpired()() && m_ListeningNode) {
       mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
       if (property.IsNotNull()){
         property->RemoveObserver(m_NodeListenerTag);
@@ -215,13 +215,13 @@ void QmitkVolumeVisualizationView::OnSelectionChanged(berry::IWorkbenchPart::Poi
       m_Controls->m_NoSelectedImageLabel->show();
     }
 
-    if (m_SelectedNode.IsNotNull() && m_ListeningNode) {
+    if (m_SelectedNode.IsExpired() && m_ListeningNode) {
       mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
       if (property.IsNotNull()) {
         m_SelectedNode->GetProperty("volumerendering")->RemoveObserver(m_NodeListenerTag);
       }
     }
-    m_SelectedNode = 0;
+    m_SelectedNode = nullptr;
     m_NodeListenerTag = 0;
     m_ListeningNode = false;
   }
@@ -232,7 +232,7 @@ void QmitkVolumeVisualizationView::OnSelectionChanged(berry::IWorkbenchPart::Poi
 
 void QmitkVolumeVisualizationView::UpdateInterface()
 {
-  if(m_SelectedNode.IsNull())
+  if(m_SelectedNode.IsExpired())
   {
     // turnoff all
     m_Controls->m_EnableRenderingCB->setChecked(false);
@@ -253,8 +253,8 @@ void QmitkVolumeVisualizationView::UpdateInterface()
   }
 
   bool enabled = false;
-
-  m_SelectedNode->GetBoolProperty("volumerendering",enabled);
+  auto selectedNode = m_SelectedNode.Lock();
+  selectedNode->GetBoolProperty("volumerendering",enabled);
   m_Controls->m_EnableRenderingCB->setEnabled(true);
   m_Controls->m_EnableRenderingCB->setChecked(enabled);
 
@@ -283,12 +283,12 @@ void QmitkVolumeVisualizationView::UpdateInterface()
     bool usegpu=false;
     bool useray=false;
     bool usemip=false;
-    m_SelectedNode->GetBoolProperty("volumerendering.usegpu",usegpu);
-    m_SelectedNode->GetBoolProperty("volumerendering.useray",useray);
-    m_SelectedNode->GetBoolProperty("volumerendering.usemip",usemip);
+    selectedNode->GetBoolProperty("volumerendering.usegpu",usegpu);
+    selectedNode->GetBoolProperty("volumerendering.useray",useray);
+    selectedNode->GetBoolProperty("volumerendering.usemip",usemip);
 
     int blendMode;
-    if (m_SelectedNode->GetIntProperty("volumerendering.blendmode", blendMode))
+    if (selectedNode->GetIntProperty("volumerendering.blendmode", blendMode))
       m_Controls->m_BlendMode->setCurrentIndex(blendMode);
 
     if (usemip)
@@ -305,43 +305,43 @@ void QmitkVolumeVisualizationView::UpdateInterface()
 
   }
 
-  m_Controls->m_TransferFunctionWidget->SetDataNode(m_SelectedNode);
+  m_Controls->m_TransferFunctionWidget->SetDataNode(selectedNode);
   m_Controls->m_TransferFunctionWidget->setEnabled(true);
-  m_Controls->m_TransferFunctionGeneratorWidget->SetDataNode(m_SelectedNode);
+  m_Controls->m_TransferFunctionGeneratorWidget->SetDataNode(selectedNode);
   m_Controls->m_TransferFunctionGeneratorWidget->setEnabled(true);
 }
 
 
 void QmitkVolumeVisualizationView::OnEnableRendering(bool state)
 {
-  if(m_SelectedNode.IsNull())
+  if(m_SelectedNode.IsExpired())
     return;
 
-  m_SelectedNode->SetProperty("volumerendering",mitk::BoolProperty::New(state));
+  m_SelectedNode.Lock()->SetProperty("volumerendering",mitk::BoolProperty::New(state));
   RequestRenderWindowUpdate();
 }
 
 void QmitkVolumeVisualizationView::OnBlendMode(int mode)
 {
-  if (m_SelectedNode.IsNull())
+  if (m_SelectedNode.IsExpired())
     return;
-
+  auto selectedNode = m_SelectedNode.Lock();
   bool usemip = false;
 
   if (mode == vtkVolumeMapper::MAXIMUM_INTENSITY_BLEND)
     usemip = true;
 
-  m_SelectedNode->SetProperty("volumerendering.usemip", mitk::BoolProperty::New(usemip));
-  m_SelectedNode->SetProperty("volumerendering.blendmode", mitk::IntProperty::New(mode));
+  selectedNode->SetProperty("volumerendering.usemip", mitk::BoolProperty::New(usemip));
+  selectedNode->SetProperty("volumerendering.blendmode", mitk::IntProperty::New(mode));
 
   RequestRenderWindowUpdate();
 }
 
 void QmitkVolumeVisualizationView::OnRenderMode(int mode)
 {
-  if(m_SelectedNode.IsNull())
+  if(m_SelectedNode.IsExpired())
     return;
-
+  auto selectedNode = m_SelectedNode.Lock();
   bool usegpu = false;
   if (mode == GPU_RENDERMODE)
     usegpu = true;
@@ -356,8 +356,8 @@ void QmitkVolumeVisualizationView::OnRenderMode(int mode)
     usegpu = true;
   }
 
-  m_SelectedNode->SetProperty("volumerendering.usegpu",mitk::BoolProperty::New(usegpu));
-  m_SelectedNode->SetProperty("volumerendering.useray",mitk::BoolProperty::New(useray));
+  selectedNode->SetProperty("volumerendering.usegpu",mitk::BoolProperty::New(usegpu));
+  selectedNode->SetProperty("volumerendering.useray",mitk::BoolProperty::New(useray));
 
   RequestRenderWindowUpdate();
 }
@@ -371,7 +371,7 @@ void QmitkVolumeVisualizationView::NodeRemoved(const mitk::DataNode* node)
 {
   if(m_SelectedNode == node)
   {
-    m_SelectedNode=0;
+    m_SelectedNode=nullptr;
     m_NodeListenerTag = 0;
     m_ListeningNode = false;
     m_Controls->m_SelectedImageLabel->hide();
