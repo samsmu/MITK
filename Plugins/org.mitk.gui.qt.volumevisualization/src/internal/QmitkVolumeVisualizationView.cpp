@@ -62,7 +62,7 @@ QmitkVolumeVisualizationView::~QmitkVolumeVisualizationView()
 {
   // Delete listeners
   if (m_SelectedNode.IsExpired() && m_ListeningNode) {
-    mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
+    mitk::BaseProperty::Pointer property = m_SelectedNode.Lock()->GetProperty("volumerendering");
     if (property.IsNotNull()) {
       property->RemoveObserver(m_NodeListenerTag);
       m_ListeningNode = false;
@@ -185,14 +185,14 @@ void QmitkVolumeVisualizationView::OnSelectionChanged(berry::IWorkbenchPart::Poi
     m_Controls->m_SelectedImageLabel->setText(infoText);
 
     if (m_SelectedNode.IsExpired()() && m_ListeningNode) {
-      mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
+      mitk::BaseProperty::Pointer property = m_SelectedNode.Lock()->GetProperty("volumerendering");
       if (property.IsNotNull()){
         property->RemoveObserver(m_NodeListenerTag);
         m_ListeningNode = false;
       }
     }
     m_SelectedNode = node;
-    mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
+    mitk::BaseProperty::Pointer property = m_SelectedNode.Lock()->GetProperty("volumerendering");
     if (property.IsNotNull()) {
       m_NodeListenerTag = property->AddObserver(itk::ModifiedEvent(), m_ModifiedCommand);
       m_ListeningNode = true;
@@ -216,9 +216,9 @@ void QmitkVolumeVisualizationView::OnSelectionChanged(berry::IWorkbenchPart::Poi
     }
 
     if (m_SelectedNode.IsExpired() && m_ListeningNode) {
-      mitk::BaseProperty::Pointer property = m_SelectedNode->GetProperty("volumerendering");
+      mitk::BaseProperty::Pointer property = m_SelectedNode.Lock()->GetProperty("volumerendering");
       if (property.IsNotNull()) {
-        m_SelectedNode->GetProperty("volumerendering")->RemoveObserver(m_NodeListenerTag);
+        m_SelectedNode.Lock()->GetProperty("volumerendering")->RemoveObserver(m_NodeListenerTag);
       }
     }
     m_SelectedNode = nullptr;
