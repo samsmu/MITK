@@ -184,7 +184,7 @@ void QmitkVolumeVisualizationView::OnSelectionChanged(berry::IWorkbenchPart::Poi
 
     m_Controls->m_SelectedImageLabel->setText(infoText);
 
-    if (m_SelectedNode.IsExpired()() && m_ListeningNode) {
+    if (m_SelectedNode.IsExpired() && m_ListeningNode) {
       mitk::BaseProperty::Pointer property = m_SelectedNode.Lock()->GetProperty("volumerendering");
       if (property.IsNotNull()){
         property->RemoveObserver(m_NodeListenerTag);
