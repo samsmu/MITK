@@ -53,26 +53,27 @@ QmitkPointListViewWidget::~QmitkPointListViewWidget()
 
 void QmitkPointListViewWidget::SetPointSet( mitk::PointSet* pointSet )
 {
-  if(m_PointSet.IsNotNull())
+  if (!m_PointSet.IsExpired())
   {
-      m_PointSet.ObjectModified.RemoveListener
-        (mitk::MessageDelegate1<QmitkPointListViewWidget
-          , const itk::Object*>( this, &QmitkPointListViewWidget::OnPointSetChanged ));
-      m_PointSet.ObjectDelete.RemoveListener
-        (mitk::MessageDelegate1<QmitkPointListViewWidget
-          , const itk::Object*>( this, &QmitkPointListViewWidget::OnPointSetDeleted ));
+    auto pointSet = m_PointSet.Lock();
+
+    pointSet->RemoveObserver(m_PointSetModifiedTag);
+    pointSet->RemoveObserver(m_PointSetDeletedTag);
   }
 
   m_PointSet = pointSet;
 
-  if(m_PointSet.IsNotNull())
+  if (!m_PointSet.IsExpired())
   {
-      m_PointSet.ObjectModified.AddListener
-        (mitk::MessageDelegate1<QmitkPointListViewWidget
-          , const itk::Object*>( this, &QmitkPointListViewWidget::OnPointSetChanged ));
-      m_PointSet.ObjectDelete.AddListener
-        (mitk::MessageDelegate1<QmitkPointListViewWidget
-          , const itk::Object*>( this, &QmitkPointListViewWidget::OnPointSetDeleted ));
+    auto pointSet = m_PointSet.Lock();
+
+    auto onPointSetDeleted = itk::SimpleMemberCommand<QmitkPointListViewWidget>::New();
+    onPointSetDeleted->SetCallbackFunction(this, &QmitkPointListViewWidget::OnPointSetDeleted);
+    m_PointSetDeletedTag = pointSet->AddObserver(itk::DeleteEvent(), onPointSetDeleted);
+
+    auto onPointSetModified = itk::SimpleMemberCommand<QmitkPointListViewWidget>::New();
+    onPointSetModified->SetCallbackFunction(this, &QmitkPointListViewWidget::OnPointSetChanged);
+    m_PointSetModifiedTag = pointSet->AddObserver(itk::DeleteEvent(), onPointSetModified);
   }
 
   this->Update();
@@ -80,7 +81,7 @@ void QmitkPointListViewWidget::SetPointSet( mitk::PointSet* pointSet )
 
 const mitk::PointSet* QmitkPointListViewWidget::GetPointSet() const
 {
-  return m_PointSet;
+  return m_PointSet.Lock();
 }
 
 void QmitkPointListViewWidget::SetTimeStep(int t)
@@ -105,22 +106,22 @@ QmitkStdMultiWidget* QmitkPointListViewWidget::GetMultiWidget() const
   return m_MultiWidget;
 }
 
-void QmitkPointListViewWidget::OnPointSetChanged(const itk::Object*)
+void QmitkPointListViewWidget::OnPointSetChanged()
 {
   if(!m_SelfCall)
     this->Update();
 }
 
-void QmitkPointListViewWidget::OnPointSetDeleted(const itk::Object*)
+void QmitkPointListViewWidget::OnPointSetDeleted()
 {
-  this->SetPointSet(0);
+  this->SetPointSet(nullptr);
   this->Update();
 }
 
 void QmitkPointListViewWidget::OnItemDoubleClicked(QListWidgetItem * item)
 {
   QmitkEditPointDialog _EditPointDialog(this);
-  _EditPointDialog.SetPoint(m_PointSet, this->row(item), m_TimeStep);
+  _EditPointDialog.SetPoint(m_PointSet.Lock(), this->row(item), m_TimeStep);
   _EditPointDialog.exec();
 }
 
@@ -131,7 +132,7 @@ void QmitkPointListViewWidget::OnCurrentRowChanged(int)
 
 void QmitkPointListViewWidget::keyPressEvent( QKeyEvent * e )
 {
-  if (m_PointSet.IsNull())
+  if (m_PointSet.IsExpired())
     return;
 
   int key = e->key();
@@ -153,7 +154,7 @@ void QmitkPointListViewWidget::keyPressEvent( QKeyEvent * e )
 
 void QmitkPointListViewWidget::MoveSelectedPointUp()
 {
-  if (m_PointSet.IsNull())
+  if (m_PointSet.IsExpired())
     return;
 
   mitk::PointSet::PointIdentifier selectedID;
@@ -166,26 +167,32 @@ void QmitkPointListViewWidget::MoveSelectedPointUp()
 
 void QmitkPointListViewWidget::MoveSelectedPointDown()
 {
-  if (m_PointSet.IsNull())
+  if (m_PointSet.IsExpired())
     return;
 
+  auto pointSet = m_PointSet.Lock();
+
   mitk::PointSet::PointIdentifier selectedID;
-  selectedID = m_PointSet->SearchSelectedPoint(m_TimeStep);
-  mitk::PointOperation* doOp = new mitk::PointOperation(mitk::OpMOVEPOINTDOWN, m_PointSet->GetPoint(selectedID, m_TimeStep), selectedID, true);
-  m_PointSet->ExecuteOperation(doOp);
+  selectedID = pointSet->SearchSelectedPoint(m_TimeStep);
+  mitk::PointOperation *doOp =
+    new mitk::PointOperation(mitk::OpMOVEPOINTDOWN, pointSet->GetPoint(selectedID, m_TimeStep), selectedID, true);
+  pointSet->ExecuteOperation(doOp);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll(); // Workaround for update problem in Pointset/Mapper
 }
 
 
 void QmitkPointListViewWidget::RemoveSelectedPoint()
 {
-  if (m_PointSet.IsNull())
+  if (m_PointSet.IsExpired())
     return;
 
+  auto pointSet = m_PointSet.Lock();
+
   mitk::PointSet::PointIdentifier selectedID;
-  selectedID = m_PointSet->SearchSelectedPoint(m_TimeStep);
-  mitk::PointOperation* doOp = new mitk::PointOperation(mitk::OpREMOVE, m_PointSet->GetPoint(selectedID, m_TimeStep), selectedID, true);
-  m_PointSet->ExecuteOperation(doOp);
+  selectedID = pointSet->SearchSelectedPoint(m_TimeStep);
+  mitk::PointOperation *doOp =
+    new mitk::PointOperation(mitk::OpREMOVE, pointSet->GetPoint(selectedID, m_TimeStep), selectedID, true);
+  pointSet->ExecuteOperation(doOp);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll(); // Workaround for update problem in Pointset/Mapper
 }
 
@@ -194,37 +201,40 @@ void QmitkPointListViewWidget::Update(bool currentRowChanged)
   if(m_SelfCall)
     return;
 
-  if(m_PointSet.IsNull())
+  if (m_PointSet.IsExpired())
   {
     this->clear();
     return;
   }
 
+  auto pointSet = m_PointSet.Lock();
+
   m_SelfCall = true;
   QString text;
   int i = 0;
 
-  mitk::PointSet::DataType::Pointer pointset = m_PointSet->GetPointSet(m_TimeStep);
-  for (mitk::PointSet::PointsContainer::Iterator it = pointset->GetPoints()->Begin(); it != pointset->GetPoints()->End(); ++it)
+  mitk::PointSet::DataType::Pointer pointset = pointSet->GetPointSet(m_TimeStep);
+  for (mitk::PointSet::PointsContainer::Iterator it = pointset->GetPoints()->Begin();
+       it != pointset->GetPoints()->End();
+       ++it)
   {
-
     text = QString("%0: (%1, %2, %3)")
-      .arg( i, 3)
-      .arg( it.Value().GetElement(0), 0, 'f', 3 )
-      .arg( it.Value().GetElement(1), 0, 'f', 3 )
-      .arg( it.Value().GetElement(2), 0, 'f', 3 );
+             .arg(i, 3)
+             .arg(it.Value().GetElement(0), 0, 'f', 3)
+             .arg(it.Value().GetElement(1), 0, 'f', 3)
+             .arg(it.Value().GetElement(2), 0, 'f', 3);
 
-    if(i==this->count())
+    if (i == this->count())
       this->addItem(text); // insert text
     else
       this->item(i)->setText(text); // update text
 
-    if(currentRowChanged)
+    if (currentRowChanged)
     {
-      if(i == this->currentRow())
-        m_PointSet->SetSelectInfo(this->currentRow(), true, m_TimeStep);
+      if (i == this->currentRow())
+        pointSet->SetSelectInfo(this->currentRow(), true, m_TimeStep);
       else
-        m_PointSet->SetSelectInfo(it->Index(), false, m_TimeStep); // select nothing now
+        pointSet->SetSelectInfo(it->Index(), false, m_TimeStep); // select nothing now
     }
     ++i;
   }

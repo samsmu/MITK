@@ -1,7 +1,7 @@
 MITK_CREATE_MODULE(
   SUBPROJECTS MITK-DTI
-  INCLUDE_DIRS Algorithms Annotation Algorithms/BrainParcellation IODataStructures Rendering ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS MitkDiffusionCore MitkFiberTracking
+  INCLUDE_DIRS Algorithms Algorithms/BrainParcellation IODataStructures Rendering ${CMAKE_CURRENT_BINARY_DIR}
+  DEPENDS MitkDiffusionCore MitkFiberTracking MitkAnnotation
   PACKAGE_DEPENDS VTK|vtkInfovisLayout
 )
 
