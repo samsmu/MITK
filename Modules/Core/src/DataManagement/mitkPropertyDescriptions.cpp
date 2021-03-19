@@ -16,6 +16,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkPropertyDescriptions.h"
 #include <algorithm>
+#include <regex>
 #include <utility>
 
 mitk::PropertyDescriptions::PropertyDescriptions()
