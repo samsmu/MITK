@@ -24,7 +24,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 
 mitk::BaseData::BaseData() :
-  m_SourceOutputIndexDuplicate(0), m_Initialized(true)
+  m_SourceOutputIndexDuplicate(0), m_Initialized(true),
+    m_PropertyList(PropertyList::New()),
+    m_TimeGeometry(ProportionalTimeGeometry::New())
 {
   m_TimeGeometry = mitk::ProportionalTimeGeometry::New();
   m_PropertyList = PropertyList::New();
@@ -32,8 +34,11 @@ mitk::BaseData::BaseData() :
 
 mitk::BaseData::BaseData( const BaseData &other ):
 itk::DataObject(), mitk::OperationActor(),
+Identifiable(),
 m_SourceOutputIndexDuplicate(other.m_SourceOutputIndexDuplicate),
-m_Initialized(other.m_Initialized)
+m_Initialized(other.m_Initialized),
+m_PropertyList(other.m_PropertyList->Clone()),
+m_TimeGeometry(other.m_TimeGeometry->Clone())
 {
   m_TimeGeometry = dynamic_cast<TimeGeometry *>(other.m_TimeGeometry->Clone().GetPointer());
   m_PropertyList = other.m_PropertyList->Clone();
@@ -292,4 +297,64 @@ void mitk::BaseData::PrintSelf(std::ostream& os, itk::Indent indent) const
       os << "  " << (*iter).first << "   " << (*iter).second->GetValueAsString() << std::endl;
     }
   }
+}
+
+mitk::BaseProperty::ConstPointer mitk::BaseData::GetConstProperty(const std::string &propertyKey, const std::string &contextName, bool fallBackOnDefaultContext) const
+{
+  if (propertyKey.empty())
+    return nullptr;
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+    return m_PropertyList->GetProperty(propertyKey);
+
+  return nullptr;
+}
+
+mitk::BaseProperty * mitk::BaseData::GetNonConstProperty(const std::string &propertyKey, const std::string &contextName, bool fallBackOnDefaultContext)
+{
+  if (propertyKey.empty())
+    return nullptr;
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+    return m_PropertyList->GetProperty(propertyKey);
+
+  return nullptr;
+}
+
+void mitk::BaseData::SetProperty(const std::string &propertyKey, BaseProperty *property, const std::string &contextName, bool fallBackOnDefaultContext)
+{
+  if (propertyKey.empty())
+    mitkThrow() << "Property key is empty.";
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+  {
+    m_PropertyList->SetProperty(propertyKey, property);
+    return;
+  }
+
+  mitkThrow() << "Unknown or unsupported non-default property context.";
+}
+
+void mitk::BaseData::RemoveProperty(const std::string &propertyKey, const std::string &contextName, bool fallBackOnDefaultContext)
+{
+  if (propertyKey.empty())
+    mitkThrow() << "Property key is empty.";
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+  {
+    m_PropertyList->RemoveProperty(propertyKey);
+    return;
+  }
+
+  mitkThrow() << "Unknown or unsupported non-default property context.";
+}
+
+std::vector<std::string> mitk::BaseData::GetPropertyKeys(const std::string &/*contextName*/, bool /*includeDefaultContext*/) const
+{
+  return m_PropertyList->GetPropertyKeys();
+}
+
+std::vector<std::string> mitk::BaseData::GetPropertyContextNames() const
+{
+  return std::vector<std::string>();
 }

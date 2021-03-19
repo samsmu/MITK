@@ -37,10 +37,20 @@ namespace mitk {
 //## from itk::DataObject and thus can be included in a pipeline.
 //## Inherits also from OperationActor and can be used as a destination for Undo
 //## @ingroup Data
-class MITKCORE_EXPORT BaseData : public itk::DataObject, public OperationActor
+class MITKCORE_EXPORT BaseData : public itk::DataObject, public OperationActor, public Identifiable, public IPropertyOwner
 {
 public:
   mitkClassMacroItkParent(BaseData,itk::DataObject)
+  
+  // IPropertyProvider
+  BaseProperty::ConstPointer GetConstProperty(const std::string &propertyKey, const std::string &contextName = "", bool fallBackOnDefaultContext = true) const override;
+  std::vector<std::string> GetPropertyKeys(const std::string &contextName = "", bool includeDefaultContext = false) const override;
+  std::vector<std::string> GetPropertyContextNames() const override;
+
+  // IPropertyOwner
+  BaseProperty * GetNonConstProperty(const std::string &propertyKey, const std::string &contextName = "", bool fallBackOnDefaultContext = true) override;
+  void SetProperty(const std::string &propertyKey, BaseProperty *property, const std::string &contextName = "", bool fallBackOnDefaultContext = false) override;
+  void RemoveProperty(const std::string &propertyKey, const std::string &contextName = "", bool fallBackOnDefaultContext = false) override;
 
   /**
   * \brief Return the TimeGeometry of the data as const pointer.
