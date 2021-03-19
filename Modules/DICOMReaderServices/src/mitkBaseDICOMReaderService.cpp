@@ -23,9 +23,17 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkDICOMFilesHelper.h>
 #include <mitkDICOMTagsOfInterestHelper.h>
 #include <mitkDICOMProperty.h>
-#include <mitkDicomSeriesReader.h>
+#include "legacy/mitkDicomSeriesReader.h"
+#include <mitkDICOMDCMTKTagScanner.h>
 #include <mitkLocaleSwitch.h>
+#include "mitkIPropertyProvider.h"
+#include "mitkPropertyNameHelper.h"
+
 #include <iostream>
+
+
+#include <itksys/SystemTools.hxx>
+#include <itksys/Directory.hxx>
 
 namespace mitk {
 
@@ -33,6 +41,11 @@ namespace mitk {
     : AbstractFileReader(CustomMimeType(IOMimeTypes::DICOM_MIMETYPE()), description)
 {
 }
+
+  BaseDICOMReaderService::BaseDICOMReaderService(const mitk::CustomMimeType& customType, const std::string& description)
+    : AbstractFileReader(customType, description)
+  {
+  }
 
 std::vector<itk::SmartPointer<BaseData> > BaseDICOMReaderService::Read()
 {
@@ -89,6 +102,46 @@ StringList BaseDICOMReaderService::GetRelevantFiles() const
 
   return relevantFiles;
 }
+
+IFileReader::ConfidenceLevel BaseDICOMReaderService::GetConfidenceLevel() const
+{
+  IFileReader::ConfidenceLevel abstractConfidence = AbstractFileReader::GetConfidenceLevel();
+
+  if (Unsupported == abstractConfidence)
+  {
+    if (itksys::SystemTools::FileIsDirectory(this->GetInputLocation().c_str()))
+    {
+      // In principle we support dicom directories
+      return Supported;
+    }
+  }
+
+  return abstractConfidence;
+}
+
+std::string GenerateNameFromDICOMProperties(const mitk::IPropertyProvider* provider)
+{
+  std::string nodeName = mitk::DataNode::NO_NAME_VALUE();
+
+  auto studyProp = provider->GetConstProperty(mitk::GeneratePropertyNameForDICOMTag(0x0020, 0x000D).c_str());
+  if (studyProp.IsNotNull())
+  {
+    nodeName = studyProp->GetValueAsString();
+  }
+
+  auto seriesProp = provider->GetConstProperty(mitk::GeneratePropertyNameForDICOMTag(0x0020, 0x000E).c_str());
+
+  if (seriesProp.IsNotNull())
+  {
+    if (studyProp.IsNotNull())
+    {
+      nodeName += " / ";
+    }
+    nodeName += seriesProp->GetValueAsString();
+  }
+
+  return nodeName;
+};
 
 
 }

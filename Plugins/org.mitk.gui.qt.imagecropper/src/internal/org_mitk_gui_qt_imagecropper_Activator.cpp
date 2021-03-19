@@ -13,27 +13,18 @@ A PARTICULAR PURPOSE.
 See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
-#ifndef MITKPLUGINACTIVATOR_H
-#define MITKPLUGINACTIVATOR_H
 
-#include <ctkPluginActivator.h>
+#include <mitkBoundingShapeObjectFactory.h>
 
-namespace mitk {
+#include "org_mitk_gui_qt_imagecropper_Activator.h"
+#include "QmitkImageCropper.h"
 
-class ImageCropperPluginActivator :
-  public QObject, public ctkPluginActivator
+void mitk::org_mitk_gui_qt_imagecropper_Activator::start(ctkPluginContext* context)
 {
-  Q_OBJECT
-  Q_PLUGIN_METADATA(IID "org_mitk_gui_qt_imagecropper")
-  Q_INTERFACES(ctkPluginActivator)
-
-public:
-
-  void start(ctkPluginContext* context) override;
-  void stop(ctkPluginContext* context) override;
-
-}; // PluginActivator
-
+  RegisterBoundingShapeObjectFactory();
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkImageCropper, context)
 }
 
-#endif // MITKPLUGINACTIVATOR_H
+void mitk::org_mitk_gui_qt_imagecropper_Activator::stop(ctkPluginContext*)
+{
+}

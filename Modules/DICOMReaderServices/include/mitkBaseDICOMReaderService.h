@@ -20,22 +20,27 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkAbstractFileReader.h>
 #include <mitkDICOMFileReader.h>
 
+#include "MitkDICOMReaderExports.h"
+
 namespace mitk {
 
   /**
   Base class for service wrappers that make DICOMFileReader from
   the DICOMReader module usable.
   */
-class BaseDICOMReaderService : public AbstractFileReader
+class MITKDICOMREADER_EXPORT BaseDICOMReaderService : public AbstractFileReader
 {
 public:
   BaseDICOMReaderService(const std::string& description);
+  BaseDICOMReaderService(const mitk::CustomMimeType& customType, const std::string& description);
 
   using AbstractFileReader::Read;
 
   /** Uses this->GetRelevantFile() and this->GetReader to load the image.
    * data and puts it into base data instances-*/
-  virtual std::vector<itk::SmartPointer<BaseData> > Read() override;
+  std::vector<itk::SmartPointer<BaseData> > Read() override;
+
+  IFileReader::ConfidenceLevel GetConfidenceLevel() const override;
 
 protected:
   /** Returns the list of all DCM files that are in the same directory
@@ -46,6 +51,13 @@ protected:
    * one the passed relevant file list.*/
   virtual mitk::DICOMFileReader::Pointer GetReader(const mitk::StringList& relevantFiles) const = 0;
 };
+
+
+class IPropertyProvider;
+
+/** Helper function that generates a name string (e.g. for DataNode names) from the DICOM properties of the passed
+  provider instance. If the instance is nullptr, or has no dicom properties DataNode::NO_NAME_VALUE() will be returned.*/
+std::string MITKDICOMREADER_EXPORT GenerateNameFromDICOMProperties(const mitk::IPropertyProvider* provider);
 
 }
 

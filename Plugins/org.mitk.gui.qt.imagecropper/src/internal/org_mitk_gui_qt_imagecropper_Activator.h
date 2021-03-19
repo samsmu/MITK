@@ -14,19 +14,23 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include "mitkImageCropperPluginActivator.h"
-#include "QmitkImageCropper.h"
+#ifndef org_mitk_gui_qt_imagecropper_Activator_h
+#define org_mitk_gui_qt_imagecropper_Activator_h
 
-namespace mitk {
+#include <ctkPluginActivator.h>
 
-void ImageCropperPluginActivator::start(ctkPluginContext* context)
+namespace mitk
 {
-  BERRY_REGISTER_EXTENSION_CLASS( QmitkImageCropper, context )
+  class org_mitk_gui_qt_imagecropper_Activator : public QObject, public ctkPluginActivator
+  {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org_mitk_gui_qt_imagecropper")
+    Q_INTERFACES(ctkPluginActivator)
+
+  public:
+    void start(ctkPluginContext* context) override;
+    void stop(ctkPluginContext* context) override;
+  };
 }
 
-void ImageCropperPluginActivator::stop(ctkPluginContext* context)
-{
-  Q_UNUSED(context)
-}
-
-}
+#endif

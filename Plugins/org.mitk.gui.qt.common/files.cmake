@@ -2,6 +2,7 @@ set(SRC_CPP_FILES
   QmitkAbstractRenderEditor.cpp
   QmitkAbstractView.cpp
   QmitkDataNodeSelectionProvider.cpp
+  QmitkSliceNavigationListener.cpp
   QmitkDnDFrameWidget.cpp
   PluginLocker.cpp
 )
@@ -15,6 +16,7 @@ set(INTERNAL_CPP_FILES
 
 set(MOC_H_FILES
   src/QmitkAbstractRenderEditor.h
+  src/QmitkSliceNavigationListener.h
   src/QmitkDnDFrameWidget.h
   src/PluginLocker.h
 
