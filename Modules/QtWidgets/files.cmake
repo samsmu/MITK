@@ -37,6 +37,7 @@ QmitkDataStorageComboBoxWithSelectNone.cpp
 QmitkPropertyItem.cpp
 QmitkPropertyItemDelegate.cpp
 QmitkPropertyItemModel.cpp
+QmitkStyleManager.cpp
 QmitkSynchronizeSelectedData.cpp
 QmitkShadowWidget.cpp
 mitkCrosshairManager.cpp
