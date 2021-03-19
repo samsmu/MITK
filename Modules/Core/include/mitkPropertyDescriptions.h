@@ -47,6 +47,7 @@ namespace mitk
     PropertyDescriptions& operator=(const PropertyDescriptions&);
 
     std::map<std::string, DescriptionMap> m_Descriptions;
+    std::map<std::string, DescriptionMap> m_DescriptionsRegEx;
   };
 }
 
