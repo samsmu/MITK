@@ -70,6 +70,7 @@ set(CPP_FILES
   DataManagement/mitkGeometryData.cpp
   DataManagement/mitkGeometryTransformHolder.cpp
   DataManagement/mitkGroupTagProperty.cpp
+  DataManagement/mitkIdentifiable.cpp
   DataManagement/mitkIPersistenceService.cpp
   DataManagement/mitkIPropertyAliases.cpp
   DataManagement/mitkIPropertyDescriptions.cpp
