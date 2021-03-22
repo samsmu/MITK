@@ -44,9 +44,9 @@ namespace mitk {
 {
 }
 
-DICOMFilePathList2 BaseDICOMReaderService::GetDICOMFilesInSameDirectory2(const std::string& filePath)
+std::vector<std::string> BaseDICOMReaderService::GetDICOMFilesInSameDirectory2(const std::string& filePath)
 {
-  DICOMFilePathList2 result;
+  std::vector<std::string> result;
 
   if (!filePath.empty())
   {
@@ -58,11 +58,11 @@ DICOMFilePathList2 BaseDICOMReaderService::GetDICOMFilesInSameDirectory2(const s
   }
 
   return result;
-};
+}
 
-DICOMFilePathList2 BaseDICOMReaderService::FilterForDICOMFiles2(const DICOMFilePathList2& fileList)
+std::vector<std::string> BaseDICOMReaderService::FilterForDICOMFiles2(const std::vector<std::string>& fileList)
 {
-  mitk::DICOMFilePathList2 result;
+  std::vector<std::string> result;
 
   itk::GDCMImageIO::Pointer io = itk::GDCMImageIO::New();
   for (auto aFile : fileList)
