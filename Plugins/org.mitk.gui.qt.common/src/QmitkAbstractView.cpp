@@ -45,6 +45,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <QScrollArea>
 #include <QVBoxLayout>
 
+using namespace boost::placeholders;
+
 class QmitkAbstractViewPrivate
 {
 public:
