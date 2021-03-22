@@ -585,3 +585,154 @@ void mitk::DataNode::PropertyListModified( const itk::Object* /*caller*/, const 
   Modified();
 }
 
+mitk::BaseProperty::ConstPointer mitk::DataNode::GetConstProperty(const std::string &propertyKey, const std::string &contextName, bool fallBackOnDefaultContext) const
+{
+  if (propertyKey.empty())
+    return nullptr;
+
+  if (!contextName.empty())
+  {
+    auto propertyListIter = m_MapOfPropertyLists.find(contextName);
+
+    if (m_MapOfPropertyLists.end() != propertyListIter)
+    {
+      BaseProperty::ConstPointer property = propertyListIter->second->GetProperty(propertyKey);
+
+      if (property.IsNotNull())
+        return property;
+    }
+  }
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+  {
+    BaseProperty::ConstPointer property = m_PropertyList->GetProperty(propertyKey);
+
+    if (property.IsNull() && m_Data.IsNotNull())
+      property = m_Data->GetProperty(propertyKey.c_str());
+
+    return property;
+  }
+
+  return nullptr;
+}
+
+mitk::BaseProperty * mitk::DataNode::GetNonConstProperty(const std::string &propertyKey, const std::string &contextName, bool fallBackOnDefaultContext)
+{
+  if (propertyKey.empty())
+    return nullptr;
+
+  if (!contextName.empty())
+  {
+    auto propertyListIter = m_MapOfPropertyLists.find(contextName);
+
+    if (m_MapOfPropertyLists.end() != propertyListIter)
+    {
+      auto property = propertyListIter->second->GetProperty(propertyKey);
+
+      if (nullptr != property)
+        return property;
+    }
+  }
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+  {
+    auto property = m_PropertyList->GetProperty(propertyKey);
+
+    if (nullptr == property && m_Data.IsNotNull())
+      property = m_Data->GetProperty(propertyKey.c_str());
+
+    return property;
+  }
+
+  return nullptr;
+}
+
+void mitk::DataNode::SetProperty(const std::string &propertyKey, BaseProperty *property, const std::string &contextName, bool fallBackOnDefaultContext)
+{
+  if (propertyKey.empty())
+    mitkThrow() << "Property key is empty.";
+
+  if (!contextName.empty())
+  {
+    auto propertyListIter = m_MapOfPropertyLists.find(contextName);
+
+    if (m_MapOfPropertyLists.end() != propertyListIter)
+    {
+      propertyListIter->second->SetProperty(propertyKey, property);
+      return;
+    }
+  }
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+  {
+    m_PropertyList->SetProperty(propertyKey, property);
+    return;
+  }
+
+  mitkThrow() << "Unknown property context.";
+}
+
+void mitk::DataNode::RemoveProperty(const std::string &propertyKey, const std::string &contextName, bool fallBackOnDefaultContext)
+{
+  if (propertyKey.empty())
+    mitkThrow() << "Property key is empty.";
+
+  if (!contextName.empty())
+  {
+    auto propertyListIter = m_MapOfPropertyLists.find(contextName);
+
+    if (m_MapOfPropertyLists.end() != propertyListIter)
+    {
+      propertyListIter->second->RemoveProperty(propertyKey);
+      return;
+    }
+  }
+
+  if (contextName.empty() || fallBackOnDefaultContext)
+  {
+    m_PropertyList->RemoveProperty(propertyKey);
+    return;
+  }
+
+  mitkThrow() << "Unknown property context.";
+}
+
+std::vector<std::string> mitk::DataNode::GetPropertyKeys(const std::string &contextName, bool includeDefaultContext) const
+{
+  std::vector<std::string> propertyKeys;
+
+  if (contextName.empty())
+  {
+    for (auto property : *m_PropertyList->GetMap())
+      propertyKeys.push_back(property.first);
+
+    return propertyKeys;
+  }
+
+  auto propertyListIter = m_MapOfPropertyLists.find(contextName);
+
+  if (m_MapOfPropertyLists.end() != propertyListIter)
+  {
+    for (auto property : *propertyListIter->second->GetMap())
+      propertyKeys.push_back(property.first);
+  }
+
+  if (includeDefaultContext)
+  {
+    for (auto property : *m_PropertyList->GetMap())
+    {
+      auto propertyKeyIter = std::find(propertyKeys.begin(), propertyKeys.end(), property.first);
+
+      if (propertyKeys.end() == propertyKeyIter)
+        propertyKeys.push_back(property.first);
+    }
+  }
+
+  return propertyKeys;
+}
+
+std::vector<std::string> mitk::DataNode::GetPropertyContextNames() const
+{
+  return this->GetPropertyListNames();
+}
+

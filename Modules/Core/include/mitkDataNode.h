@@ -85,6 +85,16 @@ public:
 
   itkFactorylessNewMacro(Self)
   itkCloneMacro(Self)
+  
+  // IPropertyProvider
+  BaseProperty::ConstPointer GetConstProperty(const std::string &propertyKey, const std::string &contextName = "", bool fallBackOnDefaultContext = true) const override;
+  std::vector<std::string> GetPropertyKeys(const std::string &contextName = "", bool includeDefaultContext = false) const override;
+  std::vector<std::string> GetPropertyContextNames() const override;
+
+  // IPropertyOwner
+  BaseProperty * GetNonConstProperty(const std::string &propertyKey, const std::string &contextName = "", bool fallBackOnDefaultContext = true) override;
+  void SetProperty(const std::string &propertyKey, BaseProperty *property, const std::string &contextName = "", bool fallBackOnDefaultContext = false) override;
+  void RemoveProperty(const std::string &propertyKey, const std::string &contextName = "", bool fallBackOnDefaultContext = false) override;
 
   mitk::Mapper* GetMapper(MapperSlotId id) const;
 
