@@ -39,7 +39,7 @@ public:
    * data and puts it into base data instances-*/
   std::vector<itk::SmartPointer<BaseData> > Read() override;
   DICOMFilePathList2 GetDICOMFilesInSameDirectory2(const std::string& filePath);
-  DICOMFilePathList2 FilterForDICOMFiles2(const DICOMFilePathList& fileList);
+  DICOMFilePathList2 FilterForDICOMFiles2(const DICOMFilePathList2& fileList);
 protected:
   /** Returns the list of all DCM files that are in the same directory
    * like this->GetLocalFileName().*/
