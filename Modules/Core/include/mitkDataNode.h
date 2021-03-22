@@ -22,6 +22,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkIdentifiable.h"
 //#include "mitkMapper.h"
 #include "mitkDataInteractor.h"
+#include "mitkIPropertyOwner.h"
 
 #ifdef MBI_NO_STD_NAMESPACE
 #define MBI_STD
@@ -64,7 +65,7 @@ class Mapper;
  * \warning Change in semantics of SetProperty() since Aug 25th 2006. Check your usage of this method if you do
  *          more with properties than just call <tt>SetProperty( "key", new SomeProperty("value") )</tt>.
  */
-class MITKCORE_EXPORT DataNode : public itk::DataObject
+class MITKCORE_EXPORT DataNode : public itk::DataObject, public Identifiable, public IPropertyOwner
 {
 public:
 
