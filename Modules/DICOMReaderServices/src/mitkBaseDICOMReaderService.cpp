@@ -124,7 +124,7 @@ std::vector<itk::SmartPointer<BaseData> > BaseDICOMReaderService::Read()
   return result;
 }
 
-StringList BaseDICOMReaderService::GetRelevantFiles() const
+StringList BaseDICOMReaderService::GetRelevantFiles()
 {
   std::string fileName = this->GetLocalFileName();
 

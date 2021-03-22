@@ -42,7 +42,7 @@ public:
 protected:
   /** Returns the list of all DCM files that are in the same directory
    * like this->GetLocalFileName().*/
-  mitk::StringList GetRelevantFiles() const;
+  mitk::StringList GetRelevantFiles();
 
   /** Returns the reader instance that should be used. The descission may be based
    * one the passed relevant file list.*/
