@@ -44,7 +44,7 @@ namespace mitk {
 {
 }
 
-DICOMFilePathList GetDICOMFilesInSameDirectory2(const std::string& filePath)
+DICOMFilePathList2 BaseDICOMReaderService::GetDICOMFilesInSameDirectory2(const std::string& filePath)
 {
   DICOMFilePathList result;
 
@@ -60,7 +60,7 @@ DICOMFilePathList GetDICOMFilesInSameDirectory2(const std::string& filePath)
   return result;
 };
 
-DICOMFilePathList FilterForDICOMFiles2(const DICOMFilePathList& fileList)
+DICOMFilePathList2 BaseDICOMReaderService::FilterForDICOMFiles2(const DICOMFilePathList& fileList)
 {
   mitk::DICOMFilePathList result;
 
