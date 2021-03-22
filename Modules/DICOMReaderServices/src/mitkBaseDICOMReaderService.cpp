@@ -31,7 +31,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <iostream>
 
-
+#include <itkGDCMImageIO.h>
+#include <itksys/SystemTools.hxx>
+#include <gdcmDirectory.h>
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
 
@@ -41,6 +43,38 @@ namespace mitk {
     : AbstractFileReader(CustomMimeType(IOMimeTypes::DICOM_MIMETYPE()), description)
 {
 }
+
+DICOMFilePathList GetDICOMFilesInSameDirectory2(const std::string& filePath)
+{
+  DICOMFilePathList result;
+
+  if (!filePath.empty())
+  {
+    std::string dir = itksys::SystemTools::GetFilenamePath(filePath);
+
+    gdcm::Directory directoryLister;
+    directoryLister.Load(dir.c_str(), false); // non-recursive
+    result = FilterForDICOMFiles2(directoryLister.GetFilenames());
+  }
+
+  return result;
+};
+
+DICOMFilePathList FilterForDICOMFiles2(const DICOMFilePathList& fileList)
+{
+  mitk::DICOMFilePathList result;
+
+  itk::GDCMImageIO::Pointer io = itk::GDCMImageIO::New();
+  for (auto aFile : fileList)
+  {
+    if (io->CanReadFile(aFile.c_str()))
+    {
+      result.push_back(aFile);
+    }
+  }
+
+  return result;
+};
 
 
 std::vector<itk::SmartPointer<BaseData> > BaseDICOMReaderService::Read()
@@ -94,7 +128,7 @@ StringList BaseDICOMReaderService::GetRelevantFiles() const
 {
   std::string fileName = this->GetLocalFileName();
 
-  mitk::StringList relevantFiles = mitk::GetDICOMFilesInSameDirectory(fileName);
+  mitk::StringList relevantFiles = GetDICOMFilesInSameDirectory2(fileName);
 
   return relevantFiles;
 }
