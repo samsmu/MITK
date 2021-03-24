@@ -750,12 +750,19 @@ bool mitk::Image::SetImportChannel(void *data, int n, ImportMemoryManagementType
 void mitk::Image::Initialize()
 {
   ImageDataItemPointerArray::iterator it, end;
-  for( it=m_Volumes.begin(), end=m_Volumes.end(); it!=end; ++it )
+  for (it = m_Slices.begin(), end = m_Slices.end(); it != end; ++it)
   {
-    (*it)=nullptr;
+    (*it) = nullptr;
   }
-
-  //m_Data = nullptr;
+  for (it = m_Volumes.begin(), end = m_Volumes.end(); it != end; ++it)
+  {
+    (*it) = nullptr;
+  }
+  for (it = m_Channels.begin(), end = m_Channels.end(); it != end; ++it)
+  {
+    (*it) = nullptr;
+  }
+  m_CompleteData = nullptr;
 
   if( m_ImageStatistics == nullptr)
   {
@@ -840,7 +847,11 @@ void mitk::Image::Initialize(const mitk::PixelType& type, unsigned int dimension
 
   ImageDataItemPointer dnull=nullptr;
 
-  m_Volumes.assign(GetNumberOfChannels()*m_Dimensions[3], dnull);
+  m_Channels.assign(GetNumberOfChannels(), dnull);
+
+  m_Volumes.assign(GetNumberOfChannels() * m_Dimensions[3], dnull);
+
+  m_Slices.assign(GetNumberOfChannels() * m_Dimensions[3] * m_Dimensions[2], dnull);
 
   ComputeOffsetTable();
 
