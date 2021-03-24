@@ -224,7 +224,7 @@ void mitk::Image::SetMetaDataDictionary(DicomTagToValueList& array)
 }
 
 mitk::Image::Image() :
-  m_Dimension(0), m_Dimensions(nullptr), m_ImageDescriptor(nullptr), m_OffsetTable(nullptr),
+  m_Dimension(0), m_Dimensions(nullptr), m_ImageDescriptor(nullptr), m_OffsetTable(nullptr),m_CompleteData(nullptr),
   m_ImageStatistics(nullptr)
 {
   m_Dimensions = new unsigned int[MAX_IMAGE_DIMENSIONS];
@@ -233,7 +233,7 @@ mitk::Image::Image() :
   m_Initialized = false;
 }
 
-mitk::Image::Image(const Image &other) : SlicedData(other), m_Dimension(0), m_Dimensions(nullptr),
+mitk::Image::Image(const Image &other) : SlicedData(other), m_Dimension(0), m_Dimensions(nullptr),m_CompleteData(nullptr),
   m_ImageDescriptor(nullptr), m_OffsetTable(nullptr), m_ImageStatistics(nullptr)
 {
   m_Dimensions = new unsigned int[MAX_IMAGE_DIMENSIONS];
@@ -297,26 +297,6 @@ unsigned int mitk::Image::GetDimension(int i) const
   if((i>=0) && (i<(int)m_Dimension))
     return m_Dimensions[i];
   return 1;
-}
-
-bool mitk::Image::canAddAccessLock(ImageAccessLock* lock)
-{
-  bool writeAccess = lock->getWriteAccess();
-  if (writeAccess) {
-    for (const auto& reader : m_ReaderLocks) {
-      if (reader->getAccessor()->overlap(*lock->getAccessor())) {
-        return false;
-      }
-    }
-  }
-
-  for (const auto& writer : m_WriterLocks) {
-    if (writer->getAccessor()->overlap(*lock->getAccessor())) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 mitk::Image::ImageDataItemPointer mitk::Image::GetChannelData(int n,

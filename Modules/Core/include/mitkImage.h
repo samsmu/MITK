@@ -634,6 +634,7 @@ protected:
   unsigned int* m_Dimensions;
 
   ImageDescriptor::Pointer m_ImageDescriptor;
+  ImageDataItemPointer m_CompleteData;
 
   size_t *m_OffsetTable;
 
