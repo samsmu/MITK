@@ -307,6 +307,26 @@ mitk::Image::ImageDataItemPointer mitk::Image::GetChannelData(int n,
   return GetChannelData_unlocked(n, data, importMemoryManagement);
 }
 
+bool mitk::Image::canAddAccessLock(ImageAccessLock* lock)
+{
+  bool writeAccess = lock->getWriteAccess();
+  if (writeAccess) {
+    for (const auto& reader : m_ReaderLocks) {
+      if (reader->getAccessor()->overlap(*lock->getAccessor())) {
+        return false;
+      }
+    }
+  }
+
+  for (const auto& writer : m_WriterLocks) {
+    if (writer->getAccessor()->overlap(*lock->getAccessor())) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void mitk::Image::addAccessLock(ImageAccessLock* lock) {
   if (lock->getWriteAccess()) {
     m_WriterLocks.push_back(lock);
