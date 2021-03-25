@@ -60,17 +60,17 @@ QmitkRenderWindow::QmitkRenderWindow(QWidget *parent,
 {
   // Needed if QVTKWidget2 is used instead of QVTKWidget
   //this will be fixed in VTK source if change 18864 is accepted
-  /*QGLFormat newform = this->format();
+  QGLFormat newform = this->format();
   newform.setSamples(8);
-  this->setFormat(newform);*/
+  this->setFormat(newform);
 
   // init crosshair position by 0/0
   m_CrosshairPosition[0] = 0;
   m_CrosshairPosition[1] = 0;
 
-  QSurfaceFormat surfaceFormat = windowHandle()->format();
+  /*QSurfaceFormat surfaceFormat = windowHandle()->format();
   surfaceFormat.setStencilBufferSize(8);
-  windowHandle()->setFormat(surfaceFormat);
+  windowHandle()->setFormat(surfaceFormat);*/
 
   if (renderingMode == mitk::BaseRenderer::RenderingMode::DepthPeeling)
   {
