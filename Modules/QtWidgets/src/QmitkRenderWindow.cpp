@@ -26,6 +26,7 @@
 #include <QResizeEvent>
 #include <QTextBrowser>
 #include <QTimer>
+#include <QGLFormat>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QScrollArea>
