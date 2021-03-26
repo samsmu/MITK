@@ -52,6 +52,7 @@ namespace mitk
     static void SetDefaultProperties(mitk::DataNode *node, mitk::BaseRenderer *renderer = nullptr, bool overwrite = false);
 
     void setClippingPlanes(vtkPlanes* planes);
+    void removeClippingPlanes()  { m_SmartVolumeMapper->RemoveAllClippingPlanes(); }
 
   protected:
     VolumeMapperVtkSmart3D();

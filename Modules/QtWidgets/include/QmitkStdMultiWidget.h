@@ -17,6 +17,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef QmitkStdMultiWidget_h
 #define QmitkStdMultiWidget_h
 
+#include <functional>
+
 #include "MitkQtWidgetsExports.h"
 
 #include <mitkLogoOverlay.h>
@@ -27,6 +29,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <qwidget.h>
 #include <qsplitter.h>
 #include <QFrame>
+
+#include <vtk3DWidget.h>
+#include <vtkCallbackCommand.h>
 
 #include <mitkCrosshairManager.h>
 #include <QmitkRenderWindow.h>
@@ -167,6 +172,51 @@ public:
   void showVolumeRendering(bool state);
   bool getVolumeRenderingState();
 
+  struct Vtk3DWidgetAdapter: vtkCallbackCommand {
+    vtkSmartPointer<vtk3DWidget> widget;
+    typedef std::function<void(vtkObject*, unsigned long, void*)> Function;
+    Function interactionSlot;
+    static void interactionCallback(vtkObject* caller, unsigned long eid, void *clientdata, void *calldata)
+    {
+      Vtk3DWidgetAdapter* that = reinterpret_cast<Vtk3DWidgetAdapter*>(clientdata);
+      if (that && that->interactionSlot)  {
+        that->interactionSlot(caller, eid, calldata);
+      }
+    }
+    Vtk3DWidgetAdapter(vtkSmartPointer<vtk3DWidget> _widget, Function _interactionSlot):
+      widget(_widget), interactionSlot(_interactionSlot)
+    {
+      if (interactionSlot) {
+        SetCallback(interactionCallback);
+        SetClientData(this);
+        widget->AddObserver(vtkCommand::InteractionEvent, this);
+      }
+    }
+    static Vtk3DWidgetAdapter *New(vtkSmartPointer<vtk3DWidget> _widget=nullptr, Function _interactionSlot=nullptr)
+    {
+        return new Vtk3DWidgetAdapter(_widget, _interactionSlot);
+    }
+  };
+
+  template<class Widget>
+  Vtk3DWidgetAdapter* get3DWidget(vtkSmartPointer<Widget> (*widgetMaker)(), bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
+  {
+    auto it = m_vtkWidgets.find((void(*)())widgetMaker);
+    if (it != m_vtkWidgets.end())  return it->second.GetPointer();
+
+    if (!createIfNeed)  return nullptr;
+
+    auto callback = Vtk3DWidgetAdapter::New(widgetMaker(), interactionSlot);
+    auto renderer = GetRenderWindow4();
+
+    callback->widget->SetDefaultRenderer(renderer->GetRenderer()->GetVtkRenderer());
+    callback->widget->SetInteractor(renderer->GetInteractor());
+
+    m_vtkWidgets.emplace((void(*)())widgetMaker, callback);
+
+    return callback;
+  }
+
 signals:
   void vrStateChanged(bool state);
 
@@ -178,6 +228,8 @@ protected:
   mitk::PropertyList::Pointer imageProperties;
 
   AnnotationOverlay m_annotationOverlay;
+
+  std::map< void(*)(), vtkSmartPointer<Vtk3DWidgetAdapter> > m_vtkWidgets;
 
 public slots:
 
