@@ -77,6 +77,12 @@ mitk::VtkPropRenderer::VtkPropRenderer(const char* name, vtkRenderWindow * renWi
   m_CurrentWorldPlaneGeometryNode->SetMapper(2, geometryMapper);
 
   m_LightKit = vtkLightKit::New();
+  m_LightKit->SetKeyLightIntensity(1.7); // dfl. 0.75
+  m_LightKit->SetKeyToFillRatio(3.);      // 3
+  m_LightKit->SetKeyToHeadRatio(3.);      // 3
+  m_LightKit->SetKeyToBackRatio(15.);     // 3.5
+  m_LightKit->SetKeyLightAngle(35., -25.); // Ev. 50, Az. 10
+  m_LightKit->SetFillLightAngle(-50., 25.); // -75, 10
   m_LightKit->AddLightsToRenderer(m_VtkRenderer);
   m_PickingMode = WorldPointPicking;
 
