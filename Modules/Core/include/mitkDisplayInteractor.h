@@ -355,6 +355,15 @@ namespace mitk
     // If set will be filtering all 2d events out. Otherwise all 3d events
     bool m_Only3D;
 
+    enum class Sign
+    {
+        Unkown = 0,
+        Positive,
+        Negative
+    };
+
+    Sign m_ThicklessSign = Sign::Unkown;
+
     SNCVector m_RotatableSNCs; /// all SNCs that currently have CreatedWorldGeometries, that can be rotated.
     SNCVector m_SNCsToBeRotated; /// all SNCs that will be rotated (exceptions are the ones parallel to the one being clicked)
 

@@ -587,6 +587,7 @@ bool mitk::DisplayInteractor::CheckChangeThicknessPossible(const InteractionEven
     {
         if (anyOtherGeometry->IntersectionPoint(intersectionLineWithGeometry, m_CenterOfRotation))
         {
+            m_ThicklessSign = Sign::Unkown;
             return true;
         }
         else
@@ -1096,7 +1097,21 @@ void mitk::DisplayInteractor::ChangeThickness(StateMachineAction*, InteractionEv
     }
 
     Point3D cursor = posEvent->GetPositionInWorld();
-    int num = std::abs(((cursor - m_CenterOfRotation) * m_orthogonalVectorThickness) / m_correctionFactorThickness);
+    int num = ((cursor - m_CenterOfRotation) * m_orthogonalVectorThickness / m_correctionFactorThickness);
+
+    if (m_ThicklessSign == Sign::Unkown)
+    {
+        m_ThicklessSign = (num > 0) ? Sign::Positive : Sign::Negative;
+    }
+    else
+    {
+        if ((m_ThicklessSign == Sign::Negative && num > 0) || (m_ThicklessSign == Sign::Positive && num < 0))
+        {
+            num = 0;
+        }
+    }
+
+    num = std::abs(num);
 
     for (SNCVector::iterator iter = m_SNCsToBeRotated.begin(); iter != m_SNCsToBeRotated.end(); ++iter)
     {
