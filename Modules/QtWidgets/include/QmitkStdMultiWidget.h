@@ -190,6 +190,8 @@ public:
         SetCallback(interactionCallback);
         SetClientData(this);
         widget->AddObserver(vtkCommand::InteractionEvent, this);
+        widget->AddObserver(vtkCommand::StartInteractionEvent, this);
+        widget->AddObserver(vtkCommand::EndInteractionEvent, this);
       }
     }
     static Vtk3DWidgetAdapter *New(vtkSmartPointer<vtk3DWidget> _widget=nullptr, Function _interactionSlot=nullptr)
@@ -198,8 +200,8 @@ public:
     }
   };
 
-  template<class Widget>
-  Vtk3DWidgetAdapter* get3DWidget(vtkSmartPointer<Widget> (*widgetMaker)(), bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
+  template<class MakerReturn>
+  Vtk3DWidgetAdapter* get3DWidget(MakerReturn (*widgetMaker)(), bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
   {
     auto it = m_vtkWidgets.find((void(*)())widgetMaker);
     if (it != m_vtkWidgets.end())  return it->second.GetPointer();
