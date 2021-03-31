@@ -648,6 +648,42 @@ QTreeView::indicator:checked:selected, QTreeView::indicator:indeterminate:select
   image: url(:/org.blueberry.ui.qt/dark/checkbox-checked-hover.svg);
 }
 
+QTreeWidget::branch:closed:has-children:has-siblings,
+QTreeWidget::branch:closed:has-children:!has-siblings {
+  image: url(:/org.blueberry.ui.qt/dark/right-arrow.svg);
+}
+
+QTreeWidget::branch:closed:has-children:has-siblings:hover,
+QTreeWidget::branch:closed:has-children:!has-siblings:hover {
+  image: url(:/org.blueberry.ui.qt/dark/right-arrow-hover.svg);
+}
+
+QTreeWidget::branch:open:has-children:has-siblings,
+QTreeWidget::branch:open:has-children:!has-siblings {
+  image: url(:/org.blueberry.ui.qt/dark/down-arrow.svg);
+}
+
+QTreeWidget::branch:open:has-children:has-siblings:hover,
+QTreeWidget::branch:open:has-children:!has-siblings:hover {
+  image: url(:/org.blueberry.ui.qt/dark/down-arrow-hover.svg);
+}
+
+QTreeWidget::indicator:unchecked {
+  image: url(:/org.blueberry.ui.qt/dark/checkbox-unchecked.svg);
+}
+
+QTreeWidget::indicator:unchecked:selected {
+  image: url(:/org.blueberry.ui.qt/dark/checkbox-unchecked-hover.svg);
+}
+
+QTreeWidget::indicator:checked, QTreeWidget::indicator:indeterminate {
+  image: url(:/org.blueberry.ui.qt/dark/checkbox-checked.svg);
+}
+
+QTreeWidget::indicator:checked:selected, QTreeWidget::indicator:indeterminate:selected {
+  image: url(:/org.blueberry.ui.qt/dark/checkbox-checked-hover.svg);
+}
+
 QProgressBar {
   text-align: center;
 }
