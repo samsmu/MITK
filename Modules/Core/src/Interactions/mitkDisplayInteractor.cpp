@@ -43,6 +43,7 @@
 #include <mitkRotationOperation.h>
 #include "rotate_cursor.xpm"
 #include "movement_cursor.xpm"
+#include "crosshair_cursor.xpm"
 #include "mitkInteractionConst.h"
 
 //
@@ -85,6 +86,9 @@ void mitk::DisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("ScrollTimeOneUp", ScrollTimeOneUp);
 
   CONNECT_FUNCTION("levelWindow", AdjustLevelWindow);
+
+  CONNECT_FUNCTION("startChangeCrosshair", StartChangeCrosshair);
+  CONNECT_FUNCTION("endChangeCrosshair", EndChangeCrosshair);
   CONNECT_FUNCTION("setCrosshair", SetCrosshair);
 
   CONNECT_FUNCTION("doubleClick", SetCrosshair);
@@ -725,6 +729,16 @@ void mitk::DisplayInteractor::Move(StateMachineAction*, InteractionEvent* intera
     sender->GetRenderingManager()->RequestUpdate(sender->GetRenderWindow());
   }
   m_LastDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
+}
+
+void mitk::DisplayInteractor::StartChangeCrosshair(StateMachineAction*, InteractionEvent*)
+{
+    this->SetMouseCursor(crosshair_cursor_xpm, 0, 0);
+}
+
+void mitk::DisplayInteractor::EndChangeCrosshair(StateMachineAction*, InteractionEvent*)
+{
+    this->ResetMouseCursor();
 }
 
 void mitk::DisplayInteractor::SetCrosshair(mitk::StateMachineAction *, mitk::InteractionEvent *interactionEvent)
