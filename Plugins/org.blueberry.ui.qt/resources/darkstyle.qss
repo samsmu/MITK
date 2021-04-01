@@ -835,7 +835,7 @@ QLabel#study_tree_header{
 }
 
 QTreeWidget#study_tree{
-  background: rgb(53,53,53);
+  background: rgb(45,45,48);
   padding: 0px;
   margin: 0px;
   border-style: outset;
