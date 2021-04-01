@@ -136,6 +136,8 @@ namespace mitk
     /**
      * \brief Sets crosshair at clicked position*
      */
+    virtual void StartChangeCrosshair(StateMachineAction*, InteractionEvent*);
+    virtual void EndChangeCrosshair(StateMachineAction*, InteractionEvent*);
     virtual void SetCrosshair(StateMachineAction*, InteractionEvent*);
 
     /**
