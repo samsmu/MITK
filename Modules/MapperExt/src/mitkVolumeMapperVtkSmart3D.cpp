@@ -73,17 +73,17 @@ void mitk::VolumeMapperVtkSmart3D::SetDefaultProperties(mitk::DataNode *node, mi
   node->AddProperty("volumerendering", mitk::BoolProperty::New(false), renderer, overwrite);
   node->AddProperty("volumerendering.usemip", mitk::BoolProperty::New(false), renderer, overwrite);
 
-  node->AddProperty("volumerendering.cpu.ambient", mitk::FloatProperty::New(0.10f), renderer, overwrite);
-  node->AddProperty("volumerendering.cpu.diffuse", mitk::FloatProperty::New(0.50f), renderer, overwrite);
-  node->AddProperty("volumerendering.cpu.specular", mitk::FloatProperty::New(0.40f), renderer, overwrite);
-  node->AddProperty("volumerendering.cpu.specular.power", mitk::FloatProperty::New(16.0f), renderer, overwrite);
+  node->AddProperty("volumerendering.cpu.ambient", mitk::FloatProperty::New(0.50f), renderer, overwrite);
+  node->AddProperty("volumerendering.cpu.diffuse", mitk::FloatProperty::New(0.22f), renderer, overwrite);
+  node->AddProperty("volumerendering.cpu.specular", mitk::FloatProperty::New(0.01f), renderer, overwrite);
+  node->AddProperty("volumerendering.cpu.specular.power", mitk::FloatProperty::New(32.0f), renderer, overwrite);
   node->AddProperty("volumerendering.usegpu", mitk::BoolProperty::New(false), renderer, overwrite);
   node->AddProperty("volumerendering.useray", mitk::BoolProperty::New(false), renderer, overwrite);
 
-  node->AddProperty("volumerendering.gpu.ambient", mitk::FloatProperty::New(0.25f), renderer, overwrite);
-  node->AddProperty("volumerendering.gpu.diffuse", mitk::FloatProperty::New(0.50f), renderer, overwrite);
-  node->AddProperty("volumerendering.gpu.specular", mitk::FloatProperty::New(0.40f), renderer, overwrite);
-  node->AddProperty("volumerendering.gpu.specular.power", mitk::FloatProperty::New(16.0f), renderer, overwrite);
+  node->AddProperty("volumerendering.gpu.ambient", mitk::FloatProperty::New(0.50f), renderer, overwrite);
+  node->AddProperty("volumerendering.gpu.diffuse", mitk::FloatProperty::New(0.45f), renderer, overwrite);
+  node->AddProperty("volumerendering.gpu.specular", mitk::FloatProperty::New(0.001f), renderer, overwrite);
+  node->AddProperty("volumerendering.gpu.specular.power", mitk::FloatProperty::New(8.0f), renderer, overwrite);
 
   node->AddProperty("binary", mitk::BoolProperty::New(false), renderer, overwrite);
 
@@ -224,8 +224,12 @@ void mitk::VolumeMapperVtkSmart3D::UpdateRenderMode(mitk::BaseRenderer *renderer
     m_SmartVolumeMapper->SetBlendMode(vtkSmartVolumeMapper::MAXIMUM_INTENSITY_BLEND);
 
   // shading parameter
-  if (m_SmartVolumeMapper->GetRequestedRenderMode() == vtkSmartVolumeMapper::GPURenderMode)
+  auto lm = m_SmartVolumeMapper->GetLastUsedRenderMode();
+  auto rm = m_SmartVolumeMapper->GetRequestedRenderMode();
+  static int gpuAck = false;
+  if (( rm == vtkSmartVolumeMapper::DefaultRenderMode && (gpuAck || lm == vtkSmartVolumeMapper::GPURenderMode) ) || rm == vtkSmartVolumeMapper::GPURenderMode)
   {
+    gpuAck = true;
     float value = 0;
     if (this->GetDataNode()->GetFloatProperty("volumerendering.gpu.ambient", value, renderer))
       m_VolumeProperty->SetAmbient(value);
