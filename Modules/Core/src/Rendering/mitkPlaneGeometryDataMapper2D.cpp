@@ -377,23 +377,35 @@ void mitk::PlaneGeometryDataMapper2D::CreateVtkCrosshair(mitk::BaseRenderer *ren
         x *= 3*m;
         auto y = 3*m*orthogonalVector;
 
-        for (auto t: handles)
+
+        std::vector<Point3D> ends{ crossLine.GetPoint1() , crossLine.GetPoint2() };
+
+        if (!intersections.empty())
         {
-          auto p = crossLine.GetPoint(t);
+            double sign = -1.0;
+            for (auto endPoint : ends)
+            {
+                auto intersection = intersections[0];
+                const auto offset = (endPoint.EuclideanDistanceTo(crossLine.GetPoint(intersection)) / lineLength) * 0.8 * sign;
 
-          auto p0 = p - y + x;
-          auto p1 = p + y + x;
-          auto p2 = p + y - x; 
-          auto p3 = p - y - x;
+                sign = 1.0;
 
-          auto polygon = vtkSmartPointer<vtkPolygon>::New();
-          polygon->GetPointIds()->SetNumberOfIds(4);
-          polygon->GetPointIds()->SetId(0, polygonPoints->InsertNextPoint(p0[0], p0[1], p0[2]));
-          polygon->GetPointIds()->SetId(1, polygonPoints->InsertNextPoint(p1[0], p1[1], p1[2]));
-          polygon->GetPointIds()->SetId(2, polygonPoints->InsertNextPoint(p2[0], p2[1], p2[2]));
-          polygon->GetPointIds()->SetId(3, polygonPoints->InsertNextPoint(p3[0], p3[1], p3[2]));
+                auto p = crossLine.GetPoint(intersection + offset);
 
-          polygones->InsertNextCell(polygon);
+                auto p0 = p - y + x;
+                auto p1 = p + y + x;
+                auto p2 = p + y - x;
+                auto p3 = p - y - x;
+
+                auto polygon = vtkSmartPointer<vtkPolygon>::New();
+                polygon->GetPointIds()->SetNumberOfIds(4);
+                polygon->GetPointIds()->SetId(0, polygonPoints->InsertNextPoint(p0[0], p0[1], p0[2]));
+                polygon->GetPointIds()->SetId(1, polygonPoints->InsertNextPoint(p1[0], p1[1], p1[2]));
+                polygon->GetPointIds()->SetId(2, polygonPoints->InsertNextPoint(p2[0], p2[1], p2[2]));
+                polygon->GetPointIds()->SetId(3, polygonPoints->InsertNextPoint(p3[0], p3[1], p3[2]));
+
+                polygones->InsertNextCell(polygon);
+            }
         }
       }
 

@@ -300,10 +300,25 @@ bool mitk::DisplayInteractor::CheckRotationPossible(const mitk::InteractionEvent
     }
 
     // check distance from one of handles
-    double distanceFromIntersectionLine = handles.empty()? threshholdDistancePixels : cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(handles[0]));
-    if (handles.size() > 1) {
-      double d = cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(handles[1]));
-      if (d < distanceFromIntersectionLine) distanceFromIntersectionLine = d;
+    double distanceFromIntersectionLine = threshholdDistancePixels;
+    std::vector<Point3D> ends{ intersectionLine.GetPoint1() , intersectionLine.GetPoint2() };
+    if (!intersections.empty())
+    {
+        double lineLength = ends[0].EuclideanDistanceTo(ends[1]);
+        double sign = -1.0;
+        for (auto endPoint : ends)
+        {
+            auto intersection = intersections[0];
+            const auto offset = (endPoint.EuclideanDistanceTo(intersectionLine.GetPoint(intersection)) / lineLength) * 0.8 * sign;
+
+            sign = 1.0;
+
+            auto distance = cursorPosition.EuclideanDistanceTo(intersectionLine.GetPoint(intersection + offset));
+            if (distance < distanceFromIntersectionLine)
+            {
+                distanceFromIntersectionLine = distance;
+            }
+        }
     }
 
     // far away, only remember for linked rotation if necessary
