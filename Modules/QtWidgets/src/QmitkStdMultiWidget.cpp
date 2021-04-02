@@ -2102,30 +2102,34 @@ void QmitkStdMultiWidget::SetDecorationColor(unsigned int widgetNumber, mitk::Co
   }
 }
 
+mitk::DataNode* QmitkStdMultiWidget::GetSelectedNode()
+{
+  if (m_DataStorage.IsNull()) {
+    return nullptr;
+  }
+  // Get currently selected serie
+  mitk::BoolProperty::Pointer selProperty(mitk::BoolProperty::New(true));
+  mitk::NodePredicateProperty::Pointer selPredicate = mitk::NodePredicateProperty::New("series_selected", selProperty);
+  mitk::DataStorage::SetOfObjects::ConstPointer selNodes = m_DataStorage->GetSubset(selPredicate);
+  if (selNodes->size() > 0) {
+    return selNodes->at(0);
+  }
+  // No series. Try to fallback at segmentation geometries
+  selPredicate = mitk::NodePredicateProperty::New("selected", selProperty);
+  selNodes = m_DataStorage->GetSubset(selPredicate);
+  if (selNodes->size() > 0) {
+    return selNodes->at(0);
+  }
+  return nullptr;
+}
+
 void QmitkStdMultiWidget::ResetCrosshair()
 {
   if (m_DataStorage.IsNull()) {
     return;
   }
 
-  // Get currently selected serie
-  mitk::BoolProperty::Pointer selProperty(mitk::BoolProperty::New(true));
-  mitk::NodePredicateProperty::Pointer selPredicate = mitk::NodePredicateProperty::New("series_selected", selProperty);
-  mitk::DataStorage::SetOfObjects::ConstPointer selNodes = m_DataStorage->GetSubset(selPredicate);
-  mitk::DataNode* selNode = nullptr;
-  if (selNodes->size() > 0) {
-    selNode = selNodes->at(0);
-  }
-
-  if (selNode == nullptr) {
-    // No series. Try to fallback at segmentation geometries
-    mitk::BoolProperty::Pointer selProperty(mitk::BoolProperty::New(true));
-    mitk::NodePredicateProperty::Pointer selPredicate = mitk::NodePredicateProperty::New("selected", selProperty);
-    mitk::DataStorage::SetOfObjects::ConstPointer selNodes = m_DataStorage->GetSubset(selPredicate);
-    if (selNodes->size() > 0) {
-      selNode = selNodes->at(0);
-    }
-  }
+  mitk::DataNode* selNode = GetSelectedNode();
 
   if (selNode != nullptr) {
     mitk::BaseData::Pointer baseData = selNode->GetData();

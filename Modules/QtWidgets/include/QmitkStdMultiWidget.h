@@ -133,6 +133,9 @@ public:
 
   void SetDataStorage( mitk::DataStorage* ds );
 
+  /// Search node labeled with "series_selected" or "selected" property
+  mitk::DataNode* GetSelectedNode();
+
   /** \brief Listener to the CrosshairPositionEvent
 
     Ensures the CrosshairPositionEvent is handled only once and at the end of the Qt-Event loop
