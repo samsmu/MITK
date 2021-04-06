@@ -182,6 +182,7 @@ public:
     mitk::DataNode::Pointer node;
     mitk::Point3D center;
     double bounds[6];
+    bool isNew=true;
     static void interactionCallback(vtkObject* caller, unsigned long eid, void *clientdata, void *calldata)
     {
       Vtk3DWidgetAdapter* that = reinterpret_cast<Vtk3DWidgetAdapter*>(clientdata);
@@ -189,7 +190,8 @@ public:
         that->interactionSlot(caller, eid, calldata);
       }
     }
-    Vtk3DWidgetAdapter(vtkSmartPointer<vtk3DWidget> _widget, Function _interactionSlot, mitk::DataNode* _node):
+    Vtk3DWidgetAdapter(vtkSmartPointer<vtk3DWidget> _widget, Function _interactionSlot, mitk::DataNode* _node,
+        vtkRenderer* renderer=nullptr, QVTKInteractor* interactor=nullptr, mitk::BaseGeometry* geometry=nullptr):
       widget(_widget), interactionSlot(_interactionSlot), node(_node)
     {
       if (interactionSlot) {
@@ -198,55 +200,61 @@ public:
         widget->AddObserver(vtkCommand::InteractionEvent, this);
         widget->AddObserver(vtkCommand::StartInteractionEvent, this);
         widget->AddObserver(vtkCommand::EndInteractionEvent, this);
-      }
-    }
-    static Vtk3DWidgetAdapter *New(vtkSmartPointer<vtk3DWidget> _widget=nullptr, Function _interactionSlot=nullptr, mitk::DataNode* _node=nullptr)
-    {
-        return new Vtk3DWidgetAdapter(_widget, _interactionSlot, _node);
-    }
-  };
-
-  template<class MakerReturn>
-  Vtk3DWidgetAdapter* get3DWidget(MakerReturn (*widgetMaker)(), bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
-  {
-    auto it = m_vtkWidgets.find((void(*)())widgetMaker);
-    if (it != m_vtkWidgets.end()) {
-      if (createIfNeed) it->second->node = GetSelectedNode();
-      else {
-        it->second->widget->Off();
-        return it->second.GetPointer();
-      }
-    } else {
-      if (!createIfNeed)  return nullptr;
-
-      auto callback = Vtk3DWidgetAdapter::New(widgetMaker(), interactionSlot, GetSelectedNode());
-      auto renderer = GetRenderWindow4();
-
-      callback->widget->SetDefaultRenderer(renderer->GetRenderer()->GetVtkRenderer());
-      callback->widget->SetInteractor(renderer->GetInteractor());
-
-      it = m_vtkWidgets.emplace((void(*)())widgetMaker, callback).first;
-    }
-    if (it->second->node) {
-      if (auto image = dynamic_cast<mitk::Image*>(it->second->node->GetData())) {
-        if (auto geometry = image->GetGeometry()) {
-          it->second->center = geometry->GetCenter();
-          auto imageBounds = geometry->GetBounds();
-          mitk::Vector3D indexDiagonal;
-          indexDiagonal[0] = imageBounds[1] - imageBounds[0];
-          indexDiagonal[1] = imageBounds[3] - imageBounds[2];
-          indexDiagonal[2] = imageBounds[5] - imageBounds[4];
-          mitk::Vector3D diagonal;
-          geometry->IndexToWorld(indexDiagonal, diagonal);
-          for (int i=0; i<3; ++i) {
-            diagonal[i] = std::abs(diagonal[i])/2;
-            it->second->bounds[i*2] =   it->second->center[i] - diagonal[i];
-            it->second->bounds[i*2+1] = it->second->center[i] + diagonal[i];
-          }
+        widget->SetDefaultRenderer(renderer);
+        widget->SetInteractor(interactor);
+        center = geometry->GetCenter();
+        auto imageBounds = geometry->GetBounds();
+        mitk::Vector3D indexDiagonal;
+        indexDiagonal[0] = imageBounds[1] - imageBounds[0];
+        indexDiagonal[1] = imageBounds[3] - imageBounds[2];
+        indexDiagonal[2] = imageBounds[5] - imageBounds[4];
+        mitk::Vector3D diagonal;
+        geometry->IndexToWorld(indexDiagonal, diagonal);
+        for (int i=0; i<3; ++i) {
+          diagonal[i] = std::abs(diagonal[i])/2;
+          bounds[i*2] =   center[i] - diagonal[i];
+          bounds[i*2+1] = center[i] + diagonal[i];
         }
       }
     }
-    return it->second.GetPointer();
+    static Vtk3DWidgetAdapter *New(vtkSmartPointer<vtk3DWidget> _widget=nullptr, Function _interactionSlot=nullptr, mitk::DataNode* _node=nullptr,
+      vtkRenderer* renderer=nullptr, QVTKInteractor* interactor=nullptr, mitk::BaseGeometry* geometry=nullptr)
+    {
+        return new Vtk3DWidgetAdapter(_widget, _interactionSlot, _node, renderer, interactor, geometry);
+    }
+  };
+
+  Vtk3DWidgetAdapter* get3DWidget(void(*makerId)(), std::function<vtk3DWidget*(void)> widgetMaker, bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
+  {
+    mitk::DataNode::Pointer node = createIfNeed? mitk::DataNode::Pointer(GetSelectedNode()) : mitk::DataNode::Pointer(m_activeWidgetNodes[makerId]);
+    vtkSmartPointer<Vtk3DWidgetAdapter> adapter = nullptr;
+    auto it = m_vtkWidgets.find(std::make_pair(makerId, node.GetPointer()));
+    if (createIfNeed) m_activeWidgetNodes[makerId] = node;
+    if (it != m_vtkWidgets.end()) {
+      adapter = it->second;
+      if (!createIfNeed && adapter) {
+        adapter->widget->Off();
+      }
+    }
+    if (!createIfNeed)  return adapter.GetPointer();
+
+    auto renderer = GetRenderWindow4();
+    if (!renderer || !node)  return  nullptr;
+    auto image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (!image) return nullptr;
+    auto geometry = image->GetGeometry();
+    if (!geometry) return nullptr;
+
+    if (!adapter) {
+      adapter = Vtk3DWidgetAdapter::New(widgetMaker(), interactionSlot, node, renderer->GetRenderer()->GetVtkRenderer(), renderer->GetInteractor(), geometry);
+      m_vtkWidgets.emplace(std::make_pair(makerId, node.GetPointer()), adapter);
+    } else adapter->node = node;
+    return adapter.GetPointer();
+  }
+  template<typename Maker>
+  Vtk3DWidgetAdapter* get3DWidget(Maker widgetMaker, bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
+  {
+    return get3DWidget((void(*)())widgetMaker, widgetMaker, createIfNeed, interactionSlot);
   }
 
 signals:
@@ -261,7 +269,8 @@ protected:
 
   AnnotationOverlay m_annotationOverlay;
 
-  std::map< void(*)(), vtkSmartPointer<Vtk3DWidgetAdapter> > m_vtkWidgets;
+  std::map< std::pair<void(*)(),mitk::DataNode*>, vtkSmartPointer<Vtk3DWidgetAdapter> > m_vtkWidgets;
+  std::map< void(*)(), mitk::WeakPointer<mitk::DataNode> > m_activeWidgetNodes;
 
 public slots:
 
