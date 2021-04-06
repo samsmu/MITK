@@ -53,6 +53,7 @@ namespace mitk
 
     void setClippingPlanes(vtkPlanes* planes);
     void removeClippingPlanes()  { m_SmartVolumeMapper->RemoveAllClippingPlanes(); }
+    void addClippingPlane(vtkPlane* plane)  { m_SmartVolumeMapper->AddClippingPlane(plane); }
 
   protected:
     VolumeMapperVtkSmart3D();

@@ -179,6 +179,9 @@ public:
     vtkSmartPointer<vtk3DWidget> widget;
     typedef std::function<void(vtkObject*, unsigned long, void*)> Function;
     Function interactionSlot;
+    mitk::DataNode::Pointer node;
+    mitk::Point3D center;
+    double bounds[6];
     static void interactionCallback(vtkObject* caller, unsigned long eid, void *clientdata, void *calldata)
     {
       Vtk3DWidgetAdapter* that = reinterpret_cast<Vtk3DWidgetAdapter*>(clientdata);
@@ -186,8 +189,8 @@ public:
         that->interactionSlot(caller, eid, calldata);
       }
     }
-    Vtk3DWidgetAdapter(vtkSmartPointer<vtk3DWidget> _widget, Function _interactionSlot):
-      widget(_widget), interactionSlot(_interactionSlot)
+    Vtk3DWidgetAdapter(vtkSmartPointer<vtk3DWidget> _widget, Function _interactionSlot, mitk::DataNode* _node):
+      widget(_widget), interactionSlot(_interactionSlot), node(_node)
     {
       if (interactionSlot) {
         SetCallback(interactionCallback);
@@ -197,9 +200,9 @@ public:
         widget->AddObserver(vtkCommand::EndInteractionEvent, this);
       }
     }
-    static Vtk3DWidgetAdapter *New(vtkSmartPointer<vtk3DWidget> _widget=nullptr, Function _interactionSlot=nullptr)
+    static Vtk3DWidgetAdapter *New(vtkSmartPointer<vtk3DWidget> _widget=nullptr, Function _interactionSlot=nullptr, mitk::DataNode* _node=nullptr)
     {
-        return new Vtk3DWidgetAdapter(_widget, _interactionSlot);
+        return new Vtk3DWidgetAdapter(_widget, _interactionSlot, _node);
     }
   };
 
@@ -207,19 +210,43 @@ public:
   Vtk3DWidgetAdapter* get3DWidget(MakerReturn (*widgetMaker)(), bool createIfNeed=true, Vtk3DWidgetAdapter::Function interactionSlot=nullptr)
   {
     auto it = m_vtkWidgets.find((void(*)())widgetMaker);
-    if (it != m_vtkWidgets.end())  return it->second.GetPointer();
+    if (it != m_vtkWidgets.end()) {
+      if (createIfNeed) it->second->node = GetSelectedNode();
+      else {
+        it->second->widget->Off();
+        return it->second.GetPointer();
+      }
+    } else {
+      if (!createIfNeed)  return nullptr;
 
-    if (!createIfNeed)  return nullptr;
+      auto callback = Vtk3DWidgetAdapter::New(widgetMaker(), interactionSlot, GetSelectedNode());
+      auto renderer = GetRenderWindow4();
 
-    auto callback = Vtk3DWidgetAdapter::New(widgetMaker(), interactionSlot);
-    auto renderer = GetRenderWindow4();
+      callback->widget->SetDefaultRenderer(renderer->GetRenderer()->GetVtkRenderer());
+      callback->widget->SetInteractor(renderer->GetInteractor());
 
-    callback->widget->SetDefaultRenderer(renderer->GetRenderer()->GetVtkRenderer());
-    callback->widget->SetInteractor(renderer->GetInteractor());
-
-    m_vtkWidgets.emplace((void(*)())widgetMaker, callback);
-
-    return callback;
+      it = m_vtkWidgets.emplace((void(*)())widgetMaker, callback).first;
+    }
+    if (it->second->node) {
+      if (auto image = dynamic_cast<mitk::Image*>(it->second->node->GetData())) {
+        if (auto geometry = image->GetGeometry()) {
+          it->second->center = geometry->GetCenter();
+          auto imageBounds = geometry->GetBounds();
+          mitk::Vector3D indexDiagonal;
+          indexDiagonal[0] = imageBounds[1] - imageBounds[0];
+          indexDiagonal[1] = imageBounds[3] - imageBounds[2];
+          indexDiagonal[2] = imageBounds[5] - imageBounds[4];
+          mitk::Vector3D diagonal;
+          geometry->IndexToWorld(indexDiagonal, diagonal);
+          for (int i=0; i<3; ++i) {
+            diagonal[i] = std::abs(diagonal[i])/2;
+            it->second->bounds[i*2] =   it->second->center[i] - diagonal[i];
+            it->second->bounds[i*2+1] = it->second->center[i] + diagonal[i];
+          }
+        }
+      }
+    }
+    return it->second.GetPointer();
   }
 
 signals:
