@@ -79,7 +79,7 @@ void QmitkStdMultiWidget::UpdateAnnotationFonts()
   }
 }
 
-QmitkStdMultiWidget::QmitkStdMultiWidget(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager, mitk::BaseRenderer::RenderingMode::Type renderingMode, bool useFXAA, const QString& name, bool crosshairVisibility3D)
+QmitkStdMultiWidget::QmitkStdMultiWidget(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager, mitk::BaseRenderer::RenderingMode::Type renderingMode, bool useFXAA, const QString& name, bool crosshairVisibility3D, WidgetType type)
   : QWidget(parent, f),
   mitkWidget1(NULL),
   mitkWidget2(NULL),
@@ -105,7 +105,8 @@ QmitkStdMultiWidget::QmitkStdMultiWidget(QWidget* parent, Qt::WindowFlags f, mit
   m_drawTextInStatusBar(true),
   m_Name(name),
   m_ShadowWidgets{ nullptr, nullptr, nullptr, nullptr },
-  m_ShadowWidgetVisible{ false, false, false, false }
+  m_ShadowWidgetVisible{ false, false, false, false },
+  m_WidgetType(type)
 {
   /******************************************************
   * Use the global RenderingManager if none was specified

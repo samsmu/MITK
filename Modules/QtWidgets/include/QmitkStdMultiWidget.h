@@ -67,7 +67,18 @@ private:
   void UpdateAnnotationFonts();
 
 public:
-  QmitkStdMultiWidget(QWidget* parent = 0, Qt::WindowFlags f = 0, mitk::RenderingManager* renderingManager = 0, mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard, bool useFXAA = true, const QString& name = "stdmulti", bool crosshairVisibility3D = true);
+  // the main widget uses the data storage set in the editor (global data storage), the additional widget uses its local data storage
+  enum WidgetType { MAIN_WIDGET, ADDITIONAL_WIDGET };
+
+  QmitkStdMultiWidget(QWidget* parent = 0,
+    Qt::WindowFlags f = 0,
+    mitk::RenderingManager* renderingManager = 0,
+    mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard,
+    bool useFXAA = true,
+    const QString& name = "stdmulti",
+    bool crosshairVisibility3D = true,
+    WidgetType type = WidgetType::MAIN_WIDGET
+  );
   virtual ~QmitkStdMultiWidget();
 
   mitk::SliceNavigationController*
@@ -534,6 +545,8 @@ protected:
   bool m_CrosshairNavigationEnabled;
 
   QString m_Name;
+
+  WidgetType m_WidgetType;
 
   /**
    * @brief CreateCornerAnnotation helper method to create a corner annotation.
