@@ -207,6 +207,9 @@ void QmitkRenderWindowMenu::CreateSettingsWidget()
   m_LeftAxialRight2DLayoutAction = new QAction( QAction::tr("Axial left, 2D right"), m_Settings );
   m_LeftAxialRight2DLayoutAction->setDisabled( false );
 
+  m_SagittalUpAndAxialDownLayoutAction = new QAction( QAction::tr("Sagittal top, Axial bottom"), m_Settings );
+  m_SagittalUpAndAxialDownLayoutAction->setDisabled( false );
+
   m_Settings->addAction(m_DefaultLayoutAction);
   m_Settings->addAction(m_2DImagesUpLayoutAction);
   m_Settings->addAction(m_2DImagesLeftLayoutAction);
@@ -220,6 +223,7 @@ void QmitkRenderWindowMenu::CreateSettingsWidget()
   m_Settings->addAction(m_2x2Dand3DWidgetLayoutAction);
   m_Settings->addAction(m_Left2Dand3DRight2DLayoutAction);
   m_Settings->addAction(m_LeftAxialRight2DLayoutAction);
+  m_Settings->addAction(m_SagittalUpAndAxialDownLayoutAction);
 
   m_Settings->setVisible( false );
 
@@ -236,6 +240,7 @@ void QmitkRenderWindowMenu::CreateSettingsWidget()
   connect( m_2x2Dand3DWidgetLayoutAction, SIGNAL( triggered(bool) ), this, SLOT(OnChangeLayoutTo2x2Dand3DWidget(bool)) );
   connect( m_Left2Dand3DRight2DLayoutAction, SIGNAL( triggered(bool) ), this, SLOT(OnChangeLayoutToLeft2Dand3DRight2D(bool)) );
   connect( m_LeftAxialRight2DLayoutAction, SIGNAL( triggered(bool) ), this, SLOT(OnChangeLayoutToAxialLeft2DRight(bool)) );
+  connect( m_SagittalUpAndAxialDownLayoutAction, SIGNAL( triggered(bool) ), this, SLOT(OnChangeLayoutToSagittalUpAndAxialDown(bool)) );
 
 }
 
@@ -514,6 +519,16 @@ void QmitkRenderWindowMenu::OnChangeLayoutToAxialLeft2DRight(bool)
   emit SignalChangeLayoutDesign( LAYOUT_LEFTAXIAL2DRIGHT );
 }
 
+void QmitkRenderWindowMenu::OnChangeLayoutToSagittalUpAndAxialDown(bool)
+{
+  //set Full Screen Mode to false, if Layout Design was changed by the LayoutDesign_List
+  m_FullScreenMode = false;
+  this->ChangeFullScreenIcon();
+
+  m_LayoutDesign = LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN;
+  emit SignalChangeLayoutDesign(LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN);
+}
+
 void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
 {
   m_LayoutDesign = layoutDesignIndex;
@@ -538,6 +553,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
 
@@ -556,6 +572,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_2DIMAGELEFT:
@@ -573,6 +590,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_BIG3D:
@@ -590,6 +608,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_AXIAL:
@@ -607,6 +626,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_SAGITTAL:
@@ -624,6 +644,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_CORONAL:
@@ -641,6 +662,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_2X2DAND3DWIDGET:
@@ -658,6 +680,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(false);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_ROWWIDGET3AND4:
@@ -675,6 +698,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_COLUMNWIDGET3AND4:
@@ -692,6 +716,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_SMALLUPPERWIDGET2BIGAND4:
@@ -709,6 +734,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_LEFT2DAND3DRIGHT2D:
@@ -726,6 +752,7 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(false);
       m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
       break;
     }
   case LAYOUT_LEFTAXIAL2DRIGHT:
@@ -743,6 +770,25 @@ void QmitkRenderWindowMenu::UpdateLayoutDesignList( int layoutDesignIndex )
       m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
       m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
       m_LeftAxialRight2DLayoutAction->setEnabled(false);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(true);
+      break;
+    }
+  case LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN:
+    {
+     m_DefaultLayoutAction->setEnabled(true);
+      m_2DImagesUpLayoutAction->setEnabled(true);
+      m_2DImagesLeftLayoutAction->setEnabled(true);
+      m_Big3DLayoutAction->setEnabled(true);
+      m_Widget1LayoutAction->setEnabled(true);
+      m_Widget2LayoutAction->setEnabled(true);
+      m_Widget3LayoutAction->setEnabled(true);
+      m_RowWidget3And4LayoutAction->setEnabled(true);
+      m_ColumnWidget3And4LayoutAction->setEnabled(true);
+      m_SmallUpperWidget2Big3and4LayoutAction->setEnabled(true);
+      m_2x2Dand3DWidgetLayoutAction->setEnabled(true);
+      m_Left2Dand3DRight2DLayoutAction->setEnabled(true);
+      m_LeftAxialRight2DLayoutAction->setEnabled(true);
+      m_SagittalUpAndAxialDownLayoutAction->setEnabled(false);
       break;
     }
   }

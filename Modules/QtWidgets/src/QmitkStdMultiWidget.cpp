@@ -1496,6 +1496,66 @@ void QmitkStdMultiWidget::changeLayoutToAxialLeft2DRight(int state)
   this->UpdateAllWidgets();
 }
 
+void QmitkStdMultiWidget::changeLayoutToSagittalUpAndAxialDown()
+{
+  SMW_INFO << "changing layout to Sagittal and Axial in a Column..." << std::endl;
+
+  //Hide all Menu Widgets
+  this->HideAllWidgetToolbars();
+
+  delete QmitkStdMultiWidgetLayout;
+
+  //create Main Layout
+  QmitkStdMultiWidgetLayout = new QHBoxLayout(this);
+  QmitkStdMultiWidgetLayout->setContentsMargins(0, 0, 0, 0);
+
+  //create main splitter
+  m_MainSplit = new QSplitter(this);
+  QmitkStdMultiWidgetLayout->addWidget(m_MainSplit);
+
+  //create m_LayoutSplit  and add to the mainSplit
+  m_LayoutSplit = new QSplitter(Qt::Vertical, m_MainSplit);
+  m_MainSplit->addWidget(m_LayoutSplit);
+
+  //add LevelWindow Widget to mainSplitter
+  m_MainSplit->addWidget(levelWindowWidget);
+
+  //add Widgets to splitter
+  m_LayoutSplit->addWidget(mitkWidget2Container);
+  m_LayoutSplit->addWidget(mitkWidget1Container);
+
+  //set Splitter Size
+  QList<int> splitterSize;
+  splitterSize.push_back(1000);
+  splitterSize.push_back(1000);
+  m_LayoutSplit->setSizes(splitterSize);
+
+  //show mainSplitt and add to Layout
+  m_MainSplit->show();
+
+  //show/hide Widgets
+  m_ShadowWidgetVisible[2] ? m_ShadowWidgets[2]->show() : mitkWidget3->show();
+  m_ShadowWidgetVisible[3] ? m_ShadowWidgets[3]->show() : mitkWidget4->show();
+
+  m_ShadowWidgetVisible[1] ? m_ShadowWidgets[1]->show() : mitkWidget2->show();
+  m_ShadowWidgetVisible[0] ? m_ShadowWidgets[0]->show() : mitkWidget1->show();
+  m_ShadowWidgets[2]->hide();
+  m_ShadowWidgets[3]->hide();
+  mitkWidget3->hide();
+  mitkWidget4->hide();
+
+  m_Layout = LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN;
+
+  //update Layout Design List
+  mitkWidget1->LayoutDesignListChanged(LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN);
+  mitkWidget2->LayoutDesignListChanged(LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN);
+  mitkWidget3->LayoutDesignListChanged(LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN);
+  mitkWidget4->LayoutDesignListChanged(LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN);
+
+  //update Alle Widgets
+  this->UpdateAllWidgets();
+}
+
 void QmitkStdMultiWidget::SetDataStorage(mitk::DataStorage* ds)
 {
   mitk::BaseRenderer::GetInstance(mitkWidget1->GetRenderWindow())->SetDataStorage(ds);
@@ -2041,6 +2101,11 @@ void QmitkStdMultiWidget::OnLayoutDesignChanged( int layoutDesignIndex, int acti
       this->changeLayoutToAxialLeft2DRight(activeProjection);
       break;
     }
+    case LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN:
+  {
+    this->changeLayoutToSagittalUpAndAxialDown();
+    break;
+  }
   };
   for (unsigned int i = 0; i < 4; i++) {
     crosshairManager->addWindow(GetRenderWindow(i));

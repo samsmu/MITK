@@ -206,6 +206,8 @@ protected slots:
 
   void OnChangeLayoutToAxialLeft2DRight(bool);
 
+  void OnChangeLayoutToSagittalUpAndAxialDown(bool);
+
   void OnCrossHairMenuAboutToShow();
 
 public:
@@ -235,7 +237,8 @@ public:
     LAYOUT_ROWWIDGETSMALL3ANDBIG4, //not in use in this class, but we need it here to synchronize with the SdtMultiWidget.
     LAYOUT_SMALLUPPERWIDGET2BIGAND4,
     LAYOUT_LEFT2DAND3DRIGHT2D,
-    LAYOUT_LEFTAXIAL2DRIGHT = 15 //because it's 15 in enum inside QmitkStdMultiWidget!
+    LAYOUT_LEFTAXIAL2DRIGHT = 15, //because it's 15 in enum inside QmitkStdMultiWidget!
+    LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN
   };
 
   void ShowMenu();
@@ -290,6 +293,8 @@ protected:
   QAction*            m_Left2Dand3DRight2DLayoutAction;
 
   QAction*            m_LeftAxialRight2DLayoutAction;
+
+  QAction*            m_SagittalUpAndAxialDownLayoutAction;
 
   QLabel *m_TSLabel;
 

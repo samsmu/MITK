@@ -309,6 +309,8 @@ public slots:
 
   void changeLayoutToAxialLeft2DRight(int state = 0);
 
+  void changeLayoutToSagittalUpAndAxialDown();
+
   void Fit();
 
   void InitPositionTracking();
@@ -411,7 +413,7 @@ public:
          LAYOUT_COLUMN_WIDGET_3_AND_4, LAYOUT_ROW_WIDGET_SMALL3_AND_BIG4 ,
          LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4,LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET,
          LAYOUT_2D_UP_AND_3D_DOWN, LAYOUT_COLUMN_WIDGET_1_AND_2,
-         LAYOUT_AXIAL_LEFT_2D_RIGHT};
+         LAYOUT_AXIAL_LEFT_2D_RIGHT, LAYOUT_SAGITTAL_UP_AND_AXIAL_DOWN };
 
   enum {
     AXIAL,
