@@ -493,6 +493,11 @@ public:
   std::pair<mitk::Color, mitk::Color> GetGradientColors(unsigned int widgetNumber);
   mitkCrosshairManager* crosshairManager;
 
+  bool setActiveNode(mitk::DataNode::Pointer node);
+  mitk::DataNode::Pointer getActiveNode();
+
+  void nodeRemoved(const mitk::DataNode* node, mitk::DataStorage* globalStorage);
+
 protected:
 
   QHBoxLayout* QmitkStdMultiWidgetLayout;
