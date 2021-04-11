@@ -488,7 +488,7 @@ QmitkStdMultiWidget::~QmitkStdMultiWidget()
 
   m_annotationOverlay.deinitialize();
 
-  mitk::MouseModeSwitcher::DestroyInstance();
+  //mitk::MouseModeSwitcher::DestroyInstance();
 }
 
 void QmitkStdMultiWidget::RemovePlanesFromDataStorage()

@@ -44,7 +44,7 @@ public:
   QmitkStdMultiWidgetEditorPrivate();
   ~QmitkStdMultiWidgetEditorPrivate();
 
-  QmitkStdMultiWidget* m_StdMultiWidget;
+  std::vector<QmitkStdMultiWidget*> m_StdMultiWidgets;
   QmitkMouseModeSwitcher* m_MouseModeToolbar;
   /**
   * @brief Members for the MultiWidget decorations.
@@ -76,10 +76,12 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
     {
       QmitkStdMultiWidgetEditor::Pointer stdMultiWidgetEditor = partRef->GetPart(false).Cast<QmitkStdMultiWidgetEditor>();
 
-      if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
-      {
-        d->m_StdMultiWidget->RemovePlanesFromDataStorage();
-        stdMultiWidgetEditor->RequestActivateMenuWidget(false);
+      //TO DO: get from focused widget
+      if (stdMultiWidgetEditor->GetStdMultiWidgetCount() > 0 && d->m_StdMultiWidgets.size() > 0) {
+        if (d->m_StdMultiWidgets.at(0) == stdMultiWidgetEditor->GetStdMultiWidget()) {
+          d->m_StdMultiWidgets.at(0)->RemovePlanesFromDataStorage();
+          stdMultiWidgetEditor->RequestActivateMenuWidget(false);
+        }
       }
     }
   }
@@ -90,10 +92,12 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
     {
       QmitkStdMultiWidgetEditor::Pointer stdMultiWidgetEditor = partRef->GetPart(false).Cast<QmitkStdMultiWidgetEditor>();
 
-      if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
-      {
-        d->m_StdMultiWidget->RemovePlanesFromDataStorage();
-        stdMultiWidgetEditor->RequestActivateMenuWidget(false);
+      //TO DO: get from focused widget
+      if (stdMultiWidgetEditor->GetStdMultiWidgetCount() > 0 && d->m_StdMultiWidgets.size() > 0) {
+        if (d->m_StdMultiWidgets.at(0) == stdMultiWidgetEditor->GetStdMultiWidget()) {
+          d->m_StdMultiWidgets.at(0)->RemovePlanesFromDataStorage();
+          stdMultiWidgetEditor->RequestActivateMenuWidget(false);
+        }
       }
     }
   }
@@ -104,10 +108,12 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
     {
       QmitkStdMultiWidgetEditor::Pointer stdMultiWidgetEditor = partRef->GetPart(false).Cast<QmitkStdMultiWidgetEditor>();
 
-      if (d->m_StdMultiWidget == stdMultiWidgetEditor->GetStdMultiWidget())
-      {
-        d->m_StdMultiWidget->AddPlanesToDataStorage();
-        stdMultiWidgetEditor->RequestActivateMenuWidget(true);
+      //TO DO: get from focused widget
+      if (stdMultiWidgetEditor->GetStdMultiWidgetCount() > 0 && d->m_StdMultiWidgets.size() > 0) {
+        if (d->m_StdMultiWidgets.at(0) == stdMultiWidgetEditor->GetStdMultiWidget()) {
+          d->m_StdMultiWidgets.at(0)->AddPlanesToDataStorage();
+          stdMultiWidgetEditor->RequestActivateMenuWidget(true);
+        }
       }
     }
   }
@@ -119,7 +125,7 @@ private:
 };
 
 QmitkStdMultiWidgetEditorPrivate::QmitkStdMultiWidgetEditorPrivate()
-  : m_StdMultiWidget(0), m_MouseModeToolbar(0)
+  : m_MouseModeToolbar(0)
   , m_MenuWidgetsEnabled(false)
   , m_PartListener(new QmitkStdMultiWidgetPartListener(this))
 {}
@@ -142,24 +148,38 @@ QmitkStdMultiWidgetEditor::~QmitkStdMultiWidgetEditor()
 
 void QmitkStdMultiWidgetEditor::SetWindowPresetBeforeLoading()
 {
-  d->m_StdMultiWidget->changeLayoutToWidget1();
+  //TO DO: get from focused widget
+  if (!d->m_StdMultiWidgets.empty()) {
+    d->m_StdMultiWidgets.at(0)->changeLayoutToWidget1();
+  }
 }
 
 void QmitkStdMultiWidgetEditor::SetWindowPresetAfterLoading()
 {
-  d->m_StdMultiWidget->changeLayoutToDefault();
+  //TO DO: get from focused widget
+  if (!d->m_StdMultiWidgets.empty()) {
+    d->m_StdMultiWidgets.at(0)->changeLayoutToDefault();
+  }
 }
 
 
-QmitkStdMultiWidget* QmitkStdMultiWidgetEditor::GetStdMultiWidget()
+QmitkStdMultiWidget* QmitkStdMultiWidgetEditor::GetStdMultiWidget(int index)
 {
-  return d->m_StdMultiWidget;
+  QmitkStdMultiWidget* multiWidget = nullptr;
+  if (0 <= index && index < d->m_StdMultiWidgets.size()) {
+    multiWidget = d->m_StdMultiWidgets.at(index);
+  }
+  return multiWidget;
 }
 
 QmitkRenderWindow *QmitkStdMultiWidgetEditor::GetActiveQmitkRenderWindow() const
 {
-  if (d->m_StdMultiWidget) return d->m_StdMultiWidget->GetRenderWindow1();
-  return 0;
+  //TO DO: get from focused widget
+  QmitkRenderWindow* window = nullptr;
+  if (!d->m_StdMultiWidgets.empty()) {
+    d->m_StdMultiWidgets.at(0)->GetRenderWindow1();
+  }
+  return window;
 }
 
 QHash<QString, QmitkRenderWindow *> QmitkStdMultiWidgetEditor::GetQmitkRenderWindows() const
@@ -169,6 +189,7 @@ QHash<QString, QmitkRenderWindow *> QmitkStdMultiWidgetEditor::GetQmitkRenderWin
 
 QmitkRenderWindow *QmitkStdMultiWidgetEditor::GetQmitkRenderWindow(const QString &id) const
 {
+  //TO DO: get from focused widget
   if (d->m_RenderWindows.contains(id))
     return d->m_RenderWindows[id];
 
@@ -177,54 +198,74 @@ QmitkRenderWindow *QmitkStdMultiWidgetEditor::GetQmitkRenderWindow(const QString
 
 mitk::Point3D QmitkStdMultiWidgetEditor::GetSelectedPosition(const QString & /*id*/) const
 {
-  return d->m_StdMultiWidget->GetCrossPosition();
+  //TO DO: get from focused widget
+  mitk::Point3D position = mitk::Point3D();
+  if (!d->m_StdMultiWidgets.empty()) {
+    d->m_StdMultiWidgets.at(0)->GetCrossPosition();
+  }
+  return position;
 }
 
 void QmitkStdMultiWidgetEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &/*id*/)
 {
-  d->m_StdMultiWidget->MoveCrossToPosition(pos);
+  //TO DO: get from focused widget
+  if (!d->m_StdMultiWidgets.empty()) {
+    d->m_StdMultiWidgets.at(0)->MoveCrossToPosition(pos);
+  }
 }
 
 void QmitkStdMultiWidgetEditor::EnableDecorations(bool enable, const QStringList &decorations)
 {
+  //TO DO: get from focused widget
+  if (d->m_StdMultiWidgets.empty()) {
+    return;
+  }
+
+  auto multiWidget = d->m_StdMultiWidgets.at(0);
   if (decorations.isEmpty() || decorations.contains(DECORATION_BORDER))
   {
-    enable ? d->m_StdMultiWidget->EnableColoredRectangles()
-           : d->m_StdMultiWidget->DisableColoredRectangles();
+    enable ? multiWidget->EnableColoredRectangles()
+           : multiWidget->DisableColoredRectangles();
   }
   if (decorations.isEmpty() || decorations.contains(DECORATION_MENU))
   {
-    d->m_StdMultiWidget->ActivateMenuWidget(enable);
+    multiWidget->ActivateMenuWidget(enable);
   }
   if (decorations.isEmpty() || decorations.contains(DECORATION_BACKGROUND))
   {
-    enable ? d->m_StdMultiWidget->EnableGradientBackground()
-           : d->m_StdMultiWidget->DisableGradientBackground();
+    enable ? multiWidget->EnableGradientBackground()
+           : multiWidget->DisableGradientBackground();
   }
   if (decorations.isEmpty() || decorations.contains(DECORATION_CORNER_ANNOTATION))
   {
-    enable ? d->m_StdMultiWidget->SetCornerAnnotationVisibility(true)
-           : d->m_StdMultiWidget->SetCornerAnnotationVisibility(false);
+    enable ? multiWidget->SetCornerAnnotationVisibility(true)
+           : multiWidget->SetCornerAnnotationVisibility(false);
   }
 }
 
 bool QmitkStdMultiWidgetEditor::IsDecorationEnabled(const QString &decoration) const
 {
+  //TO DO: get from focused widget
+  if (d->m_StdMultiWidgets.empty()) {
+    return false;
+  }
+
+  auto multiWidget = d->m_StdMultiWidgets.at(0);
   if (decoration == DECORATION_BORDER)
   {
-    return d->m_StdMultiWidget->IsColoredRectanglesEnabled();
+    return multiWidget->IsColoredRectanglesEnabled();
   }
   else if (decoration == DECORATION_MENU)
   {
-    return d->m_StdMultiWidget->IsMenuWidgetEnabled();
+    return multiWidget->IsMenuWidgetEnabled();
   }
   else if (decoration == DECORATION_BACKGROUND)
   {
-    return d->m_StdMultiWidget->GetGradientBackgroundFlag();
+    return multiWidget->GetGradientBackgroundFlag();
   }
   else if (decoration == DECORATION_CORNER_ANNOTATION)
   {
-    return d->m_StdMultiWidget->IsCornerAnnotationVisible();
+    return multiWidget ->IsCornerAnnotationVisible();
   }
 
   return false;
@@ -239,17 +280,23 @@ QStringList QmitkStdMultiWidgetEditor::GetDecorations() const
 
 void QmitkStdMultiWidgetEditor::EnableSlicingPlanes(bool enable)
 {
-  d->m_StdMultiWidget->SetWidgetPlanesVisibility(enable);
+  if (!d->m_StdMultiWidgets.empty()) {
+    d->m_StdMultiWidgets.at(0)->SetWidgetPlanesVisibility(enable);
+  }
 }
 
 bool QmitkStdMultiWidgetEditor::IsSlicingPlanesEnabled() const
 {
-  return this->d->m_StdMultiWidget->crosshairManager->getCrosshairMode() != CrosshairMode::NONE;
+  bool isEnabled(false);
+  if (!d->m_StdMultiWidgets.empty()) {
+    isEnabled = d->m_StdMultiWidgets.at(0)->crosshairManager->getCrosshairMode() != CrosshairMode::NONE;
+  }
+  return isEnabled;
 }
 
 void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_StdMultiWidget == 0)
+  if (d->m_StdMultiWidgets.empty())
   {
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0,0,0,0);
@@ -258,7 +305,6 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
     {
       d->m_MouseModeToolbar = new QmitkMouseModeSwitcher(); // delete by Qt via parent
       layout->addWidget(d->m_MouseModeToolbar);
-      d->m_MouseModeToolbar->setParent(d->m_StdMultiWidget);
     }
 
     berry::IPreferences::Pointer prefs = this->GetPreferences();
@@ -269,20 +315,20 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
     QString planeProperty("Plane Visibility 3D");
     bool planeVisibility3D = prefs->GetBool(planeProperty, true);
 
-    d->m_StdMultiWidget = new QmitkStdMultiWidget(parent, 0, 0, renderingMode, useFXAA, "stdmulti", planeVisibility3D);
-    d->m_RenderWindows.insert("axial", d->m_StdMultiWidget->GetRenderWindow1());
-    d->m_RenderWindows.insert("sagittal", d->m_StdMultiWidget->GetRenderWindow2());
-    d->m_RenderWindows.insert("coronal", d->m_StdMultiWidget->GetRenderWindow3());
-    d->m_RenderWindows.insert("3d", d->m_StdMultiWidget->GetRenderWindow4());
+    auto multiWidget = new QmitkStdMultiWidget(parent, 0, 0, renderingMode, useFXAA, "stdmulti", planeVisibility3D);
+    d->m_RenderWindows.insert("axial", multiWidget->GetRenderWindow1());
+    d->m_RenderWindows.insert("sagittal", multiWidget->GetRenderWindow2());
+    d->m_RenderWindows.insert("coronal", multiWidget->GetRenderWindow3());
+    d->m_RenderWindows.insert("3d", multiWidget->GetRenderWindow4());
 
-    d->m_MouseModeToolbar->setMouseModeSwitcher( d->m_StdMultiWidget->GetMouseModeSwitcher() );
+    d->m_MouseModeToolbar->setMouseModeSwitcher(&mitk::MouseModeSwitcher::GetInstance());
 
-    layout->addWidget(d->m_StdMultiWidget);
+    layout->addWidget(multiWidget);
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
 
     // Tell the multiWidget which (part of) the tree to render
-    d->m_StdMultiWidget->SetDataStorage(ds);
+    multiWidget->SetDataStorage(ds);
 
     // Initialize views as axial, sagittal, coronar to all data objects in DataStorage
     // (from top-left to bottom)
@@ -290,18 +336,22 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
     mitk::RenderingManager::GetInstance()->InitializeViews(geo);
 
     // Initialize bottom-right view as 3D view
-    d->m_StdMultiWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(
+    multiWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(
       mitk::BaseRenderer::Standard3D );
 
     // Enable standard handler for levelwindow-slider
-    d->m_StdMultiWidget->EnableStandardLevelWindow();
+    multiWidget->EnableStandardLevelWindow();
 
     // Add the displayed views to the tree to see their positions
     // in 2D and 3D
-    d->m_StdMultiWidget->AddDisplayPlaneSubTree();
+    multiWidget->AddDisplayPlaneSubTree();
 
     // Store the initial visibility status of the menu widget.
-    d->m_MenuWidgetsEnabled = d->m_StdMultiWidget->IsMenuWidgetEnabled();
+    d->m_MenuWidgetsEnabled = multiWidget->IsMenuWidgetEnabled();
+
+    d->m_StdMultiWidgets.push_back(multiWidget);
+
+    d->m_MouseModeToolbar->setParent(multiWidget);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
@@ -311,9 +361,9 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 
     this->RequestUpdate();
 
-    d->m_StdMultiWidget->GetRenderWindow4()->updateAllWindows();
+    multiWidget->GetRenderWindow4()->updateAllWindows();
 
-    connect(d->m_StdMultiWidget, &QmitkStdMultiWidget::saveCrosshairPreferences, this, [berryprefs, planeProperty] (bool visibility3D, CrosshairMode /*mode*/) {
+    connect(multiWidget, &QmitkStdMultiWidget::saveCrosshairPreferences, this, [berryprefs, planeProperty] (bool visibility3D, CrosshairMode /*mode*/) {
       berryprefs->PutBool(planeProperty, visibility3D);
     });
   }
@@ -321,33 +371,39 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 
 void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
+  //TO DO: get from focused widget
+  if (d->m_StdMultiWidgets.empty()) {
+    return;
+  }
+
+  auto multiWidget = d->m_StdMultiWidgets.at(0);
   //Update internal members
   this->FillMembersWithCurrentDecorations();
   this->GetPreferenceDecorations(prefs);
   //Now the members can be used to modify the stdmultiwidget
   mitk::Color upper = HexColorToMitkColor(d->m_WidgetBackgroundColor1[0]);
   mitk::Color lower = HexColorToMitkColor(d->m_WidgetBackgroundColor2[0]);
-  d->m_StdMultiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 0);
+  multiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 0);
   upper = HexColorToMitkColor(d->m_WidgetBackgroundColor1[1]);
   lower = HexColorToMitkColor(d->m_WidgetBackgroundColor2[1]);
-  d->m_StdMultiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 1);
+  multiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 1);
   upper = HexColorToMitkColor(d->m_WidgetBackgroundColor1[2]);
   lower = HexColorToMitkColor(d->m_WidgetBackgroundColor2[2]);
-  d->m_StdMultiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 2);
+  multiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 2);
   upper = HexColorToMitkColor(d->m_WidgetBackgroundColor1[3]);
   lower = HexColorToMitkColor(d->m_WidgetBackgroundColor2[3]);
-  d->m_StdMultiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 3);
-  d->m_StdMultiWidget->EnableGradientBackground();
+  multiWidget->SetGradientBackgroundColorForRenderWindow(upper, lower, 3);
+  multiWidget->EnableGradientBackground();
 
   // preferences for renderWindows
   mitk::Color colorDecorationWidget1 = HexColorToMitkColor(d->m_WidgetDecorationColor[0]);
   mitk::Color colorDecorationWidget2 = HexColorToMitkColor(d->m_WidgetDecorationColor[1]);
   mitk::Color colorDecorationWidget3 = HexColorToMitkColor(d->m_WidgetDecorationColor[2]);
   mitk::Color colorDecorationWidget4 = HexColorToMitkColor(d->m_WidgetDecorationColor[3]);
-  d->m_StdMultiWidget->SetDecorationColor(0, colorDecorationWidget1);
-  d->m_StdMultiWidget->SetDecorationColor(1, colorDecorationWidget2);
-  d->m_StdMultiWidget->SetDecorationColor(2, colorDecorationWidget3);
-  d->m_StdMultiWidget->SetDecorationColor(3, colorDecorationWidget4);
+  multiWidget->SetDecorationColor(0, colorDecorationWidget1);
+  multiWidget->SetDecorationColor(1, colorDecorationWidget2);
+  multiWidget->SetDecorationColor(2, colorDecorationWidget3);
+  multiWidget->SetDecorationColor(3, colorDecorationWidget4);
 
   std::vector<mitk::Color> colors;
   colors.push_back(colorDecorationWidget1);
@@ -355,13 +411,13 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   colors.push_back(colorDecorationWidget3);
   colors.push_back(colorDecorationWidget4);
 
-  d->m_StdMultiWidget->crosshairManager->setWindowsColors(colors);
+  multiWidget->crosshairManager->setWindowsColors(colors);
 
   // Crosshair gap
-  d->m_StdMultiWidget->crosshairManager->setCrosshairGap(prefs->GetInt("crosshair gap size", 32));
+  multiWidget->crosshairManager->setCrosshairGap(prefs->GetInt("crosshair gap size", 32));
 
   //refresh colors of rectangles
-  d->m_StdMultiWidget->DisableColoredRectangles(); //EnableColoredRectangles();
+  multiWidget->DisableColoredRectangles(); //EnableColoredRectangles();
 
   // Set preferences respecting zooming and panning
   bool constrainedZooming = prefs->GetBool("Use constrained zooming and panning", true);
@@ -376,18 +432,18 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   bool showLevelWindowWidget = prefs->GetBool("Show level/window widget", true);
   if (showLevelWindowWidget)
   {
-    d->m_StdMultiWidget->EnableStandardLevelWindow();
+    multiWidget->EnableStandardLevelWindow();
   }
   else
   {
-    d->m_StdMultiWidget->DisableStandardLevelWindow();
+    multiWidget->DisableStandardLevelWindow();
   }
 
   bool displayMetainfo = prefs->GetBool("Display metainfo", true);
-  d->m_StdMultiWidget->setDisplayMetaInfo( displayMetainfo );
+  multiWidget->setDisplayMetaInfo( displayMetainfo );
 
   bool selectionMode = prefs->GetBool("Selection on 3D View", false);
-  d->m_StdMultiWidget->setSelectionMode(selectionMode);
+  multiWidget->setSelectionMode(selectionMode);
 
   // mouse modes toolbar
   // deleted mouse mode "PACS"
@@ -396,7 +452,7 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   /*d->m_StdMultiWidget->GetMouseModeSwitcher()*/mitk::MouseModeSwitcher::GetInstance().SetInteractionScheme( /*newMode ? mitk::MouseModeSwitcher::PACS :*/ mitk::MouseModeSwitcher::MITK);
 
   mitk::DisplayInteractor::SetClockRotationSpeed(prefs->GetInt("Rotation Step", 90));
-  d->m_StdMultiWidget->crosshairManager->updateAllWindows();
+  multiWidget->crosshairManager->updateAllWindows();
 }
 
 mitk::Color QmitkStdMultiWidgetEditor::HexColorToMitkColor(const QString& widgetColorInHex)
@@ -432,12 +488,19 @@ QString QmitkStdMultiWidgetEditor::MitkColorToHex(const mitk::Color& color)
 
 void QmitkStdMultiWidgetEditor::FillMembersWithCurrentDecorations()
 {
+  //TO DO: get from focused widget
+  if (d->m_StdMultiWidgets.empty()) {
+    return;
+  }
+
+  auto multiWidget = d->m_StdMultiWidgets.at(0);
+
   //fill members with current values (or default values) from the std multi widget
   for(unsigned int i = 0; i < 4; ++i)
   {
-    d->m_WidgetDecorationColor[i] = MitkColorToHex(d->m_StdMultiWidget->GetDecorationColor(i));
-    d->m_WidgetBackgroundColor1[i] = MitkColorToHex(d->m_StdMultiWidget->GetGradientColors(i).first);
-    d->m_WidgetBackgroundColor2[i] = MitkColorToHex(d->m_StdMultiWidget->GetGradientColors(i).second);
+    d->m_WidgetDecorationColor[i] = MitkColorToHex(multiWidget->GetDecorationColor(i));
+    d->m_WidgetBackgroundColor1[i] = MitkColorToHex(multiWidget->GetGradientColors(i).first);
+    d->m_WidgetBackgroundColor2[i] = MitkColorToHex(multiWidget->GetGradientColors(i).second);
   }
 }
 
@@ -483,22 +546,29 @@ void QmitkStdMultiWidgetEditor::InitializePreferences(berry::IBerryPreferences *
 
 void QmitkStdMultiWidgetEditor::SetFocus()
 {
-  if (d->m_StdMultiWidget != 0)
-    d->m_StdMultiWidget->setFocus();
+  if (!d->m_StdMultiWidgets.empty())
+    d->m_StdMultiWidgets.at(0)->setFocus();
 }
 
 void QmitkStdMultiWidgetEditor::RequestActivateMenuWidget(bool on)
 {
-  if (d->m_StdMultiWidget)
+  //TO DO: get from focused widget
+  if (!d->m_StdMultiWidgets.empty())
   {
+    auto multiWidget = d->m_StdMultiWidgets.at(0);
     if (on)
     {
-      d->m_StdMultiWidget->ActivateMenuWidget(d->m_MenuWidgetsEnabled);
+      multiWidget->ActivateMenuWidget(d->m_MenuWidgetsEnabled);
     }
     else
     {
-      d->m_MenuWidgetsEnabled = d->m_StdMultiWidget->IsMenuWidgetEnabled();
-      d->m_StdMultiWidget->ActivateMenuWidget(false);
+      d->m_MenuWidgetsEnabled = multiWidget->IsMenuWidgetEnabled();
+      multiWidget->ActivateMenuWidget(false);
     }
   }
+}
+
+int QmitkStdMultiWidgetEditor::GetStdMultiWidgetCount()
+{
+  return d->m_StdMultiWidgets.size();
 }
