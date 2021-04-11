@@ -572,3 +572,16 @@ int QmitkStdMultiWidgetEditor::GetStdMultiWidgetCount()
 {
   return d->m_StdMultiWidgets.size();
 }
+
+void QmitkStdMultiWidgetEditor::nodeRemoved(const mitk::DataNode* node, mitk::DataStorage* globalStorage)
+{
+  if (!node || !globalStorage) {
+    return;
+  }
+
+  for (auto multiWidget : d->m_StdMultiWidgets) {
+    if (multiWidget) {
+      multiWidget->nodeRemoved(node, globalStorage);
+    }
+  }
+}

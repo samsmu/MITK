@@ -104,6 +104,8 @@ public:
   void EnableSlicingPlanes(bool enable) override;
   bool IsSlicingPlanesEnabled() const override;
 
+  void nodeRemoved(const mitk::DataNode* node, mitk::DataStorage* globalStorage);
+
 protected:
 
   /**
