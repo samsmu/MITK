@@ -32,10 +32,41 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
 
+#include <mitkStandaloneDataStorage.h>
+
 #include <QmitkMouseModeSwitcher.h>
 #include <QmitkStdMultiWidget.h>
 
 #include <QHBoxLayout>
+
+namespace
+{
+  QmitkStdMultiWidget* createStdMultiWidget(QHash<QString, QmitkRenderWindow*>& renderWindows, berry::IPreferences::Pointer preferences, mitk::DataStorage::Pointer ds)
+  {
+    bool useFXAA = preferences->GetBool("Use FXAA", true);
+    bool planeVisibility3D = preferences->GetBool("Plane Visibility 3D", true);
+    mitk::BaseRenderer::RenderingMode::Type renderingMode = static_cast<mitk::BaseRenderer::RenderingMode::Type>(preferences->GetInt("Rendering Mode", 2));
+
+    auto stdMultiWidget = new QmitkStdMultiWidget(nullptr, 0, mitk::RenderingManager::New(), renderingMode, useFXAA, "additionalMultiWidget", false, QmitkStdMultiWidget::WidgetType::ADDITIONAL_WIDGET);
+
+    stdMultiWidget->SetDataStorage(ds);
+    stdMultiWidget->DisableStandardLevelWindow();
+    stdMultiWidget->ActivateMenuWidget(true);
+
+    mitk::Color mitkColor;
+    mitkColor.SetRed(0);
+    mitkColor.SetGreen(0);
+    mitkColor.SetBlue(0);
+    stdMultiWidget->SetGradientBackgroundColorForRenderWindow(mitkColor, mitkColor, 3);
+
+    stdMultiWidget->GetRenderWindow4()->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D);
+
+    bool displayMetainfo = preferences->GetBool("Display metainfo", true);
+    stdMultiWidget->setDisplayMetaInfo(displayMetainfo);
+
+    return stdMultiWidget;
+  }
+}
 
 class QmitkStdMultiWidgetEditorPrivate
 {
@@ -83,6 +114,8 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
           stdMultiWidgetEditor->RequestActivateMenuWidget(false);
         }
       }
+
+      stdMultiWidgetEditor->resetAdvancedMode();
     }
   }
 
@@ -99,6 +132,8 @@ struct QmitkStdMultiWidgetPartListener : public berry::IPartListener
           stdMultiWidgetEditor->RequestActivateMenuWidget(false);
         }
       }
+
+      stdMultiWidgetEditor->resetAdvancedMode();
     }
   }
 
@@ -323,7 +358,14 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
 
     d->m_MouseModeToolbar->setMouseModeSwitcher(&mitk::MouseModeSwitcher::GetInstance());
 
-    layout->addWidget(multiWidget);
+    QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sizePolicy.setHorizontalStretch(2);
+    multiWidget->setSizePolicy(sizePolicy);
+
+    m_MultiWidgetSplit = new QSplitter(Qt::Horizontal);
+    layout->addWidget(m_MultiWidgetSplit);
+
+    m_MultiWidgetSplit->addWidget(multiWidget);
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
 
@@ -582,6 +624,43 @@ void QmitkStdMultiWidgetEditor::nodeRemoved(const mitk::DataNode* node, mitk::Da
   for (auto multiWidget : d->m_StdMultiWidgets) {
     if (multiWidget) {
       multiWidget->nodeRemoved(node, globalStorage);
+    }
+  }
+}
+
+void QmitkStdMultiWidgetEditor::setAdvancedMode()
+{
+  resetAdvancedMode();
+
+  mitk::DataStorage::Pointer ds = mitk::StandaloneDataStorage::New();
+  auto additionalWidget = createStdMultiWidget(d->m_RenderWindows, this->GetPreferences(), ds);
+
+  QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+  sizePolicy.setHorizontalStretch(1);
+  additionalWidget->setSizePolicy(sizePolicy);
+
+  m_MultiWidgetSplit->addWidget(additionalWidget);
+  d->m_StdMultiWidgets.push_back(additionalWidget);
+
+  additionalWidget->changeLayoutToSagittalUpAndAxialDown();
+  additionalWidget->DisableColoredRectangles();
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+void QmitkStdMultiWidgetEditor::resetAdvancedMode()
+{
+  if (GetStdMultiWidgetCount() < 2) {
+    return;
+  }
+
+  auto multiwidget = GetStdMultiWidget(1);
+  if (multiwidget) {
+    multiwidget->setParent(nullptr);
+    auto it = std::find(d->m_StdMultiWidgets.begin(), d->m_StdMultiWidgets.end(), multiwidget);
+    if (it != d->m_StdMultiWidgets.end()) {
+      d->m_StdMultiWidgets.erase(it);
+      delete multiwidget;
     }
   }
 }

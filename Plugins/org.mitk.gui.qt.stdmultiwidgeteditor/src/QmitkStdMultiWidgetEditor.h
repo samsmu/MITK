@@ -17,6 +17,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef QmitkStdMultiWidgetEditor_h
 #define QmitkStdMultiWidgetEditor_h
 
+#include <QSplitter>
+
 #include <QmitkAbstractRenderEditor.h>
 
 #include <mitkILinkedRenderWindowPart.h>
@@ -106,6 +108,9 @@ public:
 
   void nodeRemoved(const mitk::DataNode* node, mitk::DataStorage* globalStorage);
 
+  void setAdvancedMode();
+  void resetAdvancedMode();
+
 protected:
 
   /**
@@ -153,5 +158,7 @@ protected:
 
 private:
   const QScopedPointer<QmitkStdMultiWidgetEditorPrivate> d;
+
+  QSplitter* m_MultiWidgetSplit;
 };
 #endif /*QmitkStdMultiWidgetEditor_h*/
