@@ -2427,7 +2427,7 @@ bool QmitkStdMultiWidget::getVolumeRenderingState()
   return state;
 }
 
-bool QmitkStdMultiWidget::setActiveNode(mitk::DataNode::Pointer activeNode)
+bool QmitkStdMultiWidget::setActiveNode(mitk::DataNode* activeNode)
 {
   if (!activeNode) {
     return false;
@@ -2439,19 +2439,28 @@ bool QmitkStdMultiWidget::setActiveNode(mitk::DataNode::Pointer activeNode)
   }
 
   if (m_WidgetType == WidgetType::MAIN_WIDGET) {
-    mitk::DataStorage::SetOfObjects::ConstPointer allImageNodes = m_DataStorage->GetSubset(mitk::NodePredicateDataType::New("Image"));
+    mitk::DataStorage::SetOfObjects::ConstPointer allNodes = m_DataStorage->GetAll();
+
     bool isFounded(false);
-    for (auto node : *allImageNodes) {
-      node->SetBoolProperty("series_selected", false);
-      if (node == activeNode) {
-        isFounded = true;
+    for (auto node : *allNodes) {
+      if (auto image = dynamic_cast<mitk::Image*>(node->GetData())) {
+        //such dreary logic so as not to call again nodeChanged
+        bool isSelected(false);
+        node->GetBoolProperty("series_selected", isSelected);
+        if (node != activeNode && isSelected) {
+          node->SetBoolProperty("series_selected", false);
+        } else if (node == activeNode && !isSelected) {
+          node->SetBoolProperty("series_selected", false);
+          isFounded = true;
+        } else if (node == activeNode) {
+          isFounded = true;
+        }
       }
     }
 
     if (!isFounded) {
       m_DataStorage->Add(activeNode);
     }
-    activeNode->SetBoolProperty("series_selected", true);
   } else if (WidgetType::ADDITIONAL_WIDGET) {
     m_DataStorage->Remove(m_DataStorage->GetAll());
 

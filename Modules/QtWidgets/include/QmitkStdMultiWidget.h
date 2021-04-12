@@ -493,7 +493,7 @@ public:
   std::pair<mitk::Color, mitk::Color> GetGradientColors(unsigned int widgetNumber);
   mitkCrosshairManager* crosshairManager;
 
-  bool setActiveNode(mitk::DataNode::Pointer node);
+  bool setActiveNode(mitk::DataNode* node);
   mitk::DataNode::Pointer getActiveNode();
 
   void nodeRemoved(const mitk::DataNode* node, mitk::DataStorage* globalStorage);
