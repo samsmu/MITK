@@ -79,6 +79,10 @@ if(NOT DEFINED VTK_DIR)
     )
   endif()
 
+  list(APPEND additional_cmake_args
+    -DModule_SplineDrivenImageSlicer:BOOL=ON
+    )
+
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ${sep}
     URL http://www.vtk.org/files/release/8.0/VTK-8.0.1.tar.gz
