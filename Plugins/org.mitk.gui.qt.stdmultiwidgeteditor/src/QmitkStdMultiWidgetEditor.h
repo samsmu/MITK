@@ -113,6 +113,7 @@ public:
 
 signals:
   void resettingAdvancedMode();
+  void settingMarkerPosition(int pos);
 
 protected:
 

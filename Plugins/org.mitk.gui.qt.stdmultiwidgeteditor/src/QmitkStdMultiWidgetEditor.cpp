@@ -23,6 +23,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <berryIPreferences.h>
 
 #include <QWidget>
+#include <QWheelEvent>
 
 #include <mitkColorProperty.h>
 #include <mitkCrosshairManager.h>
@@ -644,6 +645,14 @@ void QmitkStdMultiWidgetEditor::setAdvancedMode()
 
   additionalWidget->changeLayoutToSagittalUpAndAxialDown();
   additionalWidget->DisableColoredRectangles();
+
+  connect(GetStdMultiWidget(1), &QmitkStdMultiWidget::WheelMoved, this, [this](QWheelEvent*) {
+    auto window = GetStdMultiWidget(1)->GetRenderWindow1();
+    if (window) {
+      int pos = window->GetSliceNavigationController()->GetSlice()->GetPos();
+      emit settingMarkerPosition(pos);
+    }
+  });
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
