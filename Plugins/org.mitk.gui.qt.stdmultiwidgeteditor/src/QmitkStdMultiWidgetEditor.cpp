@@ -52,7 +52,7 @@ namespace
 
     stdMultiWidget->SetDataStorage(ds);
     stdMultiWidget->DisableStandardLevelWindow();
-    stdMultiWidget->ActivateMenuWidget(true);
+    stdMultiWidget->ActivateMenuWidget(false);
 
     mitk::Color mitkColor;
     mitkColor.SetRed(0);
