@@ -663,4 +663,6 @@ void QmitkStdMultiWidgetEditor::resetAdvancedMode()
       delete multiwidget;
     }
   }
+
+  emit resettingAdvancedMode();
 }

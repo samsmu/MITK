@@ -111,6 +111,9 @@ public:
   void setAdvancedMode();
   void resetAdvancedMode();
 
+signals:
+  void resettingAdvancedMode();
+
 protected:
 
   /**
