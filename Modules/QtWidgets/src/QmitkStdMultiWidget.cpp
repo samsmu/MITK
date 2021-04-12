@@ -2503,9 +2503,11 @@ mitk::DataNode::Pointer QmitkStdMultiWidget::getActiveNode()
 
 void QmitkStdMultiWidget::nodeRemoved(const mitk::DataNode* node, mitk::DataStorage* globalStorage)
 {
-  if (!node || !globalStorage || m_DataStorage == globalStorage) {
+  if (!globalStorage || m_DataStorage == globalStorage) {
     return;
   }
 
-  m_DataStorage->Remove(node);
+  node ? m_DataStorage->Remove(node) : m_DataStorage->Remove(m_DataStorage->GetAll());
+
+  m_RenderingManager->RequestUpdateAll();
 }
