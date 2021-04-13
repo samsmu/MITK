@@ -60,6 +60,7 @@ namespace {
     , {"Series Tags",           QObject::tr("Series Tags")} 
     , {"Editor",                QObject::tr("Editor") }
     , {"Navigation",            QObject::tr("Navigation") }
+    , {"Data alignment",        QObject::tr("Data alignment") }
     , {"User Data",             QObject::tr("User Data") } });
   const QList<QString> mandatorySettings = QList<QString>(
     { "org.mitk.gui.qt.application.EnvironmentPreferencePage"
