@@ -149,6 +149,8 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
     // see bug-13275
     localStorage->m_ReslicedImage = NULL;
     localStorage->m_Mapper->SetInputData( localStorage->m_EmptyPolyData );
+    localStorage->m_OutlineActor->SetVisibility(false);
+    localStorage->m_OutlineShadowActor->SetVisibility(false);
     return;
   }
 
