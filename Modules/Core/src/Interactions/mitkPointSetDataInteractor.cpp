@@ -164,7 +164,7 @@ void mitk::PointSetDataInteractor::SelectPoint(StateMachineAction*, InteractionE
 }
 
 mitk::PointSetDataInteractor::PointSetDataInteractor() :
-  m_MaxNumberOfPoints(0),m_SelectionAccuracy(3.5)
+  m_MaxNumberOfPoints(0),m_SelectionAccuracy(3.5),m_IsMoving(false)
 {
 }
 
@@ -440,10 +440,13 @@ void mitk::PointSetDataInteractor::InitMove(StateMachineAction*, InteractionEven
   m_SumVec.Fill(0);
 
   GetDataNode()->SetProperty("contourcolor", ColorProperty::New(1.0, 1.0, 1.0));
+
+  m_IsMoving = true;
 }
 
 void mitk::PointSetDataInteractor::FinishMove(StateMachineAction*, InteractionEvent* interactionEvent)
 {
+  m_IsMoving = false;
 
   unsigned int timeStep = interactionEvent->GetSender()->GetTimeStep(GetDataNode()->GetData());
   ScalarType timeInMs = interactionEvent->GetSender()->GetTime();
@@ -648,4 +651,9 @@ void mitk::PointSetDataInteractor::SelectPoint(int position, unsigned int timeSt
   if ( !m_UndoEnabled )
     delete doOp;
 
+}
+
+bool mitk::PointSetDataInteractor::IsMoving()
+{
+  return m_IsMoving;
 }

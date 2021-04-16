@@ -83,6 +83,8 @@ namespace mitk
      */
     void SetMaxPoints(unsigned int maxNumber = 0);
 
+    bool IsMoving();
+
   protected:
     PointSetDataInteractor();
     virtual ~PointSetDataInteractor();
@@ -182,6 +184,8 @@ namespace mitk
     PointSet::Pointer m_PointSet;
     int m_MaxNumberOfPoints; // maximum of allowed number of points
     float m_SelectionAccuracy; // accuracy that's needed to select a point
+
+    bool m_IsMoving;
 
     // FUNCTIONS
     void UnselectAll(unsigned int timeStep , ScalarType timeInMs);
