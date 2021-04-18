@@ -649,7 +649,8 @@ void QmitkStdMultiWidgetEditor::setAdvancedMode()
   connect(GetStdMultiWidget(1), &QmitkStdMultiWidget::WheelMoved, this, [this](QWheelEvent*) {
     auto window = GetStdMultiWidget(1)->GetRenderWindow1();
     if (window) {
-      int pos = window->GetSliceNavigationController()->GetSlice()->GetPos();
+      auto snc = window->GetSliceNavigationController();
+      int pos = snc->GetSlice()->GetSteps() - snc->GetSlice()->GetPos() - 1;
       emit settingMarkerPosition(pos);
     }
   });
